@@ -1,26 +1,242 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-primary: #2D6A4F;
+  --color-primary-dark: #1B5A3F;
+  --color-primary-light: #40916C;
+  --color-secondary: #D4A843;
+  --color-secondary-dark: #B8922F;
+  --color-secondary-light: #E4C06B;
+  --color-dark: #1B3A4B;
+  --color-dark-light: #2C4F63;
+  --color-cream: #FDF8F0;
+  --color-cream-dark: #F5EDE0;
+  --color-accent: #E07A5F;
+  --color-accent-dark: #C96A50;
+  --color-accent-light: #E89A84;
+  --color-text: #2D2D2D;
+  --color-text-light: #6B7280;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  --font-family-display: "Playfair Display", serif;
+  --font-family-body: "DM Sans", sans-serif;
+
+  --font-size-display-xl: 4.5rem;
+  --font-size-display-lg: 3.5rem;
+  --font-size-display-md: 2.5rem;
+  --font-size-display-sm: 2rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  html {
+    scroll-behavior: auto;
+    overflow-x: hidden;
+  }
+
+  body {
+    font-family: var(--font-family-body);
+    color: var(--color-text);
+    background-color: var(--color-cream);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-display);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-dark);
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, var(--font-size-display-lg));
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 4vw, var(--font-size-display-md));
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 3vw, var(--font-size-display-sm));
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+    touch-action: manipulation;
+  }
+
+  input, textarea, select {
+    font-family: inherit;
+    font-size: 16px; /* Prevents iOS auto-zoom on focus */
+    touch-action: manipulation;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: white;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Noise texture overlay */
+.noise-bg {
+  position: relative;
+}
+
+.noise-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cream);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-dark);
+}
+
+/* WhatsApp pulse animation */
+@keyframes pulse-whatsapp {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+.pulse-whatsapp {
+  animation: pulse-whatsapp 2s infinite;
+}
+
+/* Swiper custom styles */
+.swiper-pagination-bullet {
+  background-color: var(--color-primary) !important;
+  opacity: 0.5 !important;
+}
+
+.swiper-pagination-bullet-active {
+  opacity: 1 !important;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  color: var(--color-primary) !important;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Hide scrollbar for horizontal scroll sections */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Gradient overlays */
+.gradient-dark-bottom {
+  background: linear-gradient(to bottom, transparent 0%, rgba(27, 58, 75, 0.9) 100%);
+}
+
+.gradient-dark-top {
+  background: linear-gradient(to top, transparent 0%, rgba(27, 58, 75, 0.7) 100%);
+}
+
+/* Text gradient */
+.text-gradient-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover effects — disabled on touch devices */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(27, 58, 75, 0.15);
+  }
+}
+
+/* Image zoom on hover — disabled on touch devices */
+.img-zoom {
+  overflow: hidden;
+}
+
+.img-zoom img {
+  transition: transform 0.5s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .img-zoom:hover img {
+    transform: scale(1.1);
+  }
+}
+
+/* Safe area for notched phones (iPhone X+, many Androids) */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
 }
