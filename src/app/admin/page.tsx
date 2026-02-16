@@ -10,7 +10,7 @@ export default async function AdminDashboardPage() {
     getEstatisticas(),
     getReservas(),
     getQuartos(),
-    getUltimosAcessosAdmin(12),
+    getUltimosAcessosAdmin(24),
   ]);
 
   return (

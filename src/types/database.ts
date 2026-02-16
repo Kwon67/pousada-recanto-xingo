@@ -309,7 +309,7 @@ export type Database = {
         Row: {
           id: string;
           username: string;
-          event_type: 'login' | 'access';
+          event_type: 'login' | 'access' | 'login_failed' | 'logout';
           ip: string | null;
           user_agent: string | null;
           path: string | null;
@@ -318,7 +318,7 @@ export type Database = {
         Insert: {
           id?: string;
           username: string;
-          event_type: 'login' | 'access';
+          event_type: 'login' | 'access' | 'login_failed' | 'logout';
           ip?: string | null;
           user_agent?: string | null;
           path?: string | null;
@@ -327,7 +327,7 @@ export type Database = {
         Update: {
           id?: string;
           username?: string;
-          event_type?: 'login' | 'access';
+          event_type?: 'login' | 'access' | 'login_failed' | 'logout';
           ip?: string | null;
           user_agent?: string | null;
           path?: string | null;

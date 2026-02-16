@@ -9,11 +9,20 @@ interface User {
   name: string;
 }
 
+interface AdminSessionInfo {
+  expiresAt: number | null;
+  issuedAt: number | null;
+}
+
 interface AuthContextValue {
   user: User | null;
+  session: AdminSessionInfo | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (
+    _username: string,
+    _password: string
+  ) => Promise<{ success: boolean; error?: string; retryAfterSeconds?: number }>;
   logout: () => Promise<void>;
 }
 
@@ -21,6 +30,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<AdminSessionInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -34,14 +44,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!response.ok) {
           setUser(null);
+          setSession(null);
           return;
         }
 
         const data = await response.json();
         if (data.authenticated && data.user) {
           setUser(data.user);
+          setSession(data.session ?? null);
         } else {
           setUser(null);
+          setSession(null);
         }
       } finally {
         setLoading(false);
@@ -63,10 +76,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const data = await response.json();
         if (!response.ok || !data.success || !data.user) {
-          return { success: false, error: data.error || 'Usuário ou senha inválidos' };
+          return {
+            success: false,
+            error: data.error || 'Usuário ou senha inválidos',
+            retryAfterSeconds: data.retryAfterSeconds,
+          };
         }
 
         setUser(data.user);
+        setSession(data.session ?? null);
         router.push('/admin');
         return { success: true };
       } catch {
@@ -81,13 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(async () => {
     await fetch('/api/admin/logout', { method: 'POST' });
     setUser(null);
+    setSession(null);
     router.push('/admin/login');
   }, [router]);
 
   const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, loading, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={{ user, session, loading, isAuthenticated, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

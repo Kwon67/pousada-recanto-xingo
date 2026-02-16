@@ -29,7 +29,7 @@ function getClientIp(request: NextRequest): string | null {
 export async function registrarAcessoAdmin(input: RegistrarAcessoAdminInput): Promise<void> {
   try {
     const supabase = createAdminClient();
-    const username = normalizeText(input.username, 120) || 'admin';
+    const username = normalizeText(input.username.toLowerCase(), 120) || 'admin';
     const path = normalizeText(input.path ?? input.request.nextUrl.pathname, 160);
     const userAgent = normalizeText(input.request.headers.get('user-agent'), 500);
     const ip = getClientIp(input.request);

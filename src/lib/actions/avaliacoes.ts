@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { avaliacoesMock } from '@/data/mock';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession, isAdminActionAuthenticated } from '@/lib/admin-action-guard';
 import type { Avaliacao } from '@/types/avaliacao';
 
 function slugify(text: string) {
@@ -15,6 +16,8 @@ function slugify(text: string) {
 }
 
 export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean }) {
+  const hasAdminSession = await isAdminActionAuthenticated();
+
   try {
     const supabase = createAdminClient();
     let query = supabase
@@ -30,6 +33,8 @@ export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean
     }
     if (filtro?.aprovada !== undefined) {
       query = query.eq('aprovada', filtro.aprovada);
+    } else if (!hasAdminSession) {
+      query = query.eq('aprovada', true);
     }
 
     const { data, error } = await query;
@@ -37,6 +42,9 @@ export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean
     return data as unknown as Avaliacao[];
   } catch {
     let avaliacoes = [...avaliacoesMock];
+    if (!hasAdminSession) {
+      avaliacoes = avaliacoes.filter((a) => a.aprovada);
+    }
     if (filtro?.nota) {
       avaliacoes = avaliacoes.filter((a) => a.nota === filtro.nota);
     }
@@ -54,6 +62,8 @@ export async function criarAvaliacao(data: {
   comentario: string;
   aprovada?: boolean;
 }) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
 
@@ -89,6 +99,8 @@ export async function criarAvaliacao(data: {
 }
 
 export async function toggleAprovada(id: string, aprovada: boolean) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase
@@ -108,6 +120,8 @@ export async function toggleAprovada(id: string, aprovada: boolean) {
 }
 
 export async function deletarAvaliacao(id: string) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from('avaliacoes').delete().eq('id', id);
@@ -121,4 +135,3 @@ export async function deletarAvaliacao(id: string) {
   revalidatePath('/');
   return { success: true, message: 'Avaliação excluída com sucesso!' };
 }
-

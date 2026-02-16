@@ -1,26 +1,59 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Clock3 } from 'lucide-react';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
 import Sidebar from '@/components/admin/Sidebar';
 import { ToastProvider } from '@/components/ui/Toast';
 
+function formatSessionRemaining(expiresAt: number | null): string {
+  if (!expiresAt) return 'Sessão ativa';
+  const expiresMs = expiresAt * 1000;
+  const remainingMs = expiresMs - Date.now();
+  if (remainingMs <= 0) return 'Sessão expirada';
+
+  const totalMinutes = Math.floor(remainingMs / 60000);
+  if (totalMinutes < 1) return 'Expira em <1min';
+  if (totalMinutes < 60) return `Expira em ${totalMinutes}min`;
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `Expira em ${hours}h${minutes > 0 ? ` ${minutes}min` : ''}`;
+}
+
 function AdminContent({ children }: { children: React.ReactNode }) {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, session, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [_minuteTick, setMinuteTick] = useState(0);
 
   const isLoginPage = pathname === '/admin/login';
 
   useEffect(() => {
+    if (!loading && isAuthenticated && isLoginPage) {
+      router.push('/admin');
+    }
+
     if (!loading && !isAuthenticated && !isLoginPage) {
       router.push('/admin/login');
     }
   }, [isAuthenticated, loading, isLoginPage, router]);
 
-  // Show loading state
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setMinuteTick((prev) => prev + 1);
+    }, 60_000);
+
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const sessionLabel = formatSessionRemaining(session?.expiresAt ?? null);
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
@@ -32,12 +65,6 @@ function AdminContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Show login page without sidebar
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
-
-  // Show protected content with sidebar
   if (!isAuthenticated) {
     return null;
   }
@@ -53,13 +80,12 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-[#F8FAFC] bg-[radial-gradient(circle_at_top_right,_rgba(45,106,79,0.12),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(212,168,67,0.12),_transparent_45%)]">
       <Sidebar />
 
       <div className="lg:ml-64 pt-16 lg:pt-0">
-        {/* Top Header */}
-        <header className="bg-white border-b border-gray-100 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-3">
+        <header className="bg-white/90 backdrop-blur border-b border-gray-200 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
+          <div className="flex items-center gap-3 min-w-0">
             {canGoBack && (
               <button
                 type="button"
@@ -71,11 +97,22 @@ function AdminContent({ children }: { children: React.ReactNode }) {
                 <span className="hidden sm:inline">Voltar</span>
               </button>
             )}
-            <p className="text-gray-800 font-medium">
-              Olá, <span className="text-primary">{user?.name || 'Admin'}</span>
-            </p>
+            <div className="min-w-0">
+              <p className="text-gray-800 font-semibold truncate">
+                Olá, <span className="text-primary">{user?.name || 'Admin'}</span>
+              </p>
+              <p className="text-xs text-gray-500">Painel administrativo seguro</p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 text-xs font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Sessão protegida
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-medium">
+              <Clock3 className="w-3.5 h-3.5" />
+              {sessionLabel}
+            </span>
             <a
               href="/"
               target="_blank"

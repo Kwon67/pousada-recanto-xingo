@@ -16,9 +16,15 @@
   --color-accent-light: #E89A84;
   --color-text: #2D2D2D;
   --color-text-light: #6B7280;
+  --color-text-muted: #9CA3AF;
   --color-success: #10B981;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
+
+  /* Badge colors - minimalistas com baixa saturação */
+  --color-badge-standard: #3B82F6;
+  --color-badge-superior: #8B5CF6;
+  --color-badge-suite: #F59E0B;
 
   --font-family-display: "Playfair Display", serif;
   --font-family-body: "DM Sans", sans-serif;
@@ -27,6 +33,22 @@
   --font-size-display-lg: 3.5rem;
   --font-size-display-md: 2.5rem;
   --font-size-display-sm: 2rem;
+
+  /* Sombras refinadas e sutis */
+  --shadow-elegant: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-elegant-md: 0 4px 6px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --shadow-elegant-lg: 0 10px 15px rgba(0, 0, 0, 0.05), 0 4px 6px rgba(0, 0, 0, 0.03);
+  --shadow-elegant-xl: 0 20px 25px rgba(0, 0, 0, 0.06), 0 8px 10px rgba(0, 0, 0, 0.04);
+
+  /* Border radius padronizado */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+
+  /* Transição luxuosa */
+  --transition-elegant: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
@@ -208,13 +230,13 @@
 
 /* Card hover effects — disabled on touch devices */
 .card-hover {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: var(--transition-elegant);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .card-hover:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(27, 58, 75, 0.15);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-elegant-md);
   }
 }
 
@@ -224,12 +246,12 @@
 }
 
 .img-zoom img {
-  transition: transform 0.5s ease;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .img-zoom:hover img {
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 }
 
@@ -239,4 +261,27 @@
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
   }
+}
+
+/* Elegant utilities */
+.elegant-transition {
+  transition: var(--transition-elegant);
+}
+
+.elegant-shadow {
+  box-shadow: var(--shadow-elegant);
+}
+
+.elegant-shadow-md {
+  box-shadow: var(--shadow-elegant-md);
+}
+
+.elegant-shadow-lg {
+  box-shadow: var(--shadow-elegant-lg);
+}
+
+/* Backdrop blur elegante para modais */
+.backdrop-elegant {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

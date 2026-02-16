@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { configuracoesMock } from '@/data/mock';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import type { Database, Configuracoes } from '@/types/database';
 
 type ConfiguracoesRow = Database['public']['Tables']['configuracoes']['Row'];
@@ -38,6 +39,8 @@ function toConfiguracoes(row: ConfiguracoesRow): Configuracoes {
 }
 
 export async function getConfiguracoes(): Promise<Configuracoes> {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase
@@ -75,6 +78,8 @@ export async function atualizarConfiguracoes(data: {
   email_notificacoes?: boolean;
   nova_reserva_push?: boolean;
 }) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { data: existing, error: existingError } = await supabase

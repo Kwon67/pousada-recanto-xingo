@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import { enviarEmailConfirmacao, enviarEmailStatus } from '@/lib/email';
 import { reservasMock } from '@/data/mock';
 import type { Reserva, StatusReserva } from '@/types/reserva';
@@ -111,6 +112,8 @@ export async function criarReserva(data: CriarReservaData) {
 }
 
 export async function getReservas(filtro?: { status?: string; busca?: string }): Promise<Reserva[]> {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     let query = supabase
@@ -175,6 +178,8 @@ export async function getReservaById(id: string) {
 }
 
 export async function atualizarStatusReserva(id: string, status: StatusReserva) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from('reservas').update({ status }).eq('id', id);
@@ -222,6 +227,8 @@ export async function atualizarStatusReserva(id: string, status: StatusReserva) 
 }
 
 export async function deletarReserva(id: string, senha: string) {
+  await assertAdminActionSession();
+
   const senhaAdmin =
     process.env.ADMIN_DELETE_PASSWORD?.trim() ||
     process.env.ADMIN_PASSWORD?.trim();
@@ -265,6 +272,8 @@ export async function criarReservaManual(data: {
   valor_total: number;
   observacoes?: string;
 }) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
 
@@ -338,6 +347,8 @@ export async function criarReservaManual(data: {
 }
 
 export async function getEstatisticas() {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const now = new Date();

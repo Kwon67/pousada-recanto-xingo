@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import { quartosMock } from '@/data/mock';
 import type { Database } from '@/types/database';
 import type { Quarto } from '@/types/quarto';
@@ -67,6 +68,8 @@ export async function criarQuarto(data: {
   ativo: boolean;
   destaque: boolean;
 }) {
+  await assertAdminActionSession();
+
   const supabase = createAdminClient();
   const slug = data.nome
     .toLowerCase()
@@ -89,6 +92,8 @@ export async function criarQuarto(data: {
 }
 
 export async function atualizarQuarto(id: string, data: QuartoUpdate) {
+  await assertAdminActionSession();
+
   const supabase = createAdminClient();
   const { error } = await supabase.from('quartos').update(data).eq('id', id);
   if (error) throw new Error(error.message);
@@ -100,6 +105,8 @@ export async function atualizarQuarto(id: string, data: QuartoUpdate) {
 }
 
 export async function deletarQuarto(id: string) {
+  await assertAdminActionSession();
+
   const supabase = createAdminClient();
   const { error } = await supabase.from('quartos').delete().eq('id', id);
   if (error) throw new Error(error.message);
@@ -111,6 +118,8 @@ export async function deletarQuarto(id: string) {
 }
 
 export async function toggleAtivoQuarto(id: string, ativo: boolean) {
+  await assertAdminActionSession();
+
   const supabase = createAdminClient();
   const { error } = await supabase.from('quartos').update({ ativo }).eq('id', id);
   if (error) throw new Error(error.message);

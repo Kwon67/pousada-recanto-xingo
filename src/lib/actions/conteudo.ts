@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession } from '@/lib/admin-action-guard';
 
 // Default content used when Supabase is not configured
 const conteudoDefault: Record<string, { valor: string; categoria: string }> = {
@@ -87,6 +88,8 @@ export async function getConteudoValor(chave: string): Promise<string> {
 }
 
 export async function atualizarConteudo(chave: string, valor: string, categoria = 'geral') {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from('conteudo_site').upsert(
@@ -113,6 +116,8 @@ export async function atualizarConteudo(chave: string, valor: string, categoria 
 export async function atualizarConteudos(
   itens: Array<{ chave: string; valor: string; categoria: string }>
 ) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const payload = itens.map((item) => ({

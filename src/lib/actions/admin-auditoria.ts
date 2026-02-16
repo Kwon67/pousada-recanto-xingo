@@ -1,9 +1,12 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import type { AdminAccessLog } from '@/types/admin';
 
 export async function getUltimosAcessosAdmin(limit: number = 12): Promise<AdminAccessLog[]> {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const safeLimit = Math.min(Math.max(limit, 1), 50);

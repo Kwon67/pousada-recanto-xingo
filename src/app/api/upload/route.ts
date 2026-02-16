@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
-import { ADMIN_SESSION_COOKIE, hasValidAdminSession } from '@/lib/admin-auth';
+import { getAdminSessionCookieNames, hasValidAdminSession } from '@/lib/admin-auth';
+import { isSameOriginRequest } from '@/lib/request-origin';
+
+function getSessionCookieValue(request: NextRequest): string | null {
+  return getAdminSessionCookieNames()
+    .map((cookieName) => request.cookies.get(cookieName)?.value ?? null)
+    .find((cookieValue) => Boolean(cookieValue)) ?? null;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const session = request.cookies.get(ADMIN_SESSION_COOKIE)?.value ?? null;
-    if (!hasValidAdminSession(session)) {
+    if (!isSameOriginRequest(request)) {
+      return NextResponse.json({ error: 'Origem inválida.' }, { status: 403 });
+    }
+
+    const session = getSessionCookieValue(request);
+    if (!(await hasValidAdminSession(session))) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
@@ -72,8 +83,12 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const session = request.cookies.get(ADMIN_SESSION_COOKIE)?.value ?? null;
-    if (!hasValidAdminSession(session)) {
+    if (!isSameOriginRequest(request)) {
+      return NextResponse.json({ error: 'Origem inválida.' }, { status: 403 });
+    }
+
+    const session = getSessionCookieValue(request);
+    if (!(await hasValidAdminSession(session))) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 

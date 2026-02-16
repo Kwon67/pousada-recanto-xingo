@@ -1,4 +1,4 @@
-export type AdminAccessEventType = 'login' | 'access';
+export type AdminAccessEventType = 'login' | 'access' | 'login_failed' | 'logout';
 
 export interface AdminAccessLog {
   id: string;

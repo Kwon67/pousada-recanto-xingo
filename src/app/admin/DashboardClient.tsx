@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import {
   Calendar,
   TrendingUp,
@@ -20,6 +21,10 @@ import {
   Smartphone,
   Monitor,
   Globe,
+  PlusCircle,
+  ImagePlus,
+  FileText,
+  Cog,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatCurrency, formatDate, formatStatus, formatPhone } from '@/lib/formatters';
@@ -92,7 +97,17 @@ function getDeviceLabel(userAgent: string | null): string {
 }
 
 function getEventLabel(eventType: AdminAccessEventType): string {
-  return eventType === 'login' ? 'Login' : 'Acesso';
+  if (eventType === 'login') return 'Login';
+  if (eventType === 'access') return 'Acesso';
+  if (eventType === 'logout') return 'Logout';
+  return 'Falha de login';
+}
+
+function getEventTone(eventType: AdminAccessEventType): string {
+  if (eventType === 'login') return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+  if (eventType === 'access') return 'bg-blue-100 text-blue-700 border-blue-200';
+  if (eventType === 'logout') return 'bg-slate-200 text-slate-700 border-slate-300';
+  return 'bg-red-100 text-red-700 border-red-200';
 }
 
 export default function AdminDashboardClient({
@@ -105,6 +120,44 @@ export default function AdminDashboardClient({
   const pendentes = useMemo(() => reservas.filter((r) => r.status === 'pendente'), [reservas]);
   const confirmadas = useMemo(() => reservas.filter((r) => r.status === 'confirmada'), [reservas]);
   const todayISO = useMemo(() => formatDateISO(new Date()), []);
+  const quickActions = useMemo(
+    () => [
+      {
+        href: '/admin/reservas',
+        label: 'Nova reserva manual',
+        helper: 'Criar atendimento rápido',
+        icon: PlusCircle,
+      },
+      {
+        href: '/admin/quartos',
+        label: 'Gerenciar quartos',
+        helper: 'Atualizar preço e disponibilidade',
+        icon: Cog,
+      },
+      {
+        href: '/admin/galeria',
+        label: 'Atualizar galeria',
+        helper: 'Subir fotos e organizar destaque',
+        icon: ImagePlus,
+      },
+      {
+        href: '/admin/conteudo',
+        label: 'Editar conteúdo',
+        helper: 'Ajustar textos e chamadas do site',
+        icon: FileText,
+      },
+    ],
+    []
+  );
+  const dashboardDateLabel = useMemo(
+    () =>
+      new Intl.DateTimeFormat('pt-BR', {
+        weekday: 'long',
+        day: '2-digit',
+        month: '2-digit',
+      }).format(new Date()),
+    []
+  );
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -157,6 +210,10 @@ export default function AdminDashboardClient({
   const recentReservas = useMemo(() => reservas.slice(0, 6), [reservas]);
   const acessosRecentes = useMemo(() => acessosAdmin.slice(0, 8), [acessosAdmin]);
   const ultimoAcesso = acessosRecentes[0] ?? null;
+  const falhasRecentes = useMemo(
+    () => acessosAdmin.filter((acesso) => acesso.event_type === 'login_failed').length,
+    [acessosAdmin]
+  );
   const reservasAtivasHoje = useMemo(
     () =>
       reservas.filter((reserva) => {
@@ -245,9 +302,34 @@ export default function AdminDashboardClient({
       >
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-500 text-sm mt-1">
-          Visão geral da pousada
+          Visão geral da pousada • {dashboardDateLabel}
         </p>
       </motion.div>
+
+      <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+        {quickActions.map((action, index) => (
+          <motion.div
+            key={action.href}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.06 }}
+          >
+            <Link
+              href={action.href}
+              className="group block rounded-2xl border border-gray-200 bg-white px-4 py-4 hover:border-primary/40 hover:shadow-sm transition-all"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
+                  <action.icon className="w-5 h-5" />
+                </div>
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <p className="mt-3 text-sm font-semibold text-gray-900">{action.label}</p>
+              <p className="text-xs text-gray-500 mt-1">{action.helper}</p>
+            </Link>
+          </motion.div>
+        ))}
+      </section>
 
       {/* Pending Reservations Notification Banner */}
       <AnimatePresence>
@@ -332,14 +414,19 @@ export default function AdminDashboardClient({
               Autoatualiza a cada 30 segundos e quando a aba volta ao foco.
             </p>
           </div>
-          <span className="inline-flex w-fit items-center rounded-full px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium">
-            {acessosRecentes.length} registro(s)
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span className="inline-flex w-fit items-center rounded-full px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium">
+              {acessosRecentes.length} registro(s)
+            </span>
+            <span className="inline-flex w-fit items-center rounded-full px-2.5 py-1 bg-red-50 text-red-700 text-xs font-medium border border-red-100">
+              {falhasRecentes} falha(s) recentes
+            </span>
+          </div>
         </div>
 
         {ultimoAcesso ? (
           <div className="mt-4 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3">
-            <p className="text-xs text-gray-600">Último acesso registrado</p>
+            <p className="text-xs text-gray-600">Última atividade registrada</p>
             <p className="mt-1 text-sm text-gray-900">
               <span className="font-semibold">{ultimoAcesso.username}</span>
               {' • '}
@@ -353,7 +440,7 @@ export default function AdminDashboardClient({
             </p>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-gray-500">Nenhum acesso registrado ainda.</p>
+          <p className="mt-4 text-sm text-gray-500">Nenhuma atividade registrada ainda.</p>
         )}
 
         <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -369,17 +456,22 @@ export default function AdminDashboardClient({
                     <UserRound className="w-4 h-4 text-gray-500" />
                     {acesso.username}
                   </p>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-[11px] font-medium text-gray-600 border border-gray-200">
-                    {isMobile ? (
-                      <Smartphone className="w-3.5 h-3.5" />
-                    ) : (
-                      <Monitor className="w-3.5 h-3.5" />
-                    )}
-                    {getDeviceLabel(acesso.user_agent)}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium border ${getEventTone(acesso.event_type)}`}>
+                      {getEventLabel(acesso.event_type)}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-1 text-[11px] font-medium text-gray-600 border border-gray-200">
+                      {isMobile ? (
+                        <Smartphone className="w-3.5 h-3.5" />
+                      ) : (
+                        <Monitor className="w-3.5 h-3.5" />
+                      )}
+                      {getDeviceLabel(acesso.user_agent)}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-600 mt-1">
-                  {getEventLabel(acesso.event_type)} em {formatDate(acesso.created_at, 'dd/MM/yyyy HH:mm')}
+                  {formatDate(acesso.created_at, 'dd/MM/yyyy HH:mm')}
                 </p>
                 <p className="text-xs text-gray-500 mt-1 truncate flex items-center gap-1">
                   <Globe className="w-3.5 h-3.5" />
@@ -518,116 +610,117 @@ export default function AdminDashboardClient({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="relative overflow-hidden bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
+        className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100"
       >
-        <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-r from-emerald-50 via-amber-50 to-slate-100 pointer-events-none" />
-        <div className="relative">
-          <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <h2 className="font-semibold text-gray-900">Disponibilidade de Hoje</h2>
-              <p className="text-xs text-gray-500 mt-1">
-                Atualizada automaticamente com base nas reservas ativas
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-amber-100 text-amber-800 text-xs font-semibold">
-                <BedDouble className="w-3.5 h-3.5" />
-                {resumoQuartos.ocupados} ocupado(s)
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-orange-100 text-orange-800 text-xs font-semibold">
-                <AlertTriangle className="w-3.5 h-3.5" />
-                {resumoQuartos.pendentes} pendente(s)
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold">
-                <CheckCircle className="w-3.5 h-3.5" />
-                {resumoQuartos.disponiveis} disponível(is)
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 bg-slate-200 text-slate-700 text-xs font-semibold">
-                <XCircle className="w-3.5 h-3.5" />
-                {resumoQuartos.inativos} inativo(s)
-              </span>
-            </div>
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="font-semibold text-gray-900">Disponibilidade de Hoje</h2>
+            <p className="text-xs text-gray-500 mt-1">
+              Atualizada automaticamente com base nas reservas ativas
+            </p>
           </div>
+          <span className="inline-flex w-fit items-center rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-600">
+            {quartosComStatus.length} quartos monitorados
+          </span>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-            {quartosComStatus.map((item) => {
-              const ocupado = item.status === 'ocupado';
-              const pendente = item.status === 'pendente';
-              const disponivel = item.status === 'disponivel';
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-amber-700">Ocupados</p>
+            <p className="mt-1 text-2xl font-bold text-amber-900">{resumoQuartos.ocupados}</p>
+          </div>
+          <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-orange-700">Pendentes</p>
+            <p className="mt-1 text-2xl font-bold text-orange-900">{resumoQuartos.pendentes}</p>
+          </div>
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-emerald-700">Disponíveis</p>
+            <p className="mt-1 text-2xl font-bold text-emerald-900">{resumoQuartos.disponiveis}</p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-100 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-700">Inativos</p>
+            <p className="mt-1 text-2xl font-bold text-slate-800">{resumoQuartos.inativos}</p>
+          </div>
+        </div>
 
-              const cardClass = ocupado
-                ? 'border-amber-200 bg-amber-50/90'
-                : pendente
-                  ? 'border-orange-200 bg-orange-50/90'
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+          {quartosComStatus.map((item) => {
+            const ocupado = item.status === 'ocupado';
+            const pendente = item.status === 'pendente';
+            const disponivel = item.status === 'disponivel';
+
+            const cardClass = ocupado
+              ? 'border-amber-200 bg-amber-50'
+              : pendente
+                ? 'border-orange-200 bg-orange-50'
                 : disponivel
-                  ? 'border-emerald-200 bg-emerald-50/90'
-                  : 'border-slate-200 bg-slate-100/90';
+                  ? 'border-emerald-200 bg-emerald-50'
+                  : 'border-slate-200 bg-slate-50';
 
-              const badgeClass = ocupado
-                ? 'bg-amber-100 text-amber-800'
-                : pendente
-                  ? 'bg-orange-100 text-orange-800'
+            const badgeClass = ocupado
+              ? 'bg-amber-100 text-amber-800 border border-amber-200'
+              : pendente
+                ? 'bg-orange-100 text-orange-800 border border-orange-200'
                 : disponivel
-                  ? 'bg-emerald-100 text-emerald-800'
-                  : 'bg-slate-200 text-slate-700';
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                  : 'bg-slate-200 text-slate-700 border border-slate-300';
 
-              return (
-                <div
-                  key={item.quarto.id}
-                  className={`rounded-xl border p-4 transition-all hover:shadow-sm ${cardClass}`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {item.quarto.nome}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {ocupado
-                          ? 'Ocupado hoje'
-                          : pendente
-                            ? 'Reserva pendente hoje'
-                            : disponivel
-                              ? 'Disponível hoje'
-                              : 'Inativo'}
-                      </p>
-                    </div>
-
-                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${badgeClass}`}>
-                      {ocupado ? (
-                        <BedDouble className="w-3.5 h-3.5" />
-                      ) : pendente ? (
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                      ) : disponivel ? (
-                        <CheckCircle className="w-3.5 h-3.5" />
-                      ) : (
-                        <XCircle className="w-3.5 h-3.5" />
-                      )}
-                      {ocupado ? 'Ocupado' : pendente ? 'Pendente' : disponivel ? 'Livre' : 'Inativo'}
-                    </span>
+            return (
+              <div
+                key={item.quarto.id}
+                className={`rounded-xl border p-4 transition-all hover:shadow-sm ${cardClass}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
+                      {item.quarto.nome}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {ocupado
+                        ? 'Ocupado hoje'
+                        : pendente
+                          ? 'Reserva pendente hoje'
+                          : disponivel
+                            ? 'Disponível hoje'
+                            : 'Inativo'}
+                    </p>
                   </div>
 
-                  {(ocupado || pendente) && item.reservaAtiva ? (
-                    <div className="mt-3 space-y-1">
-                      <p className="text-xs text-gray-700 truncate">
-                        Hóspede: <span className="font-medium">{item.reservaAtiva.hospede?.nome || 'Não informado'}</span>
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {pendente
-                          ? `Confirmação pendente para ${formatDate(item.reservaAtiva.check_in)}`
-                          : `Saída prevista: ${formatDate(item.reservaAtiva.check_out)}`}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-xs text-gray-600">
-                      {disponivel
-                        ? 'Sem conflito de reserva para hoje.'
-                        : 'Quarto desativado manualmente no painel.'}
-                    </p>
-                  )}
+                  <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-semibold ${badgeClass}`}>
+                    {ocupado ? (
+                      <BedDouble className="w-3.5 h-3.5" />
+                    ) : pendente ? (
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                    ) : disponivel ? (
+                      <CheckCircle className="w-3.5 h-3.5" />
+                    ) : (
+                      <XCircle className="w-3.5 h-3.5" />
+                    )}
+                    {ocupado ? 'Ocupado' : pendente ? 'Pendente' : disponivel ? 'Livre' : 'Inativo'}
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+
+                {(ocupado || pendente) && item.reservaAtiva ? (
+                  <div className="mt-3 rounded-lg bg-white/70 px-3 py-2">
+                    <p className="text-xs text-gray-700 truncate">
+                      Hóspede: <span className="font-medium">{item.reservaAtiva.hospede?.nome || 'Não informado'}</span>
+                    </p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {pendente
+                        ? `Confirmação pendente para ${formatDate(item.reservaAtiva.check_in)}`
+                        : `Saída prevista: ${formatDate(item.reservaAtiva.check_out)}`}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-gray-600">
+                    {disponivel
+                      ? 'Sem conflito de reserva para hoje.'
+                      : 'Quarto desativado manualmente no painel.'}
+                  </p>
+                )}
+              </div>
+            );
+          })}
         </div>
       </motion.div>
     </div>

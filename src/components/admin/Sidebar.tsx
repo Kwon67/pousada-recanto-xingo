@@ -75,13 +75,14 @@ export default function Sidebar() {
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-dark z-40 flex items-center justify-between px-4">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-dark/95 backdrop-blur z-40 flex items-center justify-between px-4 border-b border-white/10">
         <span className="font-display text-lg font-bold text-secondary">
           Recanto do Matuto
         </span>
         <button
           onClick={() => setMenuOriginPath(mobileOpen ? null : pathname)}
           className="p-2 text-white"
+          aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
         >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -98,7 +99,7 @@ export default function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 bottom-0 w-64 bg-dark z-40 transform transition-transform duration-300 lg:translate-x-0 overflow-hidden',
+          'fixed top-0 left-0 bottom-0 w-64 bg-[linear-gradient(180deg,#163244_0%,#102531_100%)] z-40 transform transition-transform duration-300 lg:translate-x-0 overflow-hidden border-r border-white/10',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -115,6 +116,9 @@ export default function Sidebar() {
 
           {/* Navigation */}
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+            <p className="text-[11px] uppercase tracking-wider text-white/40 px-4 pb-2">
+              Navegação
+            </p>
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -123,7 +127,7 @@ export default function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm',
                   isActive(item.href)
-                    ? 'bg-primary text-white'
+                    ? 'bg-white text-dark shadow-sm'
                     : 'text-white/70 hover:bg-white/10 hover:text-white'
                 )}
               >

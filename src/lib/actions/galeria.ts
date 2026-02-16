@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { galeriaImagensMock } from '@/data/mock';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { assertAdminActionSession } from '@/lib/admin-action-guard';
 
 export interface GaleriaItem {
   id: string;
@@ -43,6 +44,8 @@ export async function adicionarFoto(data: {
   categoria?: string;
   destaque?: boolean;
 }) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
 
@@ -90,6 +93,8 @@ export async function atualizarFoto(
     destaque?: boolean;
   }
 ) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { data: updated, error } = await supabase
@@ -118,6 +123,8 @@ export async function toggleDestaqueFoto(id: string, destaque: boolean) {
 }
 
 export async function deletarFoto(id: string) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { error } = await supabase.from('galeria').delete().eq('id', id);
@@ -133,6 +140,8 @@ export async function deletarFoto(id: string) {
 }
 
 export async function atualizarOrdemGaleria(itens: { id: string; ordem: number }[]) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     for (const item of itens) {
@@ -151,4 +160,3 @@ export async function atualizarOrdemGaleria(itens: { id: string; ordem: number }
     return { success: false, message };
   }
 }
-

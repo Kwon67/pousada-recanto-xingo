@@ -30,23 +30,23 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
+      'inline-flex items-center justify-center font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
     const variants = {
       primary:
-        'bg-primary text-white hover:bg-primary-dark active:scale-[0.98] shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30',
+        'bg-primary text-white hover:bg-primary-dark active:scale-[0.98] shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-elegant-md)] rounded-[var(--radius-lg)]',
       secondary:
-        'bg-secondary text-dark hover:bg-secondary-dark active:scale-[0.98] shadow-lg shadow-secondary/25',
+        'bg-secondary text-dark hover:bg-secondary-dark active:scale-[0.98] shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-elegant-md)] rounded-[var(--radius-lg)]',
       outline:
-        'border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98]',
+        'border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] rounded-[var(--radius-lg)]',
       ghost:
-        'text-text hover:bg-cream-dark active:scale-[0.98]',
+        'text-text hover:bg-cream-dark active:scale-[0.98] rounded-[var(--radius-lg)]',
       danger:
-        'bg-error text-white hover:bg-red-600 active:scale-[0.98] shadow-lg shadow-error/25',
+        'bg-error text-white hover:bg-red-600 active:scale-[0.98] shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-elegant-md)] rounded-[var(--radius-lg)]',
     };
 
     const sizes = {
-      sm: 'text-sm px-4 py-2 gap-1.5',
+      sm: 'text-sm px-4 py-2 gap-2',
       md: 'text-base px-6 py-3 gap-2',
       lg: 'text-lg px-8 py-4 gap-2.5',
     };
@@ -54,6 +54,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        style={{ transition: 'var(--transition-elegant)' }}
         className={cn(
           baseStyles,
           variants[variant],
