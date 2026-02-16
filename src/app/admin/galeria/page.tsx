@@ -23,7 +23,6 @@ import {
   deletarFoto,
 } from '@/lib/actions/galeria';
 import type { GaleriaItem } from '@/lib/actions/galeria';
-import { getConteudo, atualizarConteudo } from '@/lib/actions/conteudo';
 
 const CATEGORIAS = [
   { value: 'pousada', label: 'Pousada' },
@@ -31,51 +30,6 @@ const CATEGORIAS = [
   { value: 'area_lazer', label: 'Área de lazer' },
   { value: 'cafe', label: 'Café da manhã' },
 ];
-
-const ESTRUTURA_CARDS = [
-  {
-    key: 'home_estrutura_piscina_imagem',
-    titulo: 'Piscina',
-    defaultUrl: 'https://placehold.co/600x400/2D6A4F/FDF8F0?text=Piscina',
-  },
-  {
-    key: 'home_estrutura_area_redes_imagem',
-    titulo: 'Área de Redes',
-    defaultUrl: 'https://placehold.co/600x400/D4A843/1B3A4B?text=Area+de+Redes',
-  },
-  {
-    key: 'home_estrutura_churrasqueira_imagem',
-    titulo: 'Churrasqueira',
-    defaultUrl: 'https://placehold.co/600x400/E07A5F/FDF8F0?text=Churrasqueira',
-  },
-  {
-    key: 'home_estrutura_chuveirao_imagem',
-    titulo: 'Chuveirão',
-    defaultUrl: 'https://placehold.co/600x400/1B3A4B/FDF8F0?text=Chuveir%C3%A3o',
-  },
-  {
-    key: 'home_estrutura_espaco_amplo_imagem',
-    titulo: 'Espaço Amplo',
-    defaultUrl: 'https://placehold.co/600x400/40916C/FDF8F0?text=Espaco+Amplo',
-  },
-  {
-    key: 'home_estrutura_banheiro_privativo_imagem',
-    titulo: 'Banheiro Privativo',
-    defaultUrl: 'https://placehold.co/600x400/2D6A4F/D4A843?text=Banheiro+Privativo',
-  },
-] as const;
-
-type EstruturaCardKey = (typeof ESTRUTURA_CARDS)[number]['key'];
-
-function buildEstruturaImageState(
-  conteudoMap?: Record<string, { valor: string; categoria: string }>
-): Record<EstruturaCardKey, string> {
-  return ESTRUTURA_CARDS.reduce((acc, item) => {
-    const value = conteudoMap?.[item.key]?.valor?.trim();
-    acc[item.key] = value || item.defaultUrl;
-    return acc;
-  }, {} as Record<EstruturaCardKey, string>);
-}
 
 interface EditState {
   id: string;
@@ -113,12 +67,6 @@ export default function AdminGaleriaPage() {
   const [uploadAlt, setUploadAlt] = useState('');
   const [uploadCategoria, setUploadCategoria] = useState('pousada');
   const [uploadDestaque, setUploadDestaque] = useState(false);
-  const [estruturaImagens, setEstruturaImagens] = useState<Record<EstruturaCardKey, string>>(
-    () => buildEstruturaImageState()
-  );
-  const [estruturaUploadingKey, setEstruturaUploadingKey] = useState<EstruturaCardKey | null>(
-    null
-  );
   const { showToast } = useToast();
 
   const carregarGaleria = useCallback(async () => {
@@ -133,19 +81,9 @@ export default function AdminGaleriaPage() {
     }
   }, [showToast]);
 
-  const carregarEstrutura = useCallback(async () => {
-    try {
-      const data = await getConteudo();
-      setEstruturaImagens(buildEstruturaImageState(data));
-    } catch {
-      showToast('Erro ao carregar imagens da estrutura.', 'error');
-    }
-  }, [showToast]);
-
   useEffect(() => {
     carregarGaleria();
-    carregarEstrutura();
-  }, [carregarGaleria, carregarEstrutura]);
+  }, [carregarGaleria]);
 
   const destaqueCount = useMemo(
     () => imagens.filter((item) => item.destaque).length,
@@ -274,27 +212,6 @@ export default function AdminGaleriaPage() {
     }
   };
 
-  const handleEstruturaUpload = async (cardKey: EstruturaCardKey, file: File | null) => {
-    if (!file) return;
-
-    setEstruturaUploadingKey(cardKey);
-    try {
-      const uploaded = await uploadFile(file);
-      const result = await atualizarConteudo(cardKey, uploaded.url, 'home');
-
-      if (!result?.success) {
-        showToast(result?.message || 'Erro ao atualizar imagem da estrutura.', 'error');
-        return;
-      }
-
-      setEstruturaImagens((prev) => ({ ...prev, [cardKey]: uploaded.url }));
-      showToast('Imagem da estrutura atualizada!', 'success');
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Erro ao enviar imagem.', 'error');
-    } finally {
-      setEstruturaUploadingKey(null);
-    }
-  };
 
   if (loading) {
     return (
@@ -326,67 +243,6 @@ export default function AdminGaleriaPage() {
         </Button>
       </motion.div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Estrutura da Home</h2>
-          <p className="text-sm text-gray-500">
-            Upload das imagens da seção &quot;Tudo que você precisa para relaxar&quot;.
-          </p>
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ESTRUTURA_CARDS.map((card) => {
-            const currentUrl = estruturaImagens[card.key] || card.defaultUrl;
-            const uploading = estruturaUploadingKey === card.key;
-
-            return (
-              <div key={card.key} className="rounded-xl border border-gray-200 p-3">
-                <div className="relative mb-3 aspect-4/3 overflow-hidden rounded-lg bg-gray-100">
-                  <Image
-                    src={currentUrl}
-                    alt={card.titulo}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  />
-                </div>
-                <p className="mb-2 text-sm font-semibold text-gray-800">{card.titulo}</p>
-                <p className="truncate text-xs text-gray-400">{currentUrl}</p>
-
-                <label
-                  className={`mt-3 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
-                    uploading
-                      ? 'bg-gray-100 text-gray-500'
-                      : 'bg-primary/10 text-primary hover:bg-primary/15'
-                  }`}
-                >
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    disabled={uploading}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0] || null;
-                      void handleEstruturaUpload(card.key, file);
-                      e.currentTarget.value = '';
-                    }}
-                  />
-                  {uploading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4" />
-                      Trocar imagem
-                    </>
-                  )}
-                </label>
-              </div>
-            );
-          })}
-        </div>
-      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
         {imagens.map((img, index) => (

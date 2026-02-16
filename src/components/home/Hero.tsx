@@ -73,7 +73,7 @@ export default function Hero() {
     >
       {/* — Background layers — */}
       <motion.div
-        style={{ y: bgY }}
+        style={{ y: bgY, willChange: 'transform' }}
         className="absolute inset-0"
         aria-hidden
       >
@@ -99,14 +99,11 @@ export default function Hero() {
           }}
         />
 
-        {/* Floating particles */}
+        {/* Floating particles (reduced for performance) */}
         <FloatingParticle size={4} x="15%" y="25%" delay={0} duration={5.5} />
         <FloatingParticle size={3} x="78%" y="18%" delay={1.2} duration={6.2} />
         <FloatingParticle size={5} x="55%" y="65%" delay={0.8} duration={7} />
         <FloatingParticle size={3} x="88%" y="55%" delay={2} duration={5.8} />
-        <FloatingParticle size={4} x="32%" y="80%" delay={1.5} duration={6.5} />
-        <FloatingParticle size={2} x="65%" y="35%" delay={0.3} duration={5} />
-        <FloatingParticle size={3} x="8%" y="60%" delay={2.5} duration={6.8} />
       </motion.div>
 
       {/* Vignette overlay */}
@@ -121,7 +118,7 @@ export default function Hero() {
 
       {/* — Content — */}
       <motion.div
-        style={{ opacity: contentOpacity, y: contentY }}
+        style={{ opacity: contentOpacity, y: contentY, willChange: 'transform, opacity' }}
         className="relative z-10 container mx-auto px-4"
       >
         <div className="mx-auto max-w-6xl lg:flex lg:items-center lg:gap-16">
@@ -217,7 +214,7 @@ export default function Hero() {
                   delay: 0.7 + i * 0.12,
                   ease: [0.25, 0.46, 0.45, 0.94],
                 }}
-                className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-4 backdrop-blur-sm transition-colors duration-300 hover:border-secondary/30 hover:bg-white/[0.08]"
+                className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] px-5 py-4 transition-colors duration-300 hover:border-secondary/30 hover:bg-white/[0.08]"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-secondary/15 text-secondary transition-transform duration-300 group-hover:scale-110">
                   {item.icon}
