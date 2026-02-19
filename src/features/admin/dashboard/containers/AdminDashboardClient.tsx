@@ -27,7 +27,14 @@ import {
   Cog,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatCurrency, formatDate, formatStatus, formatPhone } from '@/lib/formatters';
+import {
+  formatCurrency,
+  formatDate,
+  formatPaymentMethod,
+  formatPaymentStatus,
+  formatPhone,
+  formatStatus,
+} from '@/lib/formatters';
 import type { Reserva } from '@/types/reserva';
 import type { Quarto } from '@/types/quarto';
 import type { AdminAccessLog, AdminAccessEventType } from '@/types/admin';
@@ -119,6 +126,34 @@ export default function AdminDashboardClient({
   const router = useRouter();
   const pendentes = useMemo(() => reservas.filter((r) => r.status === 'pendente'), [reservas]);
   const confirmadas = useMemo(() => reservas.filter((r) => r.status === 'confirmada'), [reservas]);
+  const pagamentosAprovados = useMemo(
+    () => reservas.filter((r) => r.stripe_payment_status === 'pago'),
+    [reservas]
+  );
+  const pagamentosPendentes = useMemo(
+    () =>
+      reservas.filter(
+        (r) =>
+          r.status === 'pendente' &&
+          (r.stripe_payment_status === 'pendente' ||
+            r.stripe_payment_status === 'nao_iniciado' ||
+            !r.stripe_payment_status)
+      ),
+    [reservas]
+  );
+  const reservasConfirmadasSemDebito = useMemo(
+    () => reservas.filter((r) => r.status === 'confirmada' && r.stripe_payment_status !== 'pago'),
+    [reservas]
+  );
+  const ultimoPagamentoAprovado = useMemo(() => {
+    if (pagamentosAprovados.length === 0) return null;
+
+    return [...pagamentosAprovados].sort((a, b) => {
+      const aDate = a.payment_approved_at || a.created_at;
+      const bDate = b.payment_approved_at || b.created_at;
+      return new Date(bDate).getTime() - new Date(aDate).getTime();
+    })[0];
+  }, [pagamentosAprovados]);
   const todayISO = useMemo(() => formatDateISO(new Date()), []);
   const quickActions = useMemo(
     () => [
@@ -191,20 +226,20 @@ export default function AdminDashboardClient({
       bgColor: 'border-emerald-200/80 bg-emerald-50',
     },
     {
-      label: 'Receita do mês',
+      label: 'Receita recebida',
       value: formatCurrency(estatisticas.receitaMes),
       icon: <DollarSign className="w-6 h-6" />,
       color: 'text-blue-700',
       bgColor: 'border-blue-200/80 bg-blue-50',
     },
     {
-      label: 'Pendentes',
-      value: estatisticas.reservasPendentes,
+      label: 'Pagamentos pendentes',
+      value: pagamentosPendentes.length,
       icon: <Clock className="w-6 h-6" />,
       color: 'text-amber-700',
       bgColor: 'border-amber-200/80 bg-amber-50',
     },
-  ], [estatisticas]);
+  ], [estatisticas, pagamentosPendentes]);
 
   const proximosCheckins = useMemo(() => confirmadas.slice(0, 4), [confirmadas]);
   const recentReservas = useMemo(() => reservas.slice(0, 6), [reservas]);
@@ -293,6 +328,14 @@ export default function AdminDashboardClient({
     cancelada: 'border border-rose-200 bg-rose-50 text-rose-700',
     concluida: 'border border-slate-300 bg-slate-100 text-slate-700',
   };
+  const paymentStatusColors: Record<string, string> = {
+    nao_iniciado: 'border border-slate-300 bg-slate-100 text-slate-700',
+    pendente: 'border border-amber-200 bg-amber-50 text-amber-700',
+    pago: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
+    falhou: 'border border-rose-200 bg-rose-50 text-rose-700',
+    cancelado: 'border border-rose-200 bg-rose-50 text-rose-700',
+    expirado: 'border border-orange-200 bg-orange-50 text-orange-700',
+  };
 
   return (
     <div className="space-y-7">
@@ -370,6 +413,86 @@ export default function AdminDashboardClient({
                 <div key={r.id} className="rounded-xl border border-amber-200/70 bg-white/95 px-3 py-2 text-sm">
                   <p className="truncate font-medium text-slate-800">{r.hospede?.nome}</p>
                   <p className="text-xs text-slate-500">{r.quarto?.nome} · {formatDate(r.check_in)}</p>
+                </div>
+              ))}
+            </div>
+          </motion.a>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {ultimoPagamentoAprovado && (
+          <motion.a
+            href="/admin/reservas"
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="group block cursor-pointer rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-5 shadow-sm transition-all hover:border-emerald-300/80 hover:bg-emerald-50/60"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-200 bg-white">
+                <CheckCircle className="w-6 h-6 text-emerald-700" />
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-slate-900">
+                  Débito confirmado no Stripe
+                </p>
+                <p className="mt-0.5 text-sm text-slate-700">
+                  {ultimoPagamentoAprovado.hospede?.nome || 'Hóspede'} •{' '}
+                  {ultimoPagamentoAprovado.quarto?.nome || 'Quarto'} •{' '}
+                  {formatCurrency(ultimoPagamentoAprovado.valor_total)}
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  {ultimoPagamentoAprovado.payment_approved_at
+                    ? `Aprovado em ${formatDate(ultimoPagamentoAprovado.payment_approved_at, 'dd/MM/yyyy HH:mm')}`
+                    : 'Aprovação recebida'}
+                  {' • '}
+                  Método: {formatPaymentMethod(ultimoPagamentoAprovado.stripe_payment_method)}
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-slate-500 transition-transform group-hover:translate-x-1" />
+            </div>
+          </motion.a>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {reservasConfirmadasSemDebito.length > 0 && (
+          <motion.a
+            href="/admin/reservas"
+            initial={{ opacity: 0, y: -10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="group block cursor-pointer rounded-2xl border border-rose-200/80 bg-rose-50/40 p-5 shadow-sm transition-all hover:border-rose-300/80 hover:bg-rose-50/60"
+          >
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-rose-200 bg-white">
+                <AlertTriangle className="w-6 h-6 text-rose-700" />
+              </div>
+              <div className="flex-1">
+                <p className="text-base font-semibold text-slate-900">
+                  {reservasConfirmadasSemDebito.length}{' '}
+                  {reservasConfirmadasSemDebito.length === 1
+                    ? 'reserva confirmada sem débito'
+                    : 'reservas confirmadas sem débito'}
+                </p>
+                <p className="mt-0.5 text-sm text-slate-600">
+                  Revise o pagamento no Stripe antes de considerar o valor como recebido.
+                </p>
+              </div>
+              <ArrowRight className="w-5 h-5 text-slate-500 transition-transform group-hover:translate-x-1" />
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+              {reservasConfirmadasSemDebito.slice(0, 3).map((r) => (
+                <div
+                  key={r.id}
+                  className="rounded-xl border border-rose-200/70 bg-white/95 px-3 py-2 text-sm"
+                >
+                  <p className="truncate font-medium text-slate-800">{r.hospede?.nome}</p>
+                  <p className="text-xs text-slate-500">
+                    {r.quarto?.nome} • {formatPaymentStatus(r.stripe_payment_status)}
+                  </p>
                 </div>
               ))}
             </div>
@@ -493,8 +616,9 @@ export default function AdminDashboardClient({
           className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
           <h2 className="mb-6 font-semibold text-slate-900">Resumo de Reservas</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
+              { label: 'Pagamentos debitados', count: pagamentosAprovados.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
               { label: 'Pendentes', count: pendentes.length, color: 'border border-amber-200 bg-amber-50 text-amber-700' },
               { label: 'Confirmadas', count: confirmadas.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
               { label: 'Concluídas', count: reservas.filter(r => r.status === 'concluida').length, color: 'border border-slate-300 bg-slate-100 text-slate-700' },
@@ -576,6 +700,7 @@ export default function AdminDashboardClient({
                 <th className="hidden px-6 py-3 text-left font-medium text-slate-500 md:table-cell">Check-in</th>
                 <th className="hidden px-6 py-3 text-left font-medium text-slate-500 md:table-cell">Hóspedes</th>
                 <th className="px-6 py-3 text-left font-medium text-slate-500">Valor</th>
+                <th className="hidden px-6 py-3 text-left font-medium text-slate-500 md:table-cell">Pagamento</th>
                 <th className="px-6 py-3 text-left font-medium text-slate-500">Status</th>
               </tr>
             </thead>
@@ -593,6 +718,28 @@ export default function AdminDashboardClient({
                   <td className="hidden px-6 py-4 text-slate-600 md:table-cell">{formatDate(r.check_in)}</td>
                   <td className="hidden px-6 py-4 text-slate-600 md:table-cell">{r.num_hospedes}</td>
                   <td className="px-6 py-4 font-medium text-slate-800">{formatCurrency(r.valor_total)}</td>
+                  <td className="hidden px-6 py-4 md:table-cell">
+                    <span
+                      className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
+                        paymentStatusColors[r.stripe_payment_status || 'nao_iniciado'] ||
+                        paymentStatusColors.nao_iniciado
+                      }`}
+                    >
+                      {formatPaymentStatus(r.stripe_payment_status)}
+                    </span>
+                    {r.stripe_payment_status === 'pago' ? (
+                      <p className="mt-1 text-[11px] text-emerald-700">
+                        Débito confirmado
+                        {r.payment_approved_at
+                          ? ` em ${formatDate(r.payment_approved_at, 'dd/MM HH:mm')}`
+                          : ''}
+                      </p>
+                    ) : (
+                      <p className="mt-1 text-[11px] text-slate-500">
+                        {formatPaymentMethod(r.stripe_payment_method)}
+                      </p>
+                    )}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${statusColors[r.status]}`}>
                       {formatStatus(r.status)}

@@ -413,7 +413,7 @@ export async function getEstatisticas() {
     // Reservas deste mês
     const { data: reservasMes, error: mesError } = await supabase
       .from('reservas')
-      .select('id, valor_total')
+      .select('id, valor_total, stripe_payment_status')
       .gte('created_at', firstOfMonth)
       .lt('created_at', firstOfNextMonth);
 
@@ -450,10 +450,15 @@ export async function getEstatisticas() {
       ? Math.round((quartosOcupados / totalQuartos) * 100)
       : 0;
 
+    const receitaRecebidaMes = reservasMes.reduce(
+      (acc, r) => (r.stripe_payment_status === 'pago' ? acc + r.valor_total : acc),
+      0
+    );
+
     return {
       totalReservas: reservasMes.length,
       reservasPendentes: pendentes ?? 0,
-      receitaMes: reservasMes.reduce((acc, r) => acc + r.valor_total, 0),
+      receitaMes: receitaRecebidaMes,
       taxaOcupacao,
     };
   } catch {
@@ -467,7 +472,12 @@ export async function getEstatisticas() {
     return {
       totalReservas: reservasEsteMes.length,
       reservasPendentes: reservasMock.filter((r) => r.status === 'pendente').length,
-      receitaMes: reservasEsteMes.reduce((acc, r) => acc + r.valor_total, 0),
+      receitaMes: reservasEsteMes.reduce((acc, r) => {
+        if (!r.stripe_payment_status) {
+          return r.status === 'confirmada' ? acc + r.valor_total : acc;
+        }
+        return r.stripe_payment_status === 'pago' ? acc + r.valor_total : acc;
+      }, 0),
       taxaOcupacao: 75,
     };
   }

@@ -136,8 +136,12 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
     return differenceInDays(parseISO(checkOut), parseISO(checkIn));
   };
 
-  const totalReceita = filtered
-    .filter((r) => r.stripe_payment_status === 'pago' || r.status === 'confirmada')
+  const totalReceitaRecebida = filtered
+    .filter((r) => r.stripe_payment_status === 'pago')
+    .reduce((acc, r) => acc + r.valor_total, 0);
+
+  const totalReceitaPrevista = filtered
+    .filter((r) => r.status !== 'cancelada')
     .reduce((acc, r) => acc + r.valor_total, 0);
 
   const handleNovaReserva = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -182,7 +186,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reservas</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {filtered.length} reservas · Receita: {formatCurrency(totalReceita)}
+            {filtered.length} reservas · Recebido (Stripe): {formatCurrency(totalReceitaRecebida)} · Previsto: {formatCurrency(totalReceitaPrevista)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -355,9 +359,18 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                         >
                           {formatPaymentStatus(r.stripe_payment_status)}
                         </span>
-                        <span className="text-xs text-gray-500">
-                          {formatPaymentMethod(r.stripe_payment_method)}
-                        </span>
+                        {r.stripe_payment_status === 'pago' ? (
+                          <span className="text-xs text-green-700">
+                            Débito confirmado
+                            {r.payment_approved_at
+                              ? ` em ${formatDate(r.payment_approved_at, 'dd/MM HH:mm')}`
+                              : ''}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-500">
+                            {formatPaymentMethod(r.stripe_payment_method)}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -512,12 +525,26 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                   >
                     {formatPaymentStatus(selectedReserva.stripe_payment_status)}
                   </span>
+                  {selectedReserva.stripe_payment_status === 'pago' ? (
+                    <p className="text-xs text-green-700 mt-2 font-medium">
+                      Débito confirmado no Stripe.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-amber-700 mt-2">
+                      Débito ainda não confirmado no Stripe.
+                    </p>
+                  )}
                   <p className="text-sm text-gray-600 mt-2">
                     Método: {formatPaymentMethod(selectedReserva.stripe_payment_method)}
                   </p>
                   {selectedReserva.payment_approved_at && (
                     <p className="text-xs text-gray-500 mt-1">
                       Aprovado em {formatDateTime(selectedReserva.payment_approved_at)}
+                    </p>
+                  )}
+                  {selectedReserva.stripe_payment_intent_id && (
+                    <p className="text-xs text-gray-500 mt-1 break-all font-mono">
+                      Stripe PI: {selectedReserva.stripe_payment_intent_id}
                     </p>
                   )}
                 </div>
