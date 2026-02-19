@@ -11,6 +11,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  asChild?: boolean;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -24,6 +25,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       fullWidth = false,
       leftIcon,
       rightIcon,
+      asChild = false,
       disabled,
       ...props
     },
@@ -51,6 +53,33 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       lg: 'text-lg px-8 py-4 gap-2.5',
     };
 
+    const content = loading ? (
+      <Loader2 className="w-5 h-5 animate-spin" />
+    ) : (
+      <>
+        {leftIcon && <span className="shrink-0">{leftIcon}</span>}
+        {children}
+        {rightIcon && <span className="shrink-0">{rightIcon}</span>}
+      </>
+    );
+
+    if (asChild) {
+      return (
+        <span
+          style={{ transition: 'var(--transition-elegant)' }}
+          className={cn(
+            baseStyles,
+            variants[variant],
+            sizes[size],
+            fullWidth && 'w-full',
+            className
+          )}
+        >
+          {content}
+        </span>
+      );
+    }
+
     return (
       <button
         ref={ref}
@@ -65,15 +94,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         disabled={disabled || loading}
         {...props}
       >
-        {loading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <>
-            {leftIcon && <span className="shrink-0">{leftIcon}</span>}
-            {children}
-            {rightIcon && <span className="shrink-0">{rightIcon}</span>}
-          </>
-        )}
+        {content}
       </button>
     );
   }

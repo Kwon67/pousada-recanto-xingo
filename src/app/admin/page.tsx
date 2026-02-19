@@ -1,7 +1,8 @@
 import { getEstatisticas, getReservas } from '@/lib/actions/reservas';
 import { getQuartos } from '@/lib/actions/quartos';
 import { getUltimosAcessosAdmin } from '@/lib/actions/admin-auditoria';
-import AdminDashboardClient from './DashboardClient';
+import AdminDashboardClient from '@/features/admin/dashboard/containers/AdminDashboardClient';
+import { AdminRealtimeReservasRefresh } from '@/hooks/useRealtimeReservas';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,11 +15,14 @@ export default async function AdminDashboardPage() {
   ]);
 
   return (
-    <AdminDashboardClient
-      estatisticas={estatisticas}
-      reservas={reservas}
-      quartos={quartos}
-      acessosAdmin={acessosAdmin}
-    />
+    <>
+      <AdminRealtimeReservasRefresh />
+      <AdminDashboardClient
+        estatisticas={estatisticas}
+        reservas={reservas}
+        quartos={quartos}
+        acessosAdmin={acessosAdmin}
+      />
+    </>
   );
 }

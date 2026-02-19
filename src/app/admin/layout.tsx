@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { ArrowLeft, ShieldCheck, Clock3 } from 'lucide-react';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
-import Sidebar from '@/components/admin/Sidebar';
+import AdminSidebar from '@/features/admin/layout/components/AdminSidebar';
 import { ToastProvider } from '@/components/ui/Toast';
 
 function formatSessionRemaining(expiresAt: number | null): string {
@@ -56,7 +56,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+      <div className="admin-texture-bg min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
           <span className="text-gray-500 text-sm">Carregando...</span>
@@ -80,8 +80,8 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] bg-[radial-gradient(circle_at_top_right,_rgba(45,106,79,0.12),_transparent_45%),radial-gradient(circle_at_bottom_left,_rgba(212,168,67,0.12),_transparent_45%)]">
-      <Sidebar />
+    <div className="admin-texture-bg min-h-screen">
+      <AdminSidebar />
 
       <div className="lg:ml-64 pt-16 lg:pt-0">
         <header className="bg-white/90 backdrop-blur border-b border-gray-200 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">

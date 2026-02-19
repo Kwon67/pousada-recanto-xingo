@@ -1,8 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { createClient } from '@supabase/supabase-js';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { assertAdminActionSession } from '@/lib/admin-action-guard';
+import type { Database } from '@/types/database';
 
 // Default content used when Supabase is not configured
 const conteudoDefault: Record<string, { valor: string; categoria: string }> = {
@@ -10,6 +12,8 @@ const conteudoDefault: Record<string, { valor: string; categoria: string }> = {
   hero_subtitulo: { valor: 'Descanse, respire e viva a natureza do sertão alagoano. Pousada aconchegante com piscina, área de lazer e a hospitalidade nordestina que você merece.', categoria: 'home' },
   home_sobre_titulo: { valor: 'Bem-vindo ao Recanto do Matuto', categoria: 'home' },
   home_sobre_texto: { valor: 'Uma pousada nova e aconchegante em Piranhas, Alagoas. Construída com carinho para receber você que busca tranquilidade, conforto e contato com a natureza às margens do Canyon do Xingó.', categoria: 'home' },
+  home_sobre_imagem: { valor: 'https://placehold.co/800x600/2D6A4F/FDF8F0?text=Pousada+Recanto+do+Matuto', categoria: 'home' },
+  home_sobre_media: { valor: '[]', categoria: 'home' },
   home_cta_titulo: { valor: 'Reserve agora e viva essa experiência', categoria: 'home' },
   home_cta_subtitulo: { valor: 'Quartos a partir de R$ 180/noite', categoria: 'home' },
   home_estrutura_piscina_imagem: { valor: 'https://placehold.co/600x400/2D6A4F/FDF8F0?text=Piscina', categoria: 'home' },
@@ -37,6 +41,20 @@ type ConteudoRow = {
   categoria: string | null;
 };
 
+function createReadOnlyClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
+  if (!supabaseUrl || !anonKey) return null;
+
+  return createClient<Database>(supabaseUrl, anonKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
 function toConteudoMap(rows: ConteudoRow[]) {
   return rows.reduce<Record<string, { valor: string; categoria: string }>>((acc, item) => {
     acc[item.chave] = {
@@ -48,48 +66,83 @@ function toConteudoMap(rows: ConteudoRow[]) {
 }
 
 export async function getConteudo() {
-  try {
-    const supabase = createAdminClient();
-    const { data, error } = await supabase.from('conteudo_site').select('chave, valor, categoria');
+  const runSelect = async (
+    client: ReturnType<typeof createAdminClient> | ReturnType<typeof createReadOnlyClient>
+  ) => {
+    if (!client) throw new Error('Supabase read client indisponível');
+
+    const { data, error } = await client.from('conteudo_site').select('chave, valor, categoria');
     if (error) throw error;
     return toConteudoMap((data ?? []) as ConteudoRow[]);
+  };
+
+  try {
+    return await runSelect(createAdminClient());
   } catch {
-    return conteudoDefault;
+    try {
+      return await runSelect(createReadOnlyClient());
+    } catch {
+      return conteudoDefault;
+    }
   }
 }
 
 export async function getConteudoPorCategoria(categoria: string) {
-  try {
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
+  const runSelect = async (
+    client: ReturnType<typeof createAdminClient> | ReturnType<typeof createReadOnlyClient>
+  ) => {
+    if (!client) throw new Error('Supabase read client indisponível');
+
+    const { data, error } = await client
       .from('conteudo_site')
       .select('chave, valor, categoria')
       .eq('categoria', categoria);
     if (error) throw error;
+
     return (data ?? []).map((item) => ({
       chave: item.chave,
       valor: item.valor ?? '',
       categoria: item.categoria ?? 'geral',
     }));
+  };
+
+  try {
+    return await runSelect(createAdminClient());
   } catch {
-    return Object.entries(conteudoDefault)
-      .filter(([, v]) => v.categoria === categoria)
-      .map(([chave, v]) => ({ chave, ...v }));
+    try {
+      return await runSelect(createReadOnlyClient());
+    } catch {
+      return Object.entries(conteudoDefault)
+        .filter(([, v]) => v.categoria === categoria)
+        .map(([chave, v]) => ({ chave, ...v }));
+    }
   }
 }
 
 export async function getConteudoValor(chave: string): Promise<string> {
-  try {
-    const supabase = createAdminClient();
-    const { data, error } = await supabase
+  const runSelect = async (
+    client: ReturnType<typeof createAdminClient> | ReturnType<typeof createReadOnlyClient>
+  ) => {
+    if (!client) throw new Error('Supabase read client indisponível');
+
+    const { data, error } = await client
       .from('conteudo_site')
       .select('valor')
       .eq('chave', chave)
       .maybeSingle();
     if (error) throw error;
+
     return data?.valor ?? '';
+  };
+
+  try {
+    return await runSelect(createAdminClient());
   } catch {
-    return conteudoDefault[chave]?.valor || '';
+    try {
+      return await runSelect(createReadOnlyClient());
+    } catch {
+      return conteudoDefault[chave]?.valor || '';
+    }
   }
 }
 

@@ -29,7 +29,7 @@ const navItems = [
   { href: '/admin/configuracoes', label: 'Configurações', icon: Settings },
 ];
 
-export default function Sidebar() {
+export default function AdminSidebar() {
   const pathname = usePathname();
   const { logout } = useAuth();
   const [menuOriginPath, setMenuOriginPath] = useState<string | null>(null);

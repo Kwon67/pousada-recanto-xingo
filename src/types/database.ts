@@ -127,6 +127,17 @@ export type Database = {
           valor_total: number;
           status: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
           observacoes: string | null;
+          stripe_checkout_session_id: string | null;
+          stripe_payment_intent_id: string | null;
+          stripe_payment_status:
+            | 'nao_iniciado'
+            | 'pendente'
+            | 'pago'
+            | 'falhou'
+            | 'cancelado'
+            | 'expirado';
+          stripe_payment_method: string | null;
+          payment_approved_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -139,6 +150,17 @@ export type Database = {
           valor_total: number;
           status?: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
           observacoes?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_payment_status?:
+            | 'nao_iniciado'
+            | 'pendente'
+            | 'pago'
+            | 'falhou'
+            | 'cancelado'
+            | 'expirado';
+          stripe_payment_method?: string | null;
+          payment_approved_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -151,6 +173,17 @@ export type Database = {
           valor_total?: number;
           status?: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
           observacoes?: string | null;
+          stripe_checkout_session_id?: string | null;
+          stripe_payment_intent_id?: string | null;
+          stripe_payment_status?:
+            | 'nao_iniciado'
+            | 'pendente'
+            | 'pago'
+            | 'falhou'
+            | 'cancelado'
+            | 'expirado';
+          stripe_payment_method?: string | null;
+          payment_approved_at?: string | null;
           created_at?: string;
         };
         Relationships: [];

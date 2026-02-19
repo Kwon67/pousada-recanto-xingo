@@ -38,6 +38,25 @@ function toConfiguracoes(row: ConfiguracoesRow): Configuracoes {
   };
 }
 
+export async function getConfiguracoesPublic(): Promise<Configuracoes> {
+  try {
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('configuracoes')
+      .select('*')
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return configuracoesMock;
+
+    return toConfiguracoes(data as ConfiguracoesRow);
+  } catch {
+    return configuracoesMock;
+  }
+}
+
 export async function getConfiguracoes(): Promise<Configuracoes> {
   await assertAdminActionSession();
 

@@ -179,7 +179,7 @@ export default function ResumoReserva({
             </div>
           </div>
           <p className="text-xs text-text-light mt-4">
-            * O pagamento será combinado diretamente com a pousada via WhatsApp
+            * Você será redirecionado para o Stripe para pagar com cartão, Pix e métodos disponíveis.
           </p>
         </div>
 
@@ -189,7 +189,7 @@ export default function ResumoReserva({
             Voltar
           </Button>
           <Button onClick={onConfirm} className="sm:flex-1" loading={isLoading}>
-            Confirmar Reserva
+            Ir para pagamento
           </Button>
         </div>
       </div>

@@ -78,3 +78,30 @@ export function formatStatus(status: string): string {
   };
   return statuses[status] || status;
 }
+
+export function formatPaymentStatus(status?: string | null): string {
+  if (!status) return 'Não iniciado';
+
+  const statuses: Record<string, string> = {
+    nao_iniciado: 'Não iniciado',
+    pendente: 'Aguardando pagamento',
+    pago: 'Pago',
+    falhou: 'Falhou',
+    cancelado: 'Cancelado',
+    expirado: 'Expirado',
+  };
+
+  return statuses[status] || status;
+}
+
+export function formatPaymentMethod(method?: string | null): string {
+  if (!method) return 'Não informado';
+
+  const methods: Record<string, string> = {
+    card: 'Cartão',
+    pix: 'Pix',
+    boleto: 'Boleto',
+  };
+
+  return methods[method] || method;
+}

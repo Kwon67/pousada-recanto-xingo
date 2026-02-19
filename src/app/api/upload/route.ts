@@ -31,22 +31,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
-    const allowedVideoTypes = ['video/mp4', 'video/webm'];
+    const allowedImageTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/webp',
+      'image/avif',
+      'image/heic',
+      'image/heif',
+    ];
+    const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
     const isVideo = allowedVideoTypes.includes(file.type);
     const isImage = allowedImageTypes.includes(file.type);
 
     if (!isImage && !isVideo) {
       return NextResponse.json(
-        { error: 'Tipo de arquivo não permitido. Use JPEG, PNG, WebP, AVIF, MP4 ou WebM.' },
+        { error: 'Tipo de arquivo não permitido. Use JPEG, PNG, WebP, AVIF, HEIC, HEIF, MP4, WebM ou MOV.' },
         { status: 400 }
       );
     }
 
-    const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+    const maxSize = isVideo ? 60 * 1024 * 1024 : 20 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: `Arquivo muito grande. Máximo ${isVideo ? '50MB' : '10MB'}.` },
+        { error: `Arquivo muito grande. Máximo ${isVideo ? '60MB' : '20MB'}.` },
         { status: 400 }
       );
     }

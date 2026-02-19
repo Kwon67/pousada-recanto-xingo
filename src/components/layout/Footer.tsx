@@ -13,7 +13,7 @@ export default function Footer() {
   if (isAdmin) return null;
 
   return (
-    <footer className="bg-dark text-white">
+    <footer className="bg-dark text-white dark-dots">
       {/* Main Footer */}
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
@@ -86,7 +86,7 @@ export default function Footer() {
             <ul className="space-y-4">
               <li>
                 <a
-                  href={`https://maps.google.com/?q=Piranhas,Alagoas`}
+                  href={SITE_CONFIG.mapsLink}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-3 text-white/70 hover:text-secondary transition-colors"

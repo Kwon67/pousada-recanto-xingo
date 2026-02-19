@@ -1,14 +1,28 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { CheckCircle, Home, MessageCircle, Calendar, MapPin, Users, Moon, CreditCard } from 'lucide-react';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock3,
+  CreditCard,
+  Home,
+  MapPin,
+  MessageCircle,
+  Moon,
+  Users,
+  XCircle,
+} from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { SITE_CONFIG } from '@/lib/constants';
 import { getWhatsAppLink } from '@/lib/utils';
 import { getReservaById } from '@/lib/actions/reservas';
+import { formatDate, formatPaymentMethod, formatPaymentStatus } from '@/lib/formatters';
+import type { StatusPagamentoReserva } from '@/types/reserva';
 
 interface ReservaDetalhes {
   id: string;
@@ -17,13 +31,76 @@ interface ReservaDetalhes {
   num_hospedes: number;
   valor_total: number;
   status: string;
+  stripe_payment_status?: StatusPagamentoReserva;
+  stripe_payment_method?: string | null;
+  payment_approved_at?: string | null;
   quarto?: { nome: string; imagem_principal: string | null } | null;
   hospede?: { nome: string; email: string; telefone: string | null } | null;
+}
+
+function calcularNoites(checkIn: string, checkOut: string): number {
+  const start = new Date(`${checkIn}T00:00:00`);
+  const end = new Date(`${checkOut}T00:00:00`);
+  return Math.max(Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)), 1);
+}
+
+function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
+  switch (status) {
+    case 'pago':
+      return {
+        title: 'Pagamento aprovado!',
+        message:
+          'Recebemos seu pagamento no Stripe e sua reserva já está confirmada. Você também receberá um e-mail com os detalhes.',
+        icon: CheckCircle,
+        circleClass: 'bg-success/10',
+        iconClass: 'text-success',
+      };
+    case 'falhou':
+      return {
+        title: 'Pagamento não aprovado',
+        message:
+          'O Stripe informou falha no pagamento. Você pode tentar novamente usando outro método de pagamento.',
+        icon: XCircle,
+        circleClass: 'bg-error/10',
+        iconClass: 'text-error',
+      };
+    case 'expirado':
+      return {
+        title: 'Sessão de pagamento expirada',
+        message:
+          'A sessão de checkout expirou. Faça uma nova tentativa de reserva para gerar um novo link de pagamento.',
+        icon: Clock3,
+        circleClass: 'bg-warning/10',
+        iconClass: 'text-warning',
+      };
+    case 'cancelado':
+    case 'cancelado_query':
+      return {
+        title: 'Pagamento cancelado',
+        message:
+          'O pagamento foi cancelado antes da confirmação. Se quiser, você pode refazer a reserva para gerar um novo checkout.',
+        icon: AlertCircle,
+        circleClass: 'bg-warning/10',
+        iconClass: 'text-warning',
+      };
+    case 'nao_iniciado':
+    case 'pendente':
+    default:
+      return {
+        title: 'Aguardando confirmação do pagamento',
+        message:
+          'Estamos aguardando a confirmação do Stripe. Em pagamentos Pix isso pode levar alguns minutos.',
+        icon: Clock3,
+        circleClass: 'bg-warning/10',
+        iconClass: 'text-warning',
+      };
+  }
 }
 
 function ConfirmacaoContent() {
   const searchParams = useSearchParams();
   const reservaId = searchParams.get('id') || 'RES-XXXXX';
+  const paymentQuery = searchParams.get('payment');
   const [reserva, setReserva] = useState<ReservaDetalhes | null>(null);
 
   useEffect(() => {
@@ -34,18 +111,15 @@ function ConfirmacaoContent() {
     }
   }, [reservaId]);
 
-  const whatsappMessage = `Olá! Acabei de fazer uma reserva pelo site (${reservaId}). Gostaria de confirmar os detalhes.`;
+  const whatsappMessage = `Olá! Gostaria de ajuda com a reserva ${reservaId}.`;
 
-  const formatarData = (dateStr: string) => {
-    const [year, month, day] = dateStr.split('-');
-    return `${day}/${month}/${year}`;
-  };
+  const paymentStatus = useMemo<StatusPagamentoReserva | 'cancelado_query'>(() => {
+    if (paymentQuery === 'cancelado') return 'cancelado_query';
+    return reserva?.stripe_payment_status || 'pendente';
+  }, [paymentQuery, reserva?.stripe_payment_status]);
 
-  const calcularNoites = (checkIn: string, checkOut: string) => {
-    const start = new Date(checkIn + 'T00:00:00');
-    const end = new Date(checkOut + 'T00:00:00');
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  };
+  const statusUI = getStatusUI(paymentStatus);
+  const Icon = statusUI.icon;
 
   return (
     <div className="pt-24 pb-20 bg-cream min-h-screen noise-bg">
@@ -55,33 +129,26 @@ function ConfirmacaoContent() {
           animate={{ opacity: 1, scale: 1 }}
           className="max-w-2xl mx-auto text-center"
         >
-          {/* Success Animation */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', delay: 0.2 }}
-            className="w-24 h-24 bg-success/10 rounded-full flex items-center justify-center mx-auto mb-8"
+            className={`w-24 h-24 ${statusUI.circleClass} rounded-full flex items-center justify-center mx-auto mb-8`}
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', delay: 0.4 }}
-            >
-              <CheckCircle className="w-12 h-12 text-success" />
+            <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', delay: 0.4 }}>
+              <Icon className={`w-12 h-12 ${statusUI.iconClass}`} />
             </motion.div>
           </motion.div>
 
-          {/* Title */}
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
             className="font-display text-3xl md:text-4xl font-bold text-dark mb-4"
           >
-            Reserva Confirmada!
+            {statusUI.title}
           </motion.h1>
 
-          {/* Reservation ID */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -92,18 +159,15 @@ function ConfirmacaoContent() {
             <span className="font-medium">Código: {reservaId}</span>
           </motion.div>
 
-          {/* Message */}
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className="text-text-light text-lg mb-8 max-w-md mx-auto"
           >
-            Obrigado por escolher o Recanto do Matuto! Entraremos em contato via WhatsApp
-            para confirmar os detalhes da sua reserva.
+            {statusUI.message}
           </motion.p>
 
-          {/* Reservation Details Card */}
           {reserva && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -125,14 +189,14 @@ function ConfirmacaoContent() {
                   <Calendar className="w-4 h-4 text-primary shrink-0" />
                   <div>
                     <span className="text-xs text-text-light/70 block">Check-in</span>
-                    <span className="font-medium text-dark">{formatarData(reserva.check_in)}</span>
+                    <span className="font-medium text-dark">{formatDate(reserva.check_in)}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-text-light">
                   <Calendar className="w-4 h-4 text-primary shrink-0" />
                   <div>
                     <span className="text-xs text-text-light/70 block">Check-out</span>
-                    <span className="font-medium text-dark">{formatarData(reserva.check_out)}</span>
+                    <span className="font-medium text-dark">{formatDate(reserva.check_out)}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-text-light">
@@ -154,15 +218,31 @@ function ConfirmacaoContent() {
                   <div>
                     <span className="text-xs text-text-light/70 block">Valor Total</span>
                     <span className="font-semibold text-primary text-lg">
-                      {reserva.valor_total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                      {reserva.valor_total.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL',
+                      })}
                     </span>
                   </div>
+                </div>
+                <div className="col-span-2 bg-cream rounded-xl p-4">
+                  <p className="text-xs text-text-light/70 mb-1">Status do pagamento</p>
+                  <p className="font-semibold text-dark">
+                    {formatPaymentStatus(reserva.stripe_payment_status || paymentStatus)}
+                  </p>
+                  <p className="text-sm text-text-light mt-1">
+                    Método: {formatPaymentMethod(reserva.stripe_payment_method)}
+                  </p>
+                  {reserva.payment_approved_at && (
+                    <p className="text-sm text-text-light mt-1">
+                      Aprovado em: {formatDate(reserva.payment_approved_at, 'dd/MM/yyyy HH:mm')}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
           )}
 
-          {/* Info Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -174,12 +254,12 @@ function ConfirmacaoContent() {
             </h2>
             <ul className="text-left space-y-3">
               {[
-                'Você receberá um email com os detalhes da reserva',
-                'Entraremos em contato pelo WhatsApp para confirmar',
-                'O pagamento será combinado diretamente com a pousada',
-                'Guarde o código da reserva para referência',
+                'Acompanhe o status da sua reserva pelo código informado',
+                'Você receberá e-mail quando o pagamento for confirmado',
+                'Em caso de dúvida, fale com a pousada pelo WhatsApp',
+                'Guarde este comprovante para referência',
               ].map((item, index) => (
-                <li key={index} className="flex items-start gap-3 text-text-light">
+                <li key={item} className="flex items-start gap-3 text-text-light">
                   <span className="w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary text-sm font-medium shrink-0">
                     {index + 1}
                   </span>
@@ -189,7 +269,6 @@ function ConfirmacaoContent() {
             </ul>
           </motion.div>
 
-          {/* Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -209,6 +288,11 @@ function ConfirmacaoContent() {
                 Falar no WhatsApp
               </Button>
             </a>
+            <Link href="/reservas">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Fazer nova reserva
+              </Button>
+            </Link>
             <Link href="/">
               <Button
                 variant="outline"
@@ -227,11 +311,13 @@ function ConfirmacaoContent() {
 
 export default function ConfirmacaoPage() {
   return (
-    <Suspense fallback={
-      <div className="pt-24 pb-20 bg-cream min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-text-light">Carregando...</div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="pt-24 pb-20 bg-cream min-h-screen flex items-center justify-center">
+          <div className="animate-pulse text-text-light">Carregando...</div>
+        </div>
+      }
+    >
       <ConfirmacaoContent />
     </Suspense>
   );

@@ -112,8 +112,14 @@ export function useReserva() {
         return null;
       }
 
+      if (!result.checkoutUrl) {
+        setError('Não foi possível iniciar o checkout no Stripe.');
+        return null;
+      }
+
       return {
         id: result.reservaId!,
+        checkoutUrl: result.checkoutUrl,
         quarto: state.quarto,
         checkIn: state.checkIn,
         checkOut: state.checkOut,

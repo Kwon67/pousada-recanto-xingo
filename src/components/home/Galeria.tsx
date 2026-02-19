@@ -9,6 +9,7 @@ interface LightboxImage {
   id: string;
   url: string;
   alt: string;
+  type: 'image' | 'video';
 }
 
 interface GaleriaProps {
@@ -26,9 +27,12 @@ export default function Galeria({ images }: GaleriaProps) {
   const gestureActive = useRef(false);
   const directionLocked = useRef<'horizontal' | 'vertical' | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
 
   const SWIPE_THRESHOLD = 50;
   const DIRECTION_LOCK_THRESHOLD = 8;
+  const IMAGE_AUTOPLAY_MS = 3500;
+  const VIDEO_AUTOPLAY_MS = 8000;
 
   // Lock body scroll when lightbox is open
   useEffect(() => {
@@ -46,11 +50,39 @@ export default function Galeria({ images }: GaleriaProps) {
     };
   }, [lightbox]);
 
+  const activeIndex = currentIndex >= images.length ? 0 : currentIndex;
+
+  useEffect(() => {
+    if (images.length === 0) return;
+
+    videoRefs.current.forEach((videoEl, index) => {
+      if (index === activeIndex) {
+        videoEl.play().catch(() => {});
+      } else {
+        videoEl.pause();
+      }
+    });
+  }, [activeIndex, images.length]);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    if (lightbox || isDragging) return;
+
+    const currentMedia = images[activeIndex];
+    const delay = currentMedia?.type === 'video' ? VIDEO_AUTOPLAY_MS : IMAGE_AUTOPLAY_MS;
+
+    const timer = setTimeout(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, delay);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [activeIndex, images, isDragging, lightbox]);
+
   if (images.length === 0) {
     return null;
   }
-
-  const activeIndex = currentIndex >= images.length ? 0 : currentIndex;
 
   const handlePointerDown = (e: React.PointerEvent) => {
     startX.current = e.clientX;
@@ -126,7 +158,7 @@ export default function Galeria({ images }: GaleriaProps) {
   const offset = -(activeIndex * 100) + dragX / 3.5;
 
   return (
-    <section className="py-20 bg-dark relative overflow-hidden">
+    <section className="relative overflow-hidden bg-dark py-20 dark-dots">
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/6 rounded-full blur-[120px]" />
@@ -189,21 +221,43 @@ export default function Galeria({ images }: GaleriaProps) {
                   className="relative h-full overflow-hidden"
                   style={{ width: `${100 / images.length}%` }}
                 >
-                  <Image
-                    src={img.url}
-                    alt={img.alt}
-                    fill
-                    sizes="(max-width: 640px) 100vw, 384px"
-                    draggable={false}
-                    className="object-cover"
-                    style={{
-                      transform: i === activeIndex
-                        ? `scale(${isDragging ? 1.02 : 1})`
-                        : 'scale(1.05)',
-                      transition: 'transform 0.5s ease, filter 0.5s ease',
-                      filter: i === activeIndex ? 'brightness(1)' : 'brightness(0.5)',
-                    }}
-                  />
+                  {img.type === 'video' ? (
+                    <video
+                      ref={(el) => {
+                        if (el) videoRefs.current.set(i, el);
+                        else videoRefs.current.delete(i);
+                      }}
+                      src={img.url}
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-cover"
+                      style={{
+                        transform: i === activeIndex
+                          ? `scale(${isDragging ? 1.02 : 1})`
+                          : 'scale(1.05)',
+                        transition: 'transform 0.5s ease, filter 0.5s ease',
+                        filter: i === activeIndex ? 'brightness(1)' : 'brightness(0.5)',
+                      }}
+                    />
+                  ) : (
+                    <Image
+                      src={img.url}
+                      alt={img.alt}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 384px"
+                      draggable={false}
+                      className="object-cover"
+                      style={{
+                        transform: i === activeIndex
+                          ? `scale(${isDragging ? 1.02 : 1})`
+                          : 'scale(1.05)',
+                        transition: 'transform 0.5s ease, filter 0.5s ease',
+                        filter: i === activeIndex ? 'brightness(1)' : 'brightness(0.5)',
+                      }}
+                    />
+                  )}
 
                   {/* Vignette */}
                   <div
@@ -213,12 +267,6 @@ export default function Galeria({ images }: GaleriaProps) {
                     }}
                   />
 
-                  {/* Caption overlay */}
-                  {i === activeIndex && (
-                    <div className="absolute bottom-5 left-5 right-5 pointer-events-none">
-                      <p className="text-white font-medium text-sm drop-shadow-lg">{img.alt}</p>
-                    </div>
-                  )}
                 </div>
               ))}
             </div>
@@ -273,16 +321,31 @@ export default function Galeria({ images }: GaleriaProps) {
               <X className="w-5 h-5" />
             </button>
 
-            <motion.img
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.92 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              src={lightbox.url}
-              alt={lightbox.alt}
-              className="max-w-[92vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            />
+            {lightbox.type === 'video' ? (
+              <motion.video
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                src={lightbox.url}
+                controls
+                autoPlay
+                playsInline
+                className="max-w-[92vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <motion.img
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                src={lightbox.url}
+                alt={lightbox.alt}
+                className="max-w-[92vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
 
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center">
               <p className="text-white font-medium">{lightbox.alt}</p>

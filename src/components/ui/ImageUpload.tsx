@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { Upload, X, Star, ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { deleteUploadedFile, uploadFile as uploadAdminFile } from '@/lib/api/upload-client';
 
 interface UploadedImage {
   url: string;
@@ -28,22 +29,13 @@ export default function ImageUpload({
   const [uploadingCount, setUploadingCount] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const uploadFile = async (file: File): Promise<UploadedImage | null> => {
-    const formData = new FormData();
-    formData.append('file', file);
-
+  const uploadSingleFile = async (file: File): Promise<UploadedImage | null> => {
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || 'Erro no upload');
-      }
-
-      return await response.json();
+      const uploaded = await uploadAdminFile(file);
+      return {
+        url: uploaded.url,
+        public_id: uploaded.public_id,
+      };
     } catch (err) {
       console.error('Erro ao enviar imagem:', err);
       return null;
@@ -60,7 +52,7 @@ export default function ImageUpload({
 
       setUploadingCount(toUpload.length);
 
-      const results = await Promise.all(toUpload.map(uploadFile));
+      const results = await Promise.all(toUpload.map(uploadSingleFile));
       const successful = results.filter(Boolean) as UploadedImage[];
 
       onChange([...images, ...successful]);
@@ -92,11 +84,7 @@ export default function ImageUpload({
     const image = images[index];
 
     try {
-      await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ public_id: image.public_id }),
-      });
+      await deleteUploadedFile(image.public_id);
     } catch {
       // Continue removing from UI even if Cloudinary delete fails
     }

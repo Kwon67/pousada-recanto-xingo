@@ -30,6 +30,8 @@ import {
   formatCurrency,
   formatDate,
   formatDateTime,
+  formatPaymentMethod,
+  formatPaymentStatus,
   formatStatus,
   formatPhone,
   formatCPF,
@@ -90,6 +92,15 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
     concluida: 'bg-blue-100 text-blue-700',
   };
 
+  const paymentStatusColors: Record<string, string> = {
+    nao_iniciado: 'bg-gray-100 text-gray-700',
+    pendente: 'bg-amber-100 text-amber-700',
+    pago: 'bg-green-100 text-green-700',
+    falhou: 'bg-red-100 text-red-700',
+    cancelado: 'bg-rose-100 text-rose-700',
+    expirado: 'bg-orange-100 text-orange-700',
+  };
+
   const updateStatus = async (id: string, newStatus: StatusReserva) => {
     setSaving(true);
     const result = await atualizarStatusReserva(id, newStatus);
@@ -125,7 +136,9 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
     return differenceInDays(parseISO(checkOut), parseISO(checkIn));
   };
 
-  const totalReceita = filtered.reduce((acc, r) => acc + r.valor_total, 0);
+  const totalReceita = filtered
+    .filter((r) => r.stripe_payment_status === 'pago' || r.status === 'confirmada')
+    .reduce((acc, r) => acc + r.valor_total, 0);
 
   const handleNovaReserva = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -300,6 +313,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                   <th className="text-left px-6 py-3 text-gray-500 font-medium hidden lg:table-cell">Hóspedes</th>
                   <th className="text-left px-6 py-3 text-gray-500 font-medium">Valor</th>
                   <th className="text-left px-6 py-3 text-gray-500 font-medium">Status</th>
+                  <th className="text-left px-6 py-3 text-gray-500 font-medium hidden md:table-cell">Pagamento</th>
                   <th className="text-left px-6 py-3 text-gray-500 font-medium">Ações</th>
                 </tr>
               </thead>
@@ -330,6 +344,21 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                       <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[r.status]}`}>
                         {formatStatus(r.status)}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 hidden md:table-cell">
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`inline-flex w-fit px-2.5 py-1 rounded-full text-xs font-medium ${
+                            paymentStatusColors[r.stripe_payment_status || 'nao_iniciado'] ||
+                            paymentStatusColors.nao_iniciado
+                          }`}
+                        >
+                          {formatPaymentStatus(r.stripe_payment_status)}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {formatPaymentMethod(r.stripe_payment_method)}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <button
@@ -470,6 +499,27 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                   <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${statusColors[selectedReserva.status]}`}>
                     {formatStatus(selectedReserva.status)}
                   </span>
+                </div>
+
+                {/* Payment */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-500 mb-1">Pagamento</p>
+                  <span
+                    className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${
+                      paymentStatusColors[selectedReserva.stripe_payment_status || 'nao_iniciado'] ||
+                      paymentStatusColors.nao_iniciado
+                    }`}
+                  >
+                    {formatPaymentStatus(selectedReserva.stripe_payment_status)}
+                  </span>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Método: {formatPaymentMethod(selectedReserva.stripe_payment_method)}
+                  </p>
+                  {selectedReserva.payment_approved_at && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Aprovado em {formatDateTime(selectedReserva.payment_approved_at)}
+                    </p>
+                  )}
                 </div>
 
                 {/* Observations */}

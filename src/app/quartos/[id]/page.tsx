@@ -1,124 +1,152 @@
-'use client';
-
-import { use } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
-import { useQuarto, useQuartos } from '@/hooks/useQuartos';
-import QuartoGaleria from '@/components/quartos/QuartoGaleria';
-import QuartoInfo from '@/components/quartos/QuartoInfo';
-import QuartoPreco from '@/components/quartos/QuartoPreco';
-import QuartoCard from '@/components/quartos/QuartoCard';
-import Skeleton from '@/components/ui/Skeleton';
-import Button from '@/components/ui/Button';
+import { Metadata } from 'next';
+import { getQuartoBySlug } from '@/lib/actions/quartos';
+import { getConfiguracoesPublic } from '@/lib/actions/configuracoes';
+import { getMetadataBase, getSiteUrl } from '@/lib/site-url';
+import QuartoClient from './QuartoClient';
 
 interface QuartoPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function QuartoPage({ params }: QuartoPageProps) {
-  const { id } = use(params);
-  const { quarto, loading, error } = useQuarto(id);
-  const { allQuartos } = useQuartos();
+const SITE_URL = getSiteUrl();
 
-  // Get related quartos (excluding current one)
-  const quartosRelacionados = allQuartos
-    .filter((q) => q.slug !== id)
-    .slice(0, 3);
+export async function generateMetadata({ params }: QuartoPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const [quarto, config] = await Promise.all([
+    getQuartoBySlug(id),
+    getConfiguracoesPublic(),
+  ]);
 
-  if (loading) {
-    return (
-      <div className="pt-24 pb-20 bg-cream min-h-screen">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="aspect-[16/10] rounded-2xl" />
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-32" />
-            </div>
-            <div>
-              <Skeleton className="h-96 rounded-2xl" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+  if (!quarto) {
+    return {
+      metadataBase: getMetadataBase(),
+      title: 'Quarto não encontrado | Pousada Recanto do Matuto',
+      description: 'O quarto que você procura não foi encontrado.',
+    };
   }
 
-  if (error || !quarto) {
-    return (
-      <div className="pt-24 pb-20 bg-cream min-h-screen">
-        <div className="container mx-auto px-4 text-center py-20">
-          <h1 className="font-display text-3xl font-bold text-dark mb-4">
-            Quarto não encontrado
-          </h1>
-          <p className="text-text-light mb-8">
-            O quarto que você está procurando não existe ou foi removido.
-          </p>
-          <Link href="/quartos">
-            <Button leftIcon={<ArrowLeft className="w-5 h-5" />}>
-              Ver todos os quartos
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const cidade = config.endereco || 'Piranhas, Alagoas';
+  const categoriaLabel = { standard: 'Standard', superior: 'Superior', suite: 'Suíte' }[quarto.categoria] || quarto.categoria;
+  const title = `${quarto.nome} – ${categoriaLabel} | Pousada em ${cidade}`;
+  const description = `${quarto.descricao_curta || quarto.descricao}. A partir de R$ ${quarto.preco_diaria}/noite para ${quarto.capacidade} pessoa(s). Reserve na Pousada Recanto do Matuto em ${cidade}.`;
+  const url = `${SITE_URL}/quartos/${quarto.slug}`;
+  const images = quarto.imagem_principal
+    ? [{ url: quarto.imagem_principal, width: 800, height: 600, alt: quarto.nome }]
+    : [];
+
+  return {
+    metadataBase: getMetadataBase(),
+    title,
+    description,
+    keywords: [
+      quarto.nome,
+      `pousada em ${cidade}`,
+      'pousada Piranhas Alagoas',
+      'hospedagem Canyon do Xingó',
+      'quarto pousada sertão',
+      `quarto ${categoriaLabel.toLowerCase()}`,
+      ...quarto.amenidades.slice(0, 5),
+    ],
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: config.nome_pousada || 'Pousada Recanto do Matuto Xingó',
+      images,
+      type: 'website',
+      locale: 'pt_BR',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: quarto.imagem_principal ? [quarto.imagem_principal] : [],
+    },
+  };
+}
+
+export default async function QuartoPage({ params }: QuartoPageProps) {
+  const { id } = await params;
+  const [quarto, config] = await Promise.all([
+    getQuartoBySlug(id),
+    getConfiguracoesPublic(),
+  ]);
+
+  const jsonLd = quarto
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'HotelRoom',
+        name: quarto.nome,
+        description: quarto.descricao || quarto.descricao_curta,
+        image: quarto.imagem_principal || undefined,
+        url: `${SITE_URL}/quartos/${quarto.slug}`,
+        numberOfRooms: 1,
+        bed: {
+          '@type': 'BedDetails',
+          numberOfBeds: 1,
+          typeOfBed: quarto.categoria === 'suite' ? 'King' : 'Queen',
+        },
+        occupancy: {
+          '@type': 'QuantitativeValue',
+          value: quarto.capacidade,
+          unitText: 'pessoa(s)',
+        },
+        floorSize: {
+          '@type': 'QuantitativeValue',
+          value: quarto.tamanho_m2,
+          unitCode: 'MTK',
+        },
+        amenityFeature: quarto.amenidades.map((a) => ({
+          '@type': 'LocationFeatureSpecification',
+          name: a,
+          value: true,
+        })),
+        offers: {
+          '@type': 'Offer',
+          priceCurrency: 'BRL',
+          price: quarto.preco_diaria,
+          unitCode: 'DAY',
+          availability: 'https://schema.org/InStock',
+          priceValidUntil: '2026-12-31',
+          url: `${SITE_URL}/reservas`,
+        },
+        containedInPlace: {
+          '@type': 'LodgingBusiness',
+          name: config.nome_pousada || 'Pousada Recanto do Matuto Xingó',
+          description: config.descricao || undefined,
+          telephone: config.telefone,
+          email: config.email,
+          url: SITE_URL,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: 'Piranhas',
+            addressRegion: 'AL',
+            addressCountry: 'BR',
+            streetAddress: config.endereco || 'Piranhas, Alagoas',
+          },
+          geo: config.latitude && config.longitude
+            ? {
+                '@type': 'GeoCoordinates',
+                latitude: config.latitude,
+                longitude: config.longitude,
+              }
+            : undefined,
+          checkinTime: config.horario_checkin || '14:00',
+          checkoutTime: config.horario_checkout || '12:00',
+        },
+      }
+    : null;
 
   return (
-    <div className="pt-24 pb-20 bg-cream min-h-screen noise-bg">
-      <div className="container mx-auto px-4">
-        {/* Breadcrumb */}
-        <motion.nav
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm text-text-light mb-8"
-        >
-          <Link href="/" className="hover:text-primary transition-colors">
-            Início
-          </Link>
-          <ChevronRight className="w-4 h-4" />
-          <Link href="/quartos" className="hover:text-primary transition-colors">
-            Quartos
-          </Link>
-          <ChevronRight className="w-4 h-4" />
-          <span className="text-dark font-medium">{quarto.nome}</span>
-        </motion.nav>
-
-        {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
-          {/* Left Column - Gallery & Info */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="lg:col-span-2 space-y-8"
-          >
-            <QuartoGaleria imagens={quarto.imagens} nome={quarto.nome} />
-            <QuartoInfo quarto={quarto} />
-          </motion.div>
-
-          {/* Right Column - Price Card */}
-          <div className="lg:col-span-1">
-            <QuartoPreco quarto={quarto} />
-          </div>
-        </div>
-
-        {/* Related Quartos */}
-        {quartosRelacionados.length > 0 && (
-          <section className="mt-20">
-            <h2 className="font-display text-2xl font-bold text-dark mb-8">
-              Você também pode gostar
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {quartosRelacionados.map((q, index) => (
-                <QuartoCard key={q.id} quarto={q} index={index} />
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      <QuartoClient id={id} />
+    </>
   );
 }

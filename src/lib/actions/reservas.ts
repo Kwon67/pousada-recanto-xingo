@@ -1,10 +1,11 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import { enviarEmailConfirmacao, enviarEmailStatus } from '@/lib/email';
+import { getSiteUrl } from '@/lib/site-url';
+import { createStripeCheckoutSession, getStripePaymentIntentId } from '@/lib/stripe';
 import { reservasMock } from '@/data/mock';
 import type { Reserva, StatusReserva } from '@/types/reserva';
 
@@ -27,8 +28,10 @@ interface CriarReservaData {
 const STATUSES_QUE_BLOQUEIAM: StatusReserva[] = ['pendente', 'confirmada'];
 
 export async function criarReserva(data: CriarReservaData) {
+  let reservaCriadaId: string | null = null;
+
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // 1. Upsert hóspede por email
     const { data: hospede, error: hospedeError } = await supabase
@@ -63,7 +66,7 @@ export async function criarReserva(data: CriarReservaData) {
       return { success: false, error: 'Este quarto não está mais disponível para as datas selecionadas.' };
     }
 
-    // 3. Inserir reserva
+    // 3. Inserir reserva pendente de pagamento
     const { data: reserva, error: reservaError } = await supabase
       .from('reservas')
       .insert({
@@ -74,25 +77,50 @@ export async function criarReserva(data: CriarReservaData) {
         num_hospedes: data.num_hospedes,
         valor_total: data.valor_total,
         status: 'pendente',
+        stripe_payment_status: 'pendente',
         observacoes: data.observacoes || null,
       })
       .select('id')
       .single();
 
     if (reservaError) throw new Error(`Erro ao criar reserva: ${reservaError.message}`);
+    reservaCriadaId = reserva.id;
 
-    // 4. Enviar email de confirmação (não bloqueia em caso de falha)
-    const emailResult = await enviarEmailConfirmacao({
+    // 4. Criar sessão de checkout no Stripe
+    const siteUrl = getSiteUrl();
+    const checkoutSession = await createStripeCheckoutSession({
       reservaId: reserva.id,
+      quartoNome: data.quarto_nome,
       hospedeNome: data.hospede_nome,
       hospedeEmail: data.hospede_email,
-      quartoNome: data.quarto_nome,
-      checkIn: data.check_in,
-      checkOut: data.check_out,
-      numHospedes: data.num_hospedes,
-      noites: data.noites,
       valorTotal: data.valor_total,
+      successUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&payment=cancelado`,
+      metadata: {
+        check_in: data.check_in,
+        check_out: data.check_out,
+      },
     });
+
+    if (!checkoutSession.url) {
+      throw new Error('Stripe não retornou a URL de checkout para continuar o pagamento.');
+    }
+
+    const paymentIntentId = getStripePaymentIntentId(checkoutSession.payment_intent);
+    const { error: stripeRefError } = await supabase
+      .from('reservas')
+      .update({
+        stripe_checkout_session_id: checkoutSession.id,
+        stripe_payment_intent_id: paymentIntentId,
+        stripe_payment_status:
+          checkoutSession.payment_status === 'paid' ? 'pago' : 'pendente',
+        stripe_payment_method: checkoutSession.payment_method_types?.[0] || null,
+      })
+      .eq('id', reserva.id);
+
+    if (stripeRefError) {
+      throw new Error(`Erro ao vincular checkout Stripe à reserva: ${stripeRefError.message}`);
+    }
 
     // 5. Revalidar paths
     revalidatePath('/reservas');
@@ -102,11 +130,28 @@ export async function criarReserva(data: CriarReservaData) {
     return {
       success: true,
       reservaId: reserva.id,
-      emailEnviado: emailResult.success,
+      checkoutUrl: checkoutSession.url,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erro ao criar reserva';
     console.error('criarReserva error:', message);
+
+    if (reservaCriadaId) {
+      try {
+        const supabase = createAdminClient();
+        await supabase
+          .from('reservas')
+          .update({
+            status: 'cancelada',
+            stripe_payment_status: 'falhou',
+          })
+          .eq('id', reservaCriadaId)
+          .eq('status', 'pendente');
+      } catch (rollbackErr) {
+        console.error('criarReserva rollback error:', rollbackErr);
+      }
+    }
+
     return { success: false, error: message };
   }
 }
@@ -182,7 +227,15 @@ export async function atualizarStatusReserva(id: string, status: StatusReserva) 
 
   try {
     const supabase = createAdminClient();
-    const { error } = await supabase.from('reservas').update({ status }).eq('id', id);
+    const updatePayload: {
+      status: StatusReserva;
+      stripe_payment_status?: 'cancelado';
+    } = { status };
+    if (status === 'cancelada') {
+      updatePayload.stripe_payment_status = 'cancelado';
+    }
+
+    const { error } = await supabase.from('reservas').update(updatePayload).eq('id', id);
     if (error) throw error;
 
     // Enviar email ao confirmar ou cancelar
@@ -304,6 +357,7 @@ export async function criarReservaManual(data: {
         num_hospedes: data.num_hospedes,
         valor_total: data.valor_total,
         status: 'pendente',
+        stripe_payment_status: 'nao_iniciado',
         observacoes: data.observacoes || null,
       })
       .select('id')

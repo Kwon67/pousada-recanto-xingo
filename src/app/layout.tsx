@@ -4,6 +4,7 @@ import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { getMetadataBase, getSiteUrl } from "@/lib/site-url";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
@@ -19,7 +20,11 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const SITE_URL = getSiteUrl();
+const METADATA_BASE = getMetadataBase();
+
 export const metadata: Metadata = {
+  metadataBase: METADATA_BASE,
   title: {
     default: "Pousada Recanto do Matuto Xingó | Piranhas, Alagoas",
     template: "%s | Pousada Recanto do Matuto Xingó",
@@ -43,7 +48,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    url: "https://recantodomatutoxingo.com.br",
+    url: SITE_URL,
     siteName: "Pousada Recanto do Matuto Xingó",
     title: "Pousada Recanto do Matuto Xingó | Piranhas, Alagoas",
     description:

@@ -10,61 +10,100 @@ import Localizacao from '@/components/home/Localizacao';
 import CTAReserva from '@/components/home/CTAReserva';
 import { getAvaliacoes } from '@/lib/actions/avaliacoes';
 import { getGaleria } from '@/lib/actions/galeria';
-import { getConteudo } from '@/lib/actions/conteudo';
 import type { Avaliacao } from '@/types/avaliacao';
+
+import { Metadata } from 'next';
+import { getConteudoValor } from '@/lib/actions/conteudo';
+import { getMetadataBase } from '@/lib/site-url';
 
 export const dynamic = 'force-dynamic';
 
-const LEGACY_IMAGE_KEYS: Record<string, string> = {
-  '1': 'home_estrutura_piscina_imagem',
-  '2': 'home_estrutura_area_redes_imagem',
-  '3': 'home_estrutura_churrasqueira_imagem',
-  '4': 'home_estrutura_chuveirao_imagem',
-  '5': 'home_estrutura_espaco_amplo_imagem',
-  '6': 'home_estrutura_banheiro_privativo_imagem',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const titulo = await getConteudoValor('hero_titulo');
+  const subtitulo = await getConteudoValor('hero_subtitulo');
 
-function parseMedia(raw: string): MediaItem[] {
-  try {
-    const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed)) return parsed as MediaItem[];
-  } catch { /* ignore */ }
-  return [];
+  const title = titulo ? `${titulo} | Pousada Recanto do Matuto` : 'Pousada Recanto do Matuto';
+  const description = subtitulo || 'Sua pousada no sertão alagoano.';
+
+  return {
+    metadataBase: getMetadataBase(),
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+    },
+  };
+}
+
+function isLikelyVideoUrl(url: string): boolean {
+  return /\/video\/upload\//i.test(url) || /\.(mp4|webm|mov)(\?|$)/i.test(url);
+}
+
+const MOMENTOS_CATEGORIES = new Set(['momentos', 'pousada', 'quartos', 'area_lazer', 'cafe']);
+
+function isMomentosCategory(categoria: string | null | undefined): boolean {
+  if (!categoria) return true;
+  return MOMENTOS_CATEGORIES.has(categoria);
 }
 
 export default async function HomePage() {
-  const [avaliacoesRaw, galeriaRaw, conteudoMap] = await Promise.all([
+  const [avaliacoesRaw, galeriaRaw] = await Promise.all([
     getAvaliacoes({ aprovada: true }),
     getGaleria(),
-    getConteudo(),
   ]);
 
   const avaliacoes = (avaliacoesRaw as Avaliacao[])
     .filter((item) => item.aprovada)
     .slice(0, 10);
 
-  const galeria = galeriaRaw.map((item) => ({
-    id: item.id,
-    url: item.url,
-    alt: item.alt || 'Foto da pousada',
-  }));
+  const galeria = galeriaRaw
+    .filter((item) => isMomentosCategory(item.categoria))
+    .map((item) => ({
+      id: item.id,
+      url: item.url,
+      alt: item.alt || 'Foto da pousada',
+      type: isLikelyVideoUrl(item.url) ? 'video' as const : 'image' as const,
+    }));
 
   const estruturaMediaOverrides: Record<string, MediaItem[]> = {};
   for (const id of ['1', '2', '3', '4', '5', '6']) {
-    const mediaKey = `home_estrutura_${id}_media`;
-    const mediaRaw = conteudoMap[mediaKey]?.valor ?? '[]';
-    const media = parseMedia(mediaRaw);
+    const mediaFromGaleria = galeriaRaw
+      .filter((item) => item.categoria === `home_estrutura_${id}`)
+      .map((item) => ({
+        url: item.url.trim(),
+        type: isLikelyVideoUrl(item.url) ? 'video' as const : 'image' as const,
+      }))
+      .filter((item) => item.url.length > 0);
 
-    if (media.length > 0) {
-      estruturaMediaOverrides[id] = media;
-    } else {
-      const legacyKey = LEGACY_IMAGE_KEYS[id];
-      const legacyUrl = conteudoMap[legacyKey]?.valor?.trim();
-      if (legacyUrl) {
-        estruturaMediaOverrides[id] = [{ url: legacyUrl, type: 'image' }];
-      }
+    if (mediaFromGaleria.length > 0) {
+      estruturaMediaOverrides[id] = mediaFromGaleria;
     }
   }
+
+  const homeSobreMediaFromGaleriaArea: MediaItem[] = galeriaRaw
+    .filter((item) => item.categoria === 'home_sobre')
+    .sort((a, b) => a.ordem - b.ordem)
+    .map((item) => ({ url: item.url, type: isLikelyVideoUrl(item.url) ? 'video' as const : 'image' as const }))
+    .filter((item) => item.url?.trim())
+    .map((item) => ({ ...item, url: item.url.trim() }))
+    .slice(0, 7);
+
+  const homeSobreMediaFromDestaque: MediaItem[] = galeriaRaw
+    .filter((item) => item.destaque)
+    .sort((a, b) => a.ordem - b.ordem)
+    .map((item) => ({ url: item.url, type: isLikelyVideoUrl(item.url) ? 'video' as const : 'image' as const }))
+    .filter((item) => item.url?.trim())
+    .map((item) => ({ ...item, url: item.url.trim() }))
+    .slice(0, 7);
+
+  const homeSobreMedia = (
+    homeSobreMediaFromDestaque.length > 0
+      ? homeSobreMediaFromDestaque
+      : homeSobreMediaFromGaleriaArea
+  ).slice(0, 7);
+  const homeSobreImage = homeSobreMedia.find((item) => item.type === 'image')?.url;
 
   return (
     <>
@@ -73,7 +112,7 @@ export default async function HomePage() {
       <QuartosDestaque />
       <Estrutura mediaOverrides={estruturaMediaOverrides} />
       <Experiencias />
-      <SobrePreview />
+      <SobrePreview imageUrl={homeSobreImage} media={homeSobreMedia} />
       <Galeria images={galeria} />
       <Depoimentos avaliacoes={avaliacoes} />
       <Localizacao />

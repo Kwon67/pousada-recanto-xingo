@@ -1,11 +1,12 @@
  'use client';
 
 import { motion } from 'framer-motion';
-import { MapPin, Plane, Car, Bus, Navigation } from 'lucide-react';
+import { MapPin, Plane, Car, Bus, ExternalLink } from 'lucide-react';
+import { SITE_CONFIG } from '@/lib/constants';
 
 export default function Localizacao() {
   return (
-    <section className="py-20 bg-dark">
+    <section className="bg-dark py-20 dark-dots">
       <div className="container mx-auto px-4">
         {/* Section Header */}
         <motion.div
@@ -32,23 +33,34 @@ export default function Localizacao() {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="aspect-4/3 rounded-2xl overflow-hidden shadow-md">
+            <div className="relative aspect-4/3 rounded-2xl overflow-hidden shadow-xl shadow-black/30 border border-white/10">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31259.68037387799!2d-37.76975!3d-9.6285!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7093f47f1c3a4cd%3A0x6fab1d7f45ef3a0!2sPiranhas%2C%20AL!5e0!3m2!1spt-BR!2sbr!4v1699999999999!5m2!1spt-BR!2sbr"
-                width="100%"
-                height="100%"
+                src={SITE_CONFIG.mapsEmbedLink}
+                className="w-full h-full"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
                 title="Localização da Pousada"
               />
+              <a
+                href={SITE_CONFIG.mapsLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute top-3 right-3 z-10 inline-flex items-center justify-center gap-1.5 rounded-lg bg-secondary text-dark px-3 py-2 text-sm font-semibold shadow-lg shadow-black/25 hover:bg-secondary-light transition-colors sm:top-4 sm:right-4 sm:gap-2 sm:rounded-xl sm:px-6 sm:py-3 sm:text-base sm:font-bold"
+                aria-label="Abrir localização no Google Maps"
+              >
+                <MapPin className="w-5 h-5" />
+                <span className="sm:hidden">Abrir Maps</span>
+                <span className="hidden sm:inline">Abrir no Google Maps</span>
+                <ExternalLink className="w-4 h-4" />
+              </a>
             </div>
 
             {/* Location Badge */}
-            <div className="absolute -bottom-4 left-4 bg-secondary text-dark px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              <span className="font-semibold">Piranhas, Alagoas</span>
+            <div className="absolute -bottom-3 left-4 bg-secondary text-dark px-3 py-1.5 rounded-lg shadow-md flex items-center gap-1.5 sm:-bottom-4 sm:px-4 sm:py-2 sm:rounded-xl">
+              <MapPin className="w-4 h-4" />
+              <span className="text-xs sm:text-sm font-semibold">Piranhas, Alagoas</span>
             </div>
           </motion.div>
 
@@ -58,31 +70,10 @@ export default function Localizacao() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="space-y-8"
+            className="space-y-6"
           >
-            {/* Address */}
-            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center shrink-0">
-                  <Navigation className="w-6 h-6 text-dark" />
-                </div>
-                <div>
-                  <h3 className="font-display text-xl font-semibold text-white mb-2">
-                    Endereço
-                  </h3>
-                  <p className="text-white/70">
-                    Piranhas, Alagoas<br />
-                    Região do Canyon do Xingó
-                  </p>
-                  <p className="text-white/50 text-sm mt-2">
-                    A poucos minutos do embarque para o passeio de catamarã
-                  </p>
-                </div>
-              </div>
-            </div>
-
             {/* How to get there */}
-            <div className="space-y-4">
+            <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 border border-white/10 space-y-4">
               <h3 className="font-display text-xl font-semibold text-white">
                 Como chegar
               </h3>
@@ -91,17 +82,17 @@ export default function Localizacao() {
                 {
                   icon: <Plane className="w-5 h-5" />,
                   title: 'De avião',
-                  desc: 'Aeroporto mais próximo: Maceió (AL) - 280km. Também é possível voar para Aracaju (SE) - 200km.',
+                  desc: 'Aeroportos de Maceió (AL) ou Aracaju (SE).',
                 },
                 {
                   icon: <Car className="w-5 h-5" />,
                   title: 'De carro',
-                  desc: 'Via BR-101 e AL-225. Piranhas fica a 280km de Maceió e 200km de Aracaju.',
+                  desc: 'Acesso principal pelas rodovias BR-101 e AL-225.',
                 },
                 {
                   icon: <Bus className="w-5 h-5" />,
                   title: 'De ônibus',
-                  desc: 'Há linhas regulares saindo de Maceió, Aracaju e outras capitais do Nordeste.',
+                  desc: 'Linhas regionais com destino a Piranhas.',
                 },
               ].map((item, index) => (
                 <motion.div
@@ -123,16 +114,6 @@ export default function Localizacao() {
               ))}
             </div>
 
-            {/* CTA */}
-            <a
-              href="https://maps.google.com/?q=Piranhas,Alagoas"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-secondary hover:text-secondary-light transition-colors font-medium"
-            >
-              <MapPin className="w-5 h-5" />
-              Ver no Google Maps
-            </a>
           </motion.div>
         </div>
       </div>

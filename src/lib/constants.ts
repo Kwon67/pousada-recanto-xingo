@@ -1,11 +1,14 @@
 export const SITE_CONFIG = {
   name: 'Pousada Recanto do Matuto Xingó',
   description: 'Seu refúgio às margens do Canyon do Xingó',
-  url: 'https://recantodomatutoxingo.com.br',
+  url: 'https://pousada-recanto-xingo.vercel.app',
   phone: '(82) 98133-4027',
   phoneClean: '82981334027',
   email: 'kivora.dev@outlook.com',
   address: 'Piranhas, Alagoas',
+  mapsLink: 'https://maps.app.goo.gl/JsXxNX8P2N5qaGF48',
+  mapsEmbedLink:
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3933.842043198745!2d-37.7761691!3d-9.6088661!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x70f33b4a458b90f%3A0xcd4fa1c1bba7eeec!2sPousada%20Recanto%20do%20Matuto!5e0!3m2!1spt-BR!2sbr!4v1771311080462!5m2!1spt-BR!2sbr',
   instagram: '@recantodomatutoxingo',
   checkIn: '14:00',
   checkOut: '12:00',

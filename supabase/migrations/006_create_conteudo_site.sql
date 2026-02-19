@@ -34,6 +34,8 @@ INSERT INTO conteudo_site (chave, valor, categoria) VALUES
 ('hero_subtitulo', 'Descanse, respire e viva a natureza do sertão alagoano. Pousada aconchegante com piscina, área de lazer e a hospitalidade nordestina que você merece.', 'home'),
 ('home_sobre_titulo', 'Bem-vindo ao Recanto do Matuto', 'home'),
 ('home_sobre_texto', 'Uma pousada nova e aconchegante em Piranhas, Alagoas. Construída com carinho para receber você que busca tranquilidade, conforto e contato com a natureza às margens do Canyon do Xingó.', 'home'),
+('home_sobre_imagem', 'https://placehold.co/800x600/2D6A4F/FDF8F0?text=Pousada+Recanto+do+Matuto', 'home'),
+('home_sobre_media', '[]', 'home'),
 ('home_cta_titulo', 'Reserve agora e viva essa experiência', 'home'),
 ('home_cta_subtitulo', 'Quartos a partir de R$ 180/noite', 'home'),
 ('sobre_titulo', 'Nossa História', 'sobre'),

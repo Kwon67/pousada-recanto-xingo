@@ -8,19 +8,7 @@ import { formatCurrency } from '@/lib/formatters';
 
 export default function CTAReserva() {
   return (
-    <section className="relative py-24 overflow-hidden">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            'url(https://placehold.co/1920x800/1B3A4B/2D6A4F?text=Canyon+do+Xingo+Sunset)',
-        }}
-      />
-
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-dark/70" />
-
+    <section className="relative overflow-hidden bg-dark py-24 dark-dots">
       {/* Content */}
       <div className="container mx-auto px-4 relative z-10">
         <motion.div

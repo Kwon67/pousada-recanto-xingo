@@ -1,6 +1,9 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+const EMAIL_FROM =
+  process.env.RESEND_FROM_EMAIL?.trim() ||
+  'Pousada Recanto do Matuto <onboarding@resend.dev>';
 
 interface EmailConfirmacaoData {
   reservaId: string;
@@ -12,6 +15,7 @@ interface EmailConfirmacaoData {
   numHospedes: number;
   noites: number;
   valorTotal: number;
+  metodoPagamento?: string;
 }
 
 export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promise<{ success: boolean; error?: string }> {
@@ -19,6 +23,12 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
     const checkInFormatado = formatarData(data.checkIn);
     const checkOutFormatado = formatarData(data.checkOut);
     const valorFormatado = data.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const pagamentoAprovado = Boolean(data.metodoPagamento);
+    const metodoPagamento = formatarMetodoPagamento(data.metodoPagamento);
+    const titulo = pagamentoAprovado ? 'Pagamento Aprovado!' : 'Reserva Confirmada!';
+    const mensagem = pagamentoAprovado
+      ? `Ol&aacute;, <strong>${data.hospedeNome}</strong>! Recebemos o seu pagamento no Stripe com sucesso (${metodoPagamento}). Confira os detalhes da sua reserva:`
+      : `Ol&aacute;, <strong>${data.hospedeNome}</strong>! Sua reserva foi recebida com sucesso. Confira os detalhes abaixo:`;
 
     const html = `
 <!DOCTYPE html>
@@ -47,9 +57,9 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
           <!-- Content -->
           <tr>
             <td style="padding:40px;">
-              <h2 style="color:#2D6A4F;margin:0 0 8px;font-size:22px;">Reserva Confirmada!</h2>
+              <h2 style="color:#2D6A4F;margin:0 0 8px;font-size:22px;">${titulo}</h2>
               <p style="color:#666;margin:0 0 24px;font-size:15px;line-height:1.6;">
-                Ol&aacute;, <strong>${data.hospedeNome}</strong>! Sua reserva foi recebida com sucesso. Confira os detalhes abaixo:
+                ${mensagem}
               </p>
 
               <!-- Reservation Details -->
@@ -117,12 +127,12 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="padding:8px 0;color:#666;font-size:14px;line-height:1.6;">
-                    <strong style="color:#D4A843;">1.</strong> Entraremos em contato pelo WhatsApp para confirmar os detalhes
+                    <strong style="color:#D4A843;">1.</strong> ${pagamentoAprovado ? `Pagamento aprovado via ${metodoPagamento}` : 'Entraremos em contato pelo WhatsApp para confirmar os detalhes'}
                   </td>
                 </tr>
                 <tr>
                   <td style="padding:8px 0;color:#666;font-size:14px;line-height:1.6;">
-                    <strong style="color:#D4A843;">2.</strong> O pagamento ser&aacute; combinado diretamente com a pousada
+                    <strong style="color:#D4A843;">2.</strong> ${pagamentoAprovado ? 'Sua reserva j&aacute; est&aacute; confirmada no sistema da pousada' : 'O pagamento ser&aacute; combinado diretamente com a pousada'}
                   </td>
                 </tr>
                 <tr>
@@ -156,7 +166,7 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
                 Piranhas, Alagoas | (82) 98133-4027
               </p>
               <p style="color:#999;margin:0;font-size:12px;">
-                recantodomatutoxingo.com.br
+                pousada-recanto-xingo.vercel.app
               </p>
             </td>
           </tr>
@@ -168,9 +178,11 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
 </html>`;
 
     await resend.emails.send({
-      from: 'Pousada Recanto do Matuto <onboarding@resend.dev>',
+      from: EMAIL_FROM,
       to: data.hospedeEmail,
-      subject: `Reserva ${data.reservaId} - Pousada Recanto do Matuto Xingó`,
+      subject: pagamentoAprovado
+        ? `Pagamento aprovado - Reserva ${data.reservaId}`
+        : `Reserva ${data.reservaId} - Pousada Recanto do Matuto Xingó`,
       html,
     });
 
@@ -323,7 +335,7 @@ export async function enviarEmailStatus(data: EmailStatusData): Promise<{ succes
                 Piranhas, Alagoas | (82) 98133-4027
               </p>
               <p style="color:#999;margin:0;font-size:12px;">
-                recantodomatutoxingo.com.br
+                pousada-recanto-xingo.vercel.app
               </p>
             </td>
           </tr>
@@ -339,7 +351,7 @@ export async function enviarEmailStatus(data: EmailStatusData): Promise<{ succes
       : `Reserva Cancelada - Pousada Recanto do Matuto Xingó`;
 
     await resend.emails.send({
-      from: 'Pousada Recanto do Matuto <onboarding@resend.dev>',
+      from: EMAIL_FROM,
       to: data.hospedeEmail,
       subject: assunto,
       html,
@@ -353,7 +365,96 @@ export async function enviarEmailStatus(data: EmailStatusData): Promise<{ succes
   }
 }
 
+interface EmailPagamentoAprovadoAdminData {
+  reservaId: string;
+  destinoEmail: string;
+  hospedeNome: string;
+  hospedeEmail: string;
+  quartoNome: string;
+  checkIn: string;
+  checkOut: string;
+  valorTotal: number;
+  metodoPagamento?: string | null;
+}
+
+export async function enviarEmailPagamentoAprovadoAdmin(
+  data: EmailPagamentoAprovadoAdminData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const valorFormatado = data.valorTotal.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    });
+    const metodoPagamento = formatarMetodoPagamento(data.metodoPagamento || undefined);
+
+    const html = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px;background:#f8fafc;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
+          <tr>
+            <td style="padding:24px;background:#14532d;color:#ffffff;">
+              <h1 style="margin:0;font-size:20px;">Pagamento aprovado no Stripe</h1>
+              <p style="margin:8px 0 0;font-size:13px;opacity:0.9;">Reserva ${data.reservaId}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px;">
+              <p style="margin:0 0 16px;color:#111827;">O Stripe confirmou o pagamento da reserva abaixo:</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#111827;">
+                <tr><td style="padding:8px 0;color:#6b7280;">Reserva</td><td style="padding:8px 0;text-align:right;font-weight:600;">${data.reservaId}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Hóspede</td><td style="padding:8px 0;text-align:right;font-weight:600;">${data.hospedeNome}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Email</td><td style="padding:8px 0;text-align:right;font-weight:600;">${data.hospedeEmail}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Quarto</td><td style="padding:8px 0;text-align:right;font-weight:600;">${data.quartoNome}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Check-in</td><td style="padding:8px 0;text-align:right;font-weight:600;">${formatarData(data.checkIn)}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Check-out</td><td style="padding:8px 0;text-align:right;font-weight:600;">${formatarData(data.checkOut)}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Método</td><td style="padding:8px 0;text-align:right;font-weight:600;">${metodoPagamento}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Valor</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#14532d;">${valorFormatado}</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    await resend.emails.send({
+      from: EMAIL_FROM,
+      to: data.destinoEmail,
+      subject: `Stripe aprovado: reserva ${data.reservaId}`,
+      html,
+    });
+
+    return { success: true };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Erro ao enviar email';
+    console.error('Erro ao enviar email de pagamento aprovado para admin:', message);
+    return { success: false, error: message };
+  }
+}
+
 function formatarData(dateStr: string): string {
   const [year, month, day] = dateStr.split('-');
   return `${day}/${month}/${year}`;
+}
+
+function formatarMetodoPagamento(method?: string): string {
+  if (!method) return 'Não informado';
+
+  const map: Record<string, string> = {
+    card: 'Cartão',
+    pix: 'Pix',
+    boleto: 'Boleto',
+  };
+
+  return map[method] || method;
 }

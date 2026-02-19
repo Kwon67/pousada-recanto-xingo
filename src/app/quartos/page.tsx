@@ -1,62 +1,131 @@
-'use client';
+import { Metadata } from 'next';
+import { getQuartos } from '@/lib/actions/quartos';
+import { getConfiguracoesPublic } from '@/lib/actions/configuracoes';
+import { getMetadataBase, getSiteUrl } from '@/lib/site-url';
+import QuartosClient from './QuartosClient';
 
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useQuartos } from '@/hooks/useQuartos';
-import { FiltroQuartos as FiltroType } from '@/types/quarto';
-import QuartoCard from '@/components/quartos/QuartoCard';
-import FiltroQuartos from '@/components/quartos/FiltroQuartos';
-import { SkeletonCard } from '@/components/ui/Skeleton';
+const SITE_URL = getSiteUrl();
 
-export default function QuartosPage() {
-  const [filtros, setFiltros] = useState<FiltroType>({});
-  const { quartos, loading } = useQuartos(filtros);
+export async function generateMetadata(): Promise<Metadata> {
+  const [quartos, config] = await Promise.all([
+    getQuartos(),
+    getConfiguracoesPublic(),
+  ]);
+
+  const ativos = quartos.filter((q) => q.ativo);
+  const cidade = config.endereco || 'Piranhas, Alagoas';
+  const precoMin = ativos.length > 0 ? Math.min(...ativos.map((q) => q.preco_diaria)) : 180;
+  const title = `Quartos e Suítes – Pousada em ${cidade} | Recanto do Matuto`;
+  const description = `Conheça os ${ativos.length} quartos da Pousada Recanto do Matuto em ${cidade}. Standard, Superior e Suítes a partir de R$ ${precoMin}/noite. Todos com banheiro privativo, ar-condicionado e Wi-Fi.`;
+  const url = `${SITE_URL}/quartos`;
+  const imagens = ativos.filter((q) => q.imagem_principal).slice(0, 4).map((q) => ({
+    url: q.imagem_principal,
+    width: 800,
+    height: 600,
+    alt: q.nome,
+  }));
+
+  return {
+    metadataBase: getMetadataBase(),
+    title,
+    description,
+    keywords: [
+      `pousada em ${cidade}`,
+      'pousada Piranhas Alagoas',
+      'hospedagem Canyon do Xingó',
+      'quartos pousada sertão',
+      'suítes Piranhas AL',
+      'acomodações Xingó',
+      'hotel em Piranhas',
+    ],
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: config.nome_pousada || 'Pousada Recanto do Matuto Xingó',
+      images: imagens,
+      type: 'website',
+      locale: 'pt_BR',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: imagens.map((i) => i.url),
+    },
+  };
+}
+
+export default async function QuartosPage() {
+  const [quartos, config] = await Promise.all([
+    getQuartos(),
+    getConfiguracoesPublic(),
+  ]);
+
+  const ativos = quartos.filter((q) => q.ativo);
+  const precoMin = ativos.length > 0 ? Math.min(...ativos.map((q) => q.preco_diaria)) : 180;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LodgingBusiness',
+    name: config.nome_pousada || 'Pousada Recanto do Matuto Xingó',
+    description: config.descricao || 'Pousada aconchegante em Piranhas, Alagoas.',
+    url: SITE_URL,
+    telephone: config.telefone,
+    email: config.email,
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Piranhas',
+      addressRegion: 'AL',
+      addressCountry: 'BR',
+      streetAddress: config.endereco || 'Piranhas, Alagoas',
+    },
+    geo: config.latitude && config.longitude
+      ? {
+          '@type': 'GeoCoordinates',
+          latitude: config.latitude,
+          longitude: config.longitude,
+        }
+      : undefined,
+    checkinTime: config.horario_checkin || '14:00',
+    checkoutTime: config.horario_checkout || '12:00',
+    numberOfRooms: ativos.length,
+    priceRange: `R$ ${precoMin}+`,
+    makesOffer: ativos.map((q) => ({
+      '@type': 'Offer',
+      itemOffered: {
+        '@type': 'HotelRoom',
+        name: q.nome,
+        description: q.descricao_curta || q.descricao,
+        image: q.imagem_principal || undefined,
+        url: `${SITE_URL}/quartos/${q.slug}`,
+        occupancy: {
+          '@type': 'QuantitativeValue',
+          value: q.capacidade,
+          unitText: 'pessoa(s)',
+        },
+        amenityFeature: q.amenidades.map((a) => ({
+          '@type': 'LocationFeatureSpecification',
+          name: a,
+          value: true,
+        })),
+      },
+      priceCurrency: 'BRL',
+      price: q.preco_diaria,
+      unitCode: 'DAY',
+      availability: 'https://schema.org/InStock',
+      url: `${SITE_URL}/reservas`,
+    })),
+  };
 
   return (
-    <div className="pt-24 pb-20 bg-cream min-h-screen noise-bg">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-12"
-        >
-          <p className="text-primary font-medium mb-2">Acomodações</p>
-          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-4">
-            Nossos Quartos
-          </h1>
-          <p className="text-text-light text-lg max-w-2xl mx-auto">
-            Conheça nossos 10 quartos aconchegantes, todos com banheiro privativo. Escolha o
-            ideal para você e sua família.
-          </p>
-        </motion.div>
-
-        {/* Filtros */}
-        <FiltroQuartos filtros={filtros} onFiltroChange={setFiltros} />
-
-        {/* Quartos Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {loading
-            ? Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)
-            : quartos.map((quarto, index) => (
-                <QuartoCard key={quarto.id} quarto={quarto} index={index} />
-              ))}
-        </div>
-
-        {/* Empty State */}
-        {!loading && quartos.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
-            <p className="text-text-light text-lg">
-              Nenhum quarto encontrado com os filtros selecionados.
-            </p>
-          </motion.div>
-        )}
-      </div>
-    </div>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <QuartosClient />
+    </>
   );
 }

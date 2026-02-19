@@ -1,6 +1,7 @@
 import { getReservas } from '@/lib/actions/reservas';
 import { getQuartos } from '@/lib/actions/quartos';
-import AdminReservasClient from './ReservasClient';
+import AdminReservasClient from '@/features/admin/reservas/containers/AdminReservasClient';
+import { AdminRealtimeReservasRefresh } from '@/hooks/useRealtimeReservas';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,5 +11,10 @@ export default async function AdminReservasPage() {
     getQuartos(),
   ]);
 
-  return <AdminReservasClient reservasIniciais={reservas} quartos={quartos} />;
+  return (
+    <>
+      <AdminRealtimeReservasRefresh />
+      <AdminReservasClient reservasIniciais={reservas} quartos={quartos} />
+    </>
+  );
 }

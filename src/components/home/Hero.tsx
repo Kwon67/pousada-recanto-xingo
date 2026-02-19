@@ -130,10 +130,10 @@ export default function Hero() {
               initial="initial"
               animate="animate"
               transition={{ duration: 0.55, delay: 0.1 }}
-              className="mb-8 inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-[11px] font-medium tracking-[0.2em] text-white/70 uppercase"
+              className="mb-8 inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-black/20 px-5 py-2.5 text-[10px] font-semibold tracking-[0.24em] text-white/85 uppercase backdrop-blur-md ring-1 ring-inset ring-white/10 shadow-[0_8px_30px_rgba(0,0,0,0.28)]"
             >
               <span
-                className="block h-1.5 w-1.5 rounded-full bg-secondary"
+                className="block h-2 w-2 rounded-full bg-secondary shadow-[0_0_12px_rgba(212,168,67,0.75)]"
                 aria-hidden
               />
               Piranhas · Alagoas

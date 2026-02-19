@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,7 +18,7 @@ export default function Header() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      setIsScrolled(window.scrollY > 20);
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -36,7 +37,7 @@ export default function Header() {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+          'fixed top-0 left-0 right-0 z-50 transition-all duration-150 ease-out',
           isScrolled || !isHome
             ? 'bg-white/95 backdrop-blur-md shadow-lg shadow-dark/5 py-3'
             : 'bg-transparent py-6'

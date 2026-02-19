@@ -25,7 +25,7 @@ function applySecurityHeaders(response: NextResponse, pathname: string): NextRes
   return response;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const hasSession = await hasAdminSessionFromRequest(request);
 

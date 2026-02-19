@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useReserva } from '@/hooks/useReserva';
 import { useQuartos } from '@/hooks/useQuartos';
 import { useDisponibilidade, useQuartosDisponiveis } from '@/hooks/useDisponibilidade';
-import { formatDateLong, formatNights, formatCurrency } from '@/lib/formatters';
-import { calcularNoites, getWhatsAppLink } from '@/lib/utils';
-import { SITE_CONFIG } from '@/lib/constants';
+import { formatDateLong, formatNights } from '@/lib/formatters';
+import { calcularNoites } from '@/lib/utils';
 import StepIndicator from '@/components/reservas/StepIndicator';
 import CalendarioReserva from '@/components/reservas/CalendarioReserva';
 import SeletorQuarto from '@/components/reservas/SeletorQuarto';
@@ -20,7 +19,6 @@ import { User, Users } from 'lucide-react';
 const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação'];
 
 function ReservasContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const {
@@ -81,28 +79,7 @@ function ReservasContent() {
   const handleConfirm = async () => {
     const result = await confirmarReserva();
     if (result) {
-      // Build detailed WhatsApp message
-      const msg = [
-        `Olá! Acabei de fazer uma reserva pelo site.`,
-        ``,
-        `*Código:* ${result.id}`,
-        `*Nome:* ${result.hospede.nome}`,
-        `*Quarto:* ${result.quarto.nome}`,
-        `*Check-in:* ${formatDateLong(result.checkIn)}`,
-        `*Check-out:* ${formatDateLong(result.checkOut)}`,
-        `*Hóspedes:* ${result.numHospedes}`,
-        `*Noites:* ${result.noites}`,
-        `*Valor total:* ${formatCurrency(result.valorTotal)}`,
-        ``,
-        `Gostaria de confirmar os detalhes da reserva. Obrigado!`,
-      ].join('\n');
-
-      // Open WhatsApp with the message
-      const whatsappUrl = getWhatsAppLink(SITE_CONFIG.phoneClean, msg);
-      window.open(whatsappUrl, '_blank');
-
-      // Navigate to confirmation page
-      router.push(`/reservas/confirmacao?id=${result.id}`);
+      window.location.href = result.checkoutUrl;
     }
   };
 

@@ -54,8 +54,8 @@ export default function FiltroQuartos({ filtros, onFiltroChange }: FiltroQuartos
       <motion.div
         initial={false}
         animate={{
-          height: isOpen || typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'auto' : 0,
-          opacity: isOpen || typeof window !== 'undefined' && window.innerWidth >= 1024 ? 1 : 0,
+          height: isOpen ? 'auto' : 0,
+          opacity: isOpen ? 1 : 0,
         }}
         className="overflow-hidden lg:!h-auto lg:!opacity-100"
       >

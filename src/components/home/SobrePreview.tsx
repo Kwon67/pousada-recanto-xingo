@@ -2,12 +2,193 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Heart, MapPin } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import EssenceMark from '@/components/icons/EssenceMark';
 
-export default function SobrePreview() {
+type MediaItem = {
+  url: string;
+  type: 'image' | 'video';
+  public_id?: string;
+};
+
+type SobrePreviewProps = {
+  imageUrl?: string;
+  media?: MediaItem[];
+};
+
+const DEFAULT_SOBRE_IMAGE =
+  'https://placehold.co/800x600/2D6A4F/FDF8F0?text=Pousada+Recanto+do+Matuto';
+
+function SobreMediaSlider({
+  media,
+  fallbackImageUrl,
+}: {
+  media: MediaItem[];
+  fallbackImageUrl?: string;
+}) {
+  const normalizedMedia = useMemo(
+    () => media
+      .filter((item): item is MediaItem => (
+        Boolean(item)
+        && (item.type === 'image' || item.type === 'video')
+        && typeof item.url === 'string'
+        && item.url.trim().length > 0
+      ))
+      .map((item) => ({ ...item, url: item.url.trim() })),
+    [media]
+  );
+
+  const resolvedMedia = useMemo(
+    () => (
+      normalizedMedia.length > 0
+        ? normalizedMedia
+        : [{ url: fallbackImageUrl?.trim() || DEFAULT_SOBRE_IMAGE, type: 'image' as const }]
+    ),
+    [fallbackImageUrl, normalizedMedia]
+  );
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartX = useRef(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const count = resolvedMedia.length;
+  const hasMultiple = count > 1;
+  const safeActiveIndex = count > 0 ? activeIndex % count : 0;
+
+  const IMAGE_DURATION = 3000;
+  const VIDEO_DURATION = 8000;
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.4 }
+    );
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!hasMultiple) return;
+
+    const currentType = resolvedMedia[safeActiveIndex]?.type;
+    const delay = currentType === 'video' ? VIDEO_DURATION : IMAGE_DURATION;
+
+    timerRef.current = setTimeout(() => {
+      setActiveIndex((prev) => (prev + 1) % count);
+    }, delay);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [count, hasMultiple, resolvedMedia, safeActiveIndex]);
+
+  useEffect(() => {
+    videoRefs.current.forEach((videoEl, index) => {
+      if (index === safeActiveIndex && isVisible) {
+        videoEl.play().catch(() => {});
+      } else {
+        videoEl.pause();
+      }
+    });
+  }, [isVisible, safeActiveIndex]);
+
+  const goTo = (index: number) => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setActiveIndex(index);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!hasMultiple) return;
+
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) < 50) return;
+
+    if (diff > 0) {
+      goTo((safeActiveIndex + 1) % count);
+      return;
+    }
+
+    goTo((safeActiveIndex - 1 + count) % count);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative h-full w-full overflow-hidden bg-dark touch-pan-y"
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      {resolvedMedia.map((item, i) => {
+        const isActive = i === safeActiveIndex;
+
+        if (item.type === 'video') {
+          return (
+            <video
+              key={`sobre-v-${item.url}-${i}`}
+              ref={(el) => { if (el) videoRefs.current.set(i, el); }}
+              src={item.url}
+              muted
+              loop
+              playsInline
+              preload="auto"
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out"
+              style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
+            />
+          );
+        }
+
+        return (
+          <div
+            key={`sobre-i-${item.url}-${i}`}
+            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+            style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
+          >
+            <Image
+              src={item.url}
+              alt={`Pousada Recanto do Matuto ${i + 1}`}
+              fill
+              unoptimized
+              className="object-cover"
+              sizes="(max-width: 1024px) 100vw, 50vw"
+            />
+          </div>
+        );
+      })}
+
+      {hasMultiple && (
+        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/25 px-2 py-1 backdrop-blur-sm">
+          {resolvedMedia.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Mídia ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === safeActiveIndex
+                  ? 'w-4 bg-white/95'
+                  : 'w-1.5 bg-white/55 hover:bg-white/80'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function SobrePreview({ imageUrl, media = [] }: SobrePreviewProps) {
   return (
     <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
@@ -21,13 +202,7 @@ export default function SobrePreview() {
             className="relative"
           >
             <div className="relative rounded-2xl overflow-hidden shadow-md aspect-4/3">
-              <Image
-                src="https://placehold.co/800x600/2D6A4F/FDF8F0?text=Pousada+Recanto+do+Matuto"
-                alt="Pousada Recanto do Matuto"
-                fill
-                className="object-cover"
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
+              <SobreMediaSlider media={media} fallbackImageUrl={imageUrl} />
             </div>
 
             {/* Floating Card */}

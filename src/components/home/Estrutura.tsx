@@ -45,6 +45,7 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
 
   const IMAGE_DURATION = 3000;
   const VIDEO_DURATION = 8000;
+  const mediaOverlayClass = 'absolute inset-0 bg-dark/62';
 
   // Observe visibility for video autoplay
   useEffect(() => {
@@ -122,7 +123,7 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
 
     if (item.type === 'video') {
       return (
-        <div ref={containerRef} className="relative h-52 overflow-hidden">
+        <div ref={containerRef} className="relative h-52 overflow-hidden bg-dark">
           <video
             ref={(el) => { if (el) videoRefs.current.set(0, el); }}
             src={item.url}
@@ -135,20 +136,20 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
               e.currentTarget.classList.replace('opacity-0', 'opacity-100');
             }}
           />
-          <div className="absolute inset-0 bg-linear-to-t from-dark/90 via-dark/35 to-transparent" />
+          <div className={mediaOverlayClass} />
         </div>
       );
     }
 
     return (
-      <div className="relative h-52 overflow-hidden">
+      <div className="relative h-52 overflow-hidden bg-dark">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.url}
           alt={alt}
           className="h-full w-full object-cover transition-transform duration-600 group-hover:scale-110"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-dark/90 via-dark/35 to-transparent" />
+        <div className={mediaOverlayClass} />
       </div>
     );
   }
@@ -157,7 +158,7 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
   return (
     <div
       ref={containerRef}
-      className="relative h-52 overflow-hidden touch-pan-y"
+      className="relative h-52 overflow-hidden bg-dark touch-pan-y"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
@@ -175,7 +176,7 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
               playsInline
               preload="auto"
               className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out"
-              style={{ opacity: isActive ? 1 : 0 }}
+              style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
             />
           );
         }
@@ -189,13 +190,14 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-600 group-hover:scale-110"
             style={{
               opacity: isActive ? 1 : 0,
+              zIndex: isActive ? 2 : 1,
               transform: isActive ? 'scale(1)' : 'scale(1.02)',
               transition: 'opacity 700ms ease-in-out, transform 600ms ease-in-out',
             }}
           />
         );
       })}
-      <div className="absolute inset-0 bg-linear-to-t from-dark/90 via-dark/35 to-transparent" />
+      <div className={mediaOverlayClass} />
 
       {/* Dots indicator */}
       <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
@@ -228,16 +230,7 @@ export default function Estrutura({ mediaOverrides }: EstruturaProps) {
   });
 
   return (
-    <section className="relative overflow-hidden bg-dark py-24">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.08]"
-        style={{
-          backgroundImage:
-            'linear-gradient(to right, rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.3) 1px, transparent 1px)',
-          backgroundSize: '56px 56px',
-        }}
-      />
-
+    <section className="relative overflow-hidden bg-dark py-24 dark-dots">
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 22 }}
@@ -279,10 +272,10 @@ export default function Estrutura({ mediaOverrides }: EstruturaProps) {
                     Ambiente
                   </div>
 
-                  <div className="absolute bottom-[calc(100%-13rem+1rem)] left-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/30 bg-white/90 text-dark shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur">
-                    <div className="absolute inset-[4px] rounded-xl border border-dark/12" />
+                  <div className="absolute bottom-[calc(100%-13rem+1rem)] left-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-white/90 text-dark shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur">
+                    <div className="absolute inset-[3px] rounded-lg border border-dark/12" />
                     <div className="relative transition-transform duration-300 group-hover:scale-110">
-                      {Icon ? <Icon className="h-7 w-7" strokeWidth={2} /> : null}
+                      {Icon ? <Icon className="h-6 w-6" strokeWidth={2} /> : null}
                     </div>
                   </div>
 

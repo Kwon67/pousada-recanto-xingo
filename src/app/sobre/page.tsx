@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Heart,
@@ -12,6 +13,7 @@ import {
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
 import EssenceMark from '@/components/icons/EssenceMark';
+import { createClient as createSupabaseClient } from '@/lib/supabase/client';
 
 const diferenciais = [
   {
@@ -46,7 +48,163 @@ const diferenciais = [
   },
 ];
 
+type GaleriaPublicItem = {
+  id: string;
+  url: string;
+  alt: string | null;
+  categoria: string | null;
+  ordem: number;
+  destaque: boolean;
+};
+
+type SobreCardImage = {
+  url: string;
+  alt: string;
+};
+
+const SOBRE_CARD_FALLBACKS: Record<'pousada' | 'area' | 'piscina' | 'quarto', SobreCardImage> = {
+  pousada: {
+    url: 'https://placehold.co/400x500/2D6A4F/FDF8F0?text=Pousada+1',
+    alt: 'Pousada',
+  },
+  area: {
+    url: 'https://placehold.co/400x300/D4A843/1B3A4B?text=Area+de+Lazer',
+    alt: 'Área de lazer',
+  },
+  piscina: {
+    url: 'https://placehold.co/400x300/1B3A4B/FDF8F0?text=Piscina',
+    alt: 'Piscina',
+  },
+  quarto: {
+    url: 'https://placehold.co/400x500/E07A5F/FDF8F0?text=Quarto',
+    alt: 'Quarto',
+  },
+};
+
+const PUBLIC_GALERIA_CATEGORIES = new Set(['momentos', 'pousada', 'quartos', 'area_lazer', 'cafe']);
+
+function sanitizeUrl(url: string | null | undefined): string | null {
+  if (!url || typeof url !== 'string') return null;
+  const trimmed = url.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function toCandidates(items: GaleriaPublicItem[], defaultAlt: string): SobreCardImage[] {
+  return items
+    .map((item) => {
+      const url = sanitizeUrl(item.url);
+      if (!url) return null;
+      return {
+        url,
+        alt: item.alt?.trim() || defaultAlt,
+      };
+    })
+    .filter((item): item is SobreCardImage => Boolean(item));
+}
+
 export default function SobrePage() {
+  const [galeria, setGaleria] = useState<GaleriaPublicItem[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadMedia = async () => {
+      try {
+        const supabase = createSupabaseClient();
+        const { data, error } = await supabase
+          .from('galeria')
+          .select('id,url,alt,categoria,ordem,destaque')
+          .order('ordem');
+
+        if (!mounted) return;
+
+        if (!error && data) {
+          setGaleria(data as GaleriaPublicItem[]);
+        }
+      } catch {
+        // Keep placeholders when Supabase is unavailable on client.
+      }
+    };
+
+    void loadMedia();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const sobreCards = useMemo(() => {
+    const orderedGaleria = [...galeria]
+      .filter((item) => !item.categoria || PUBLIC_GALERIA_CATEGORIES.has(item.categoria))
+      .sort((a, b) => a.ordem - b.ordem);
+
+    const momentosItems = orderedGaleria.filter(
+      (item) => !item.categoria || item.categoria === 'momentos'
+    );
+    const pousadaItems = orderedGaleria.filter((item) => item.categoria === 'pousada');
+    const areaItems = orderedGaleria.filter((item) => item.categoria === 'area_lazer');
+    const quartoItems = orderedGaleria.filter((item) => item.categoria === 'quartos');
+    const destaqueItems = orderedGaleria.filter((item) => item.destaque);
+    const piscinaItems = [...areaItems, ...momentosItems]
+      .filter((item) => /piscina/i.test(item.alt ?? '') || /piscina/i.test(item.url));
+
+    const pousadaCandidates = toCandidates([...pousadaItems, ...momentosItems], 'Pousada');
+    const areaCandidates = toCandidates([...areaItems, ...momentosItems], 'Área de lazer');
+    const piscinaCandidates = toCandidates(piscinaItems, 'Piscina');
+    const quartoCandidates = toCandidates([...quartoItems, ...momentosItems], 'Quarto');
+    const destaqueCandidates = toCandidates(destaqueItems, 'Foto em destaque');
+
+    const homeSobreCandidates: SobreCardImage[] = [];
+
+    const genericFallbackPool = [
+      ...homeSobreCandidates,
+      ...destaqueCandidates,
+      ...pousadaCandidates,
+      ...areaCandidates,
+      ...quartoCandidates,
+    ];
+
+    const usedUrls = new Set<string>();
+    const pickUnique = (groups: SobreCardImage[][], fallback: SobreCardImage) => {
+      for (const group of groups) {
+        for (const item of group) {
+          if (item?.url && !usedUrls.has(item.url)) {
+            usedUrls.add(item.url);
+            return item;
+          }
+        }
+      }
+
+      for (const item of genericFallbackPool) {
+        if (item?.url && !usedUrls.has(item.url)) {
+          usedUrls.add(item.url);
+          return item;
+        }
+      }
+
+      return fallback;
+    };
+
+    return {
+      pousada: pickUnique(
+        [pousadaCandidates, destaqueCandidates, homeSobreCandidates, areaCandidates],
+        SOBRE_CARD_FALLBACKS.pousada
+      ),
+      area: pickUnique(
+        [areaCandidates, destaqueCandidates, homeSobreCandidates, pousadaCandidates],
+        SOBRE_CARD_FALLBACKS.area
+      ),
+      piscina: pickUnique(
+        [piscinaCandidates, areaCandidates, destaqueCandidates, homeSobreCandidates],
+        SOBRE_CARD_FALLBACKS.piscina
+      ),
+      quarto: pickUnique(
+        [quartoCandidates, destaqueCandidates, homeSobreCandidates, pousadaCandidates],
+        SOBRE_CARD_FALLBACKS.quarto
+      ),
+    };
+  }, [galeria]);
+
   return (
     <div className="pt-24 pb-20">
       {/* Hero */}
@@ -121,25 +279,25 @@ export default function SobrePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <img
-                    src="https://placehold.co/400x500/2D6A4F/FDF8F0?text=Pousada+1"
-                    alt="Pousada"
+                    src={sobreCards.pousada.url}
+                    alt={sobreCards.pousada.alt}
                     className="w-full rounded-2xl shadow-lg"
                   />
                   <img
-                    src="https://placehold.co/400x300/D4A843/1B3A4B?text=Area+de+Lazer"
-                    alt="Área de lazer"
+                    src={sobreCards.area.url}
+                    alt={sobreCards.area.alt}
                     className="w-full rounded-2xl shadow-lg"
                   />
                 </div>
                 <div className="space-y-4 pt-8">
                   <img
-                    src="https://placehold.co/400x300/1B3A4B/FDF8F0?text=Piscina"
-                    alt="Piscina"
+                    src={sobreCards.piscina.url}
+                    alt={sobreCards.piscina.alt}
                     className="w-full rounded-2xl shadow-lg"
                   />
                   <img
-                    src="https://placehold.co/400x500/E07A5F/FDF8F0?text=Quarto"
-                    alt="Quarto"
+                    src={sobreCards.quarto.url}
+                    alt={sobreCards.quarto.alt}
                     className="w-full rounded-2xl shadow-lg"
                   />
                 </div>
@@ -190,7 +348,7 @@ export default function SobrePage() {
       </section>
 
       {/* Region Section */}
-      <section className="py-20 bg-dark">
+      <section className="bg-dark py-20 dark-dots">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <motion.div

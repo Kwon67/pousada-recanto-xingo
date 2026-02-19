@@ -226,6 +226,8 @@ INSERT INTO conteudo_site (chave, valor, categoria) VALUES
 ('hero_subtitulo', 'Descanse, respire e viva a natureza do sertao alagoano. Pousada aconchegante com piscina, area de lazer e a hospitalidade nordestina que voce merece.', 'home'),
 ('home_sobre_titulo', 'Bem-vindo ao Recanto do Matuto', 'home'),
 ('home_sobre_texto', 'Uma pousada nova e aconchegante em Piranhas, Alagoas. Construida com carinho para receber voce que busca tranquilidade, conforto e contato com a natureza as margens do Canyon do Xingo.', 'home'),
+('home_sobre_imagem', 'https://placehold.co/800x600/2D6A4F/FDF8F0?text=Pousada+Recanto+do+Matuto', 'home'),
+('home_sobre_media', '[]', 'home'),
 ('home_cta_titulo', 'Reserve agora e viva essa experiencia', 'home'),
 ('home_cta_subtitulo', 'Quartos a partir de R$ 180/noite', 'home'),
 ('sobre_titulo', 'Nossa Historia', 'sobre'),
@@ -240,6 +242,7 @@ CREATE TABLE galeria (
   url TEXT NOT NULL,
   alt TEXT,
   categoria TEXT DEFAULT 'pousada',
+  destaque BOOLEAN DEFAULT false,
   ordem INT DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
