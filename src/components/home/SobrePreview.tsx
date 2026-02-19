@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Heart, MapPin } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import EssenceMark from '@/components/icons/EssenceMark';
 
 type MediaItem = {

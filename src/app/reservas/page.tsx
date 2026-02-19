@@ -13,7 +13,7 @@ import CalendarioReserva from '@/components/reservas/CalendarioReserva';
 import SeletorQuarto from '@/components/reservas/SeletorQuarto';
 import FormHospede from '@/components/reservas/FormHospede';
 import ResumoReserva from '@/components/reservas/ResumoReserva';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { User, Users } from 'lucide-react';
 
 const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação'];

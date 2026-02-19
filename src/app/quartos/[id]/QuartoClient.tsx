@@ -10,7 +10,7 @@ import QuartoInfo from '@/components/quartos/QuartoInfo';
 import QuartoPreco from '@/components/quartos/QuartoPreco';
 import QuartoCard from '@/components/quartos/QuartoCard';
 import Skeleton from '@/components/ui/Skeleton';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface QuartoClientProps {
   id: string;

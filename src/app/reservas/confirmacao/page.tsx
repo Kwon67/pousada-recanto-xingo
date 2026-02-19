@@ -17,7 +17,7 @@ import {
   Users,
   XCircle,
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { SITE_CONFIG } from '@/lib/constants';
 import { getWhatsAppLink } from '@/lib/utils';
 import { getReservaById } from '@/lib/actions/reservas';

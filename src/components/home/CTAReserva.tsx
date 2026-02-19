@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { formatCurrency } from '@/lib/formatters';
 
 export default function CTAReserva() {

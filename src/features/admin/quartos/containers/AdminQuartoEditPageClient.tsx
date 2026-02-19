@@ -20,7 +20,7 @@ import {
   Coffee,
   Lightbulb,
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { useToast } from '@/components/ui/Toast';
 import { quartosMock } from '@/data/mock';

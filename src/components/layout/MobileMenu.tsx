@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Phone, Mail, Instagram } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NAV_LINKS, SITE_CONFIG } from '@/lib/constants';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface MobileMenuProps {
   isOpen: boolean;
@@ -19,33 +19,44 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const scrollPositionRef = useRef(0);
 
   useEffect(() => {
-    if (!isOpen) return;
+    const unlockBody = () => {
+      document.body.style.position = '';
+      document.body.style.top = '';
+      document.body.style.left = '';
+      document.body.style.right = '';
+      document.body.style.width = '';
+      document.body.style.overflow = '';
+    };
+
+    if (!isOpen) {
+      unlockBody();
+      return;
+    }
 
     scrollPositionRef.current = window.scrollY;
     document.body.style.position = 'fixed';
     document.body.style.top = `-${scrollPositionRef.current}px`;
     document.body.style.left = '0';
     document.body.style.right = '0';
+    document.body.style.width = '100%';
     document.body.style.overflow = 'hidden';
 
     return () => {
-      const root = document.documentElement;
-      const previousScrollBehavior = root.style.scrollBehavior;
+      unlockBody();
+      window.scrollTo({ top: scrollPositionRef.current, left: 0, behavior: 'auto' });
+    };
+  }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
       document.body.style.position = '';
       document.body.style.top = '';
       document.body.style.left = '';
       document.body.style.right = '';
+      document.body.style.width = '';
       document.body.style.overflow = '';
-
-      root.style.scrollBehavior = 'auto';
-      window.scrollTo(0, scrollPositionRef.current);
-
-      requestAnimationFrame(() => {
-        root.style.scrollBehavior = previousScrollBehavior;
-      });
     };
-  }, [isOpen]);
+  }, []);
 
   return (
     <AnimatePresence>

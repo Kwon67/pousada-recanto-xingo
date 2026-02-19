@@ -6,7 +6,7 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { FiltroQuartos as FiltroType, CategoriaQuarto } from '@/types/quarto';
 import { CATEGORIAS_QUARTO, CAPACIDADES } from '@/lib/constants';
 import Select from '@/components/ui/Select';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface FiltroQuartosProps {
   filtros: FiltroType;

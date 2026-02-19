@@ -8,13 +8,13 @@ import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NAV_LINKS } from '@/lib/constants';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import MobileMenu from './MobileMenu';
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const pathname = usePathname();
+  const pathname = usePathname() || '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,7 +37,7 @@ export default function Header() {
         animate={{ y: 0 }}
         transition={{ duration: 0.5 }}
         className={cn(
-          'fixed top-0 left-0 right-0 z-50 transition-all duration-150 ease-out',
+          'fixed top-0 left-0 right-0 z-90 transition-all duration-150 ease-out',
           isScrolled || !isHome
             ? 'bg-white/95 backdrop-blur-md shadow-lg shadow-dark/5 py-3'
             : 'bg-transparent py-6'
@@ -84,14 +84,14 @@ export default function Header() {
 
             {/* CTA Button & Mobile Menu Toggle */}
             <div className="flex items-center gap-4">
-              <Link href="/reservas" className="hidden md:block">
-                <Button
-                  variant={isScrolled || !isHome ? 'primary' : 'secondary'}
-                  size="sm"
-                >
-                  Reserve agora
-                </Button>
-              </Link>
+              <Button
+                asChild
+                className="hidden md:inline-flex"
+                variant={isScrolled || !isHome ? 'primary' : 'secondary'}
+                size="sm"
+              >
+                <Link href="/reservas">Reserve agora</Link>
+              </Button>
 
               <button
                 onClick={() => setIsMobileMenuOpen(true)}

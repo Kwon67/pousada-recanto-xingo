@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
 import { NovoHospede } from '@/types/hospede';
 import Input, { Textarea } from '@/components/ui/Input';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface FormData extends NovoHospede {
   observacoes: string;

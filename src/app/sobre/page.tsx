@@ -10,7 +10,7 @@ import {
   Leaf,
   Building2,
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import Link from 'next/link';
 import EssenceMark from '@/components/icons/EssenceMark';
 import { createClient as createSupabaseClient } from '@/lib/supabase/client';

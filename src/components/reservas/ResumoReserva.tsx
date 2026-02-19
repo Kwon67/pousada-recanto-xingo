@@ -5,7 +5,7 @@ import { Calendar, Users, MapPin, User, Mail, Phone, FileText } from 'lucide-rea
 import { Quarto } from '@/types/quarto';
 import { NovoHospede } from '@/types/hospede';
 import { formatCurrency, formatDateLong, formatNights, formatGuests } from '@/lib/formatters';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface ResumoReservaProps {
   quarto: Quarto;

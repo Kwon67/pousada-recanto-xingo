@@ -7,7 +7,7 @@ import { Users, ArrowRight } from 'lucide-react';
 import { useQuartos } from '@/hooks/useQuartos';
 import { formatCurrency } from '@/lib/formatters';
 import { formatCategoria } from '@/lib/formatters';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import Badge from '@/components/ui/Badge';
 import { SkeletonCard } from '@/components/ui/Skeleton';
 

@@ -40,7 +40,7 @@ import {
   formatCategoria,
 } from '@/lib/formatters';
 import { atualizarStatusReserva, criarReservaManual, deletarReserva } from '@/lib/actions/reservas';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import type { Reserva, StatusReserva } from '@/types/reserva';
 import type { Quarto } from '@/types/quarto';

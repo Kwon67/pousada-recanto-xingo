@@ -11,7 +11,7 @@ import {
   Eye,
   Lightbulb,
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import { getConteudo, atualizarConteudos } from '@/lib/actions/conteudo';
 

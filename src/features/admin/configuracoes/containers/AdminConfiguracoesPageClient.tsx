@@ -13,7 +13,7 @@ import {
   Bell,
   Info,
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import { getConfiguracoes, atualizarConfiguracoes } from '@/lib/actions/configuracoes';
 

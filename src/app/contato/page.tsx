@@ -21,7 +21,7 @@ import { SITE_CONFIG, ASSUNTOS_CONTATO } from '@/lib/constants';
 import { getWhatsAppLink } from '@/lib/utils';
 import Input, { Textarea } from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 const contatoSchema = z.object({
   nome: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),

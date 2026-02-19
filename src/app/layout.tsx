@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -92,18 +91,7 @@ export default function RootLayout({
       <body
         className={`${playfairDisplay.variable} ${dmSans.variable} antialiased bg-cream overflow-x-hidden`}
       >
-        <Script id="scroll-reset-on-reload" strategy="beforeInteractive">
-          {`
-            if ('scrollRestoration' in window.history) {
-              window.history.scrollRestoration = 'manual';
-            }
-            const resetScroll = () => window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-            resetScroll();
-            window.addEventListener('load', resetScroll, { once: true });
-            window.addEventListener('pageshow', resetScroll);
-          `}
-        </Script>
-        <div className="overflow-x-hidden w-full">
+        <div className="relative overflow-x-hidden w-full">
           <Header />
           <main>{children}</main>
           <Footer />

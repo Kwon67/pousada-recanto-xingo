@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   Copy,
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import { uploadFile } from '@/lib/api/upload-client';
 import ConfirmDialog from '@/features/admin/shared/components/ConfirmDialog';

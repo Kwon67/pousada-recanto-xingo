@@ -13,7 +13,7 @@ import {
   Search,
 } from 'lucide-react';
 import { formatCurrency, formatCategoria } from '@/lib/formatters';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import { getQuartos, toggleAtivoQuarto, deletarQuarto } from '@/lib/actions/quartos';
 import type { Quarto } from '@/types/quarto';

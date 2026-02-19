@@ -20,7 +20,7 @@ import {
   deletarAvaliacao,
 } from '@/lib/actions/avaliacoes';
 import type { Avaliacao } from '@/types/avaliacao';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import ConfirmDialog from '@/features/admin/shared/components/ConfirmDialog';
 import DataState from '@/features/admin/shared/components/DataState';

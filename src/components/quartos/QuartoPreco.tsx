@@ -11,7 +11,7 @@ import { calcularValorTotal, calcularNoites, getWhatsAppLink } from '@/lib/utils
 import { SITE_CONFIG } from '@/lib/constants';
 import DatePicker from '@/components/ui/DatePicker';
 import Select from '@/components/ui/Select';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface QuartoPrecoProps {
   quarto: Quarto;

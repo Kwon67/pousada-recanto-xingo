@@ -52,9 +52,31 @@
     }
   }
 
-  /* Keep legacy colors for compatibility during transition */
-  --color-pousada-primary: #2D6A4F;
-  --color-pousada-secondary: #D4A843;
+  /* Legacy design tokens still used by existing Tailwind utilities */
+  --color-primary-dark: #1B5A3F;
+  --color-primary-light: #40916C;
+  --color-secondary-dark: #B8922F;
+  --color-secondary-light: #E4C06B;
+  --color-dark: #1B3A4B;
+  --color-dark-light: #2C4F63;
+  --color-cream: #FDF8F0;
+  --color-cream-dark: #F5EDE0;
+  --color-accent-dark: #C96A50;
+  --color-accent-light: #E89A84;
+  --color-text: #2D2D2D;
+  --color-text-light: #6B7280;
+  --color-text-muted: #9CA3AF;
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+
+  --color-badge-standard: #3B82F6;
+  --color-badge-superior: #8B5CF6;
+  --color-badge-suite: #F59E0B;
+
+  /* Transition aliases for old custom token names */
+  --color-pousada-primary: hsl(var(--primary));
+  --color-pousada-secondary: hsl(var(--secondary));
   --color-pousada-dark: #1B3A4B;
   --color-pousada-cream: #FDF8F0;
 
@@ -146,7 +168,7 @@
   }
 
   html {
-    scroll-behavior: auto;
+    scroll-behavior: auto; /* Prevent jumps during hydration */
     overflow-x: hidden;
   }
 
@@ -161,6 +183,11 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Apply smooth scroll only when not in initial load or via JS if preferred */
+  .smooth-scroll {
+    scroll-behavior: smooth;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -245,22 +272,18 @@
   background-size: 28px 28px;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
+/* Hide main page scrollbar (keep scrolling functional) */
+html,
+body {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-cream);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-primary);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-dark);
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chromium/WebKit */
 }
 
 /* WhatsApp pulse animation */

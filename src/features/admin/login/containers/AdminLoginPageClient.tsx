@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, User, Eye, EyeOff, ShieldCheck, Timer, Sparkles } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 function formatCooldown(seconds: number): string {
   if (seconds < 60) return `${seconds}s`;

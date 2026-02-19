@@ -6,7 +6,7 @@ import { Users, Maximize2 } from 'lucide-react';
 import { Quarto } from '@/types/quarto';
 import { formatCurrency, formatCategoria } from '@/lib/formatters';
 import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/app-button';
 
 interface QuartoCardProps {
   quarto: Quarto;
