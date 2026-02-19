@@ -35,6 +35,8 @@ import type { GaleriaItem } from '@/lib/actions/galeria';
 
 const CATEGORIAS = [
   { value: 'momentos', label: 'Home - Seção Momentos (galeria pública)' },
+  { value: 'hero_logo', label: 'Home - Logo Principal do Hero' },
+  { value: 'hero_background', label: 'Home - Imagem de Fundo do Hero' },
   { value: 'home_sobre', label: 'Home - Seção Sobre (slider)' },
   { value: 'home_estrutura_1', label: 'Home - Estrutura: Piscina' },
   { value: 'home_estrutura_2', label: 'Home - Estrutura: Área de Redes' },

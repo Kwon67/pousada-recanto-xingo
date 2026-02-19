@@ -49,9 +49,10 @@ function isMomentosCategory(categoria: string | null | undefined): boolean {
 }
 
 export default async function HomePage() {
-  const [avaliacoesRaw, galeriaRaw] = await Promise.all([
+  const [avaliacoesRaw, galeriaRaw, homeSobreImagemPadrao] = await Promise.all([
     getAvaliacoes({ aprovada: true }),
     getGaleria(),
+    getConteudoValor('home_sobre_imagem'),
   ]);
 
   const avaliacoes = (avaliacoesRaw as Avaliacao[])
@@ -104,10 +105,17 @@ export default async function HomePage() {
       : homeSobreMediaFromGaleriaArea
   ).slice(0, 7);
   const homeSobreImage = homeSobreMedia.find((item) => item.type === 'image')?.url;
+  
+  // Buscar imagem de fundo do Hero da galeria
+  const heroBackgroundItem = galeriaRaw.find((item) => item.categoria === 'hero_background');
+  const heroBackgroundImage = heroBackgroundItem?.url?.trim() || homeSobreImage?.trim() || homeSobreImagemPadrao?.trim();
+
+  const heroLogoItem = galeriaRaw.find((item) => item.categoria === 'hero_logo');
+  const heroLogoUrl = heroLogoItem?.url || 'https://res.cloudinary.com/diuh0ditl/image/upload/v1771538229/recantodomatuto_keg3sl.png';
 
   return (
     <>
-      <Hero />
+      <Hero backgroundImageUrl={heroBackgroundImage} logoUrl={heroLogoUrl} />
       <BuscaRapida />
       <QuartosDestaque />
       <Estrutura mediaOverrides={estruturaMediaOverrides} />

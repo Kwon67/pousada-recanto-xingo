@@ -75,7 +75,7 @@ export default function DatePicker({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          'w-full px-4 py-3 rounded-xl border-2 border-cream-dark bg-white text-left flex items-center gap-3 transition-all duration-200',
+          'w-full px-4 py-3 rounded-xl border-2 border-cream-dark bg-white text-left flex items-center gap-3 transition-colors duration-200',
           'hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
           error && 'border-error focus:border-error focus:ring-error/20',
           isOpen && 'border-primary ring-2 ring-primary/20'
@@ -152,7 +152,7 @@ export default function DatePicker({
                       onClick={() => handleSelect(day)}
                       disabled={disabled}
                       className={cn(
-                        'w-full aspect-square rounded-lg text-sm font-medium transition-all duration-200',
+                        'w-full aspect-square rounded-lg text-sm font-medium transition-colors duration-200',
                         'hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/30',
                         disabled && 'opacity-30 cursor-not-allowed hover:bg-transparent',
                         selected && 'bg-primary text-white hover:bg-primary-dark',

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -16,6 +16,23 @@ interface GaleriaProps {
   images: LightboxImage[];
 }
 
+const TRACK_TRANSITION = 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+const MEDIA_TRANSITION = 'transform 0.5s ease, filter 0.5s ease';
+const VIGNETTE_STYLE = {
+  background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 40%)',
+} as const;
+const TAP_HINT_STYLE = {
+  background: 'rgba(0,0,0,0.3)',
+  backdropFilter: 'blur(8px)',
+} as const;
+const LIGHTBOX_STYLE = {
+  background: 'rgba(0,0,0,0.92)',
+  backdropFilter: 'blur(20px)',
+} as const;
+const LIGHTBOX_CLOSE_STYLE = {
+  background: 'rgba(255,255,255,0.08)',
+} as const;
+
 export default function Galeria({ images }: GaleriaProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [dragX, setDragX] = useState(0);
@@ -28,11 +45,40 @@ export default function Galeria({ images }: GaleriaProps) {
   const directionLocked = useRef<'horizontal' | 'vertical' | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Map<number, HTMLVideoElement>>(new Map());
+  const dragRafRef = useRef<number | null>(null);
+  const pendingDragRef = useRef(0);
 
   const SWIPE_THRESHOLD = 50;
   const DIRECTION_LOCK_THRESHOLD = 8;
   const IMAGE_AUTOPLAY_MS = 3500;
   const VIDEO_AUTOPLAY_MS = 8000;
+  const scheduleDragX = useCallback((value: number) => {
+    pendingDragRef.current = value;
+    if (dragRafRef.current !== null) {
+      return;
+    }
+    dragRafRef.current = requestAnimationFrame(() => {
+      setDragX(pendingDragRef.current);
+      dragRafRef.current = null;
+    });
+  }, []);
+
+  const commitDragX = useCallback((value: number) => {
+    if (dragRafRef.current !== null) {
+      cancelAnimationFrame(dragRafRef.current);
+      dragRafRef.current = null;
+    }
+    pendingDragRef.current = value;
+    setDragX(value);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (dragRafRef.current !== null) {
+        cancelAnimationFrame(dragRafRef.current);
+      }
+    };
+  }, []);
 
   // Lock body scroll when lightbox is open
   useEffect(() => {
@@ -50,10 +96,46 @@ export default function Galeria({ images }: GaleriaProps) {
     };
   }, [lightbox]);
 
-  const activeIndex = currentIndex >= images.length ? 0 : currentIndex;
+  const imageCount = images.length;
+  const activeIndex = imageCount === 0 ? 0 : (currentIndex >= imageCount ? 0 : currentIndex);
+  const currentMediaType = images[activeIndex]?.type;
+  const offset = -(activeIndex * 100) + dragX / 3.5;
+  const trackStyle = useMemo(
+    () => ({
+      width: `${imageCount * 100}%`,
+      transform: `translateX(${offset / Math.max(imageCount, 1)}%)`,
+      transition: isDragging ? 'none' : TRACK_TRANSITION,
+      willChange: 'transform' as const,
+    }),
+    [imageCount, offset, isDragging]
+  );
+  const slideStyle = useMemo(
+    () => ({
+      width: `${100 / Math.max(imageCount, 1)}%`,
+    }),
+    [imageCount]
+  );
+  const activeMediaStyle = useMemo(
+    () => ({
+      transform: `scale(${isDragging ? 1.02 : 1})`,
+      transition: MEDIA_TRANSITION,
+      filter: 'brightness(1)',
+      willChange: 'transform',
+    }),
+    [isDragging]
+  );
+  const inactiveMediaStyle = useMemo(
+    () => ({
+      transform: 'scale(1.05)',
+      transition: MEDIA_TRANSITION,
+      filter: 'brightness(0.5)',
+      willChange: 'transform',
+    }),
+    []
+  );
 
   useEffect(() => {
-    if (images.length === 0) return;
+    if (imageCount === 0) return;
 
     videoRefs.current.forEach((videoEl, index) => {
       if (index === activeIndex) {
@@ -62,23 +144,20 @@ export default function Galeria({ images }: GaleriaProps) {
         videoEl.pause();
       }
     });
-  }, [activeIndex, images.length]);
+  }, [activeIndex, imageCount]);
 
   useEffect(() => {
-    if (images.length <= 1) return;
-    if (lightbox || isDragging) return;
+    if (imageCount <= 1 || lightbox || isDragging) return;
 
-    const currentMedia = images[activeIndex];
-    const delay = currentMedia?.type === 'video' ? VIDEO_AUTOPLAY_MS : IMAGE_AUTOPLAY_MS;
-
+    const delay = currentMediaType === 'video' ? VIDEO_AUTOPLAY_MS : IMAGE_AUTOPLAY_MS;
     const timer = setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
+      setCurrentIndex((prev) => (prev + 1) % imageCount);
     }, delay);
 
     return () => {
       clearTimeout(timer);
     };
-  }, [activeIndex, images, isDragging, lightbox]);
+  }, [currentMediaType, imageCount, isDragging, lightbox]);
 
   if (images.length === 0) {
     return null;
@@ -109,7 +188,7 @@ export default function Galeria({ images }: GaleriaProps) {
         directionLocked.current = 'vertical';
         gestureActive.current = false;
         setIsDragging(false);
-        setDragX(0);
+        commitDragX(0);
         return;
       }
       // Horizontal — capture and handle swipe
@@ -120,7 +199,7 @@ export default function Galeria({ images }: GaleriaProps) {
     }
 
     if (directionLocked.current !== 'horizontal') return;
-    setDragX(deltaX);
+    scheduleDragX(deltaX);
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
@@ -133,7 +212,7 @@ export default function Galeria({ images }: GaleriaProps) {
 
     // Tap: no movement at all + quick touch
     if (Math.abs(deltaX) < 5 && Math.abs(deltaY) < 5 && Date.now() - startTime.current < 250) {
-      setDragX(0);
+      commitDragX(0);
       setLightbox(images[activeIndex]);
       return;
     }
@@ -146,16 +225,14 @@ export default function Galeria({ images }: GaleriaProps) {
         setCurrentIndex(activeIndex - 1);
       }
     }
-    setDragX(0);
+    commitDragX(0);
   };
 
   const handlePointerCancel = () => {
     gestureActive.current = false;
     setIsDragging(false);
-    setDragX(0);
+    commitDragX(0);
   };
-
-  const offset = -(activeIndex * 100) + dragX / 3.5;
 
   return (
     <section className="relative overflow-hidden bg-dark py-20 dark-dots">
@@ -209,73 +286,58 @@ export default function Galeria({ images }: GaleriaProps) {
             {/* Sliding track */}
             <div
               className="absolute top-0 left-0 h-full flex"
-              style={{
-                width: `${images.length * 100}%`,
-                transform: `translateX(${offset / images.length}%)`,
-                transition: isDragging ? 'none' : 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-              }}
+              style={trackStyle}
             >
-              {images.map((img, i) => (
-                <div
-                  key={img.id}
-                  className="relative h-full overflow-hidden"
-                  style={{ width: `${100 / images.length}%` }}
-                >
-                  {img.type === 'video' ? (
-                    <video
-                      ref={(el) => {
-                        if (el) videoRefs.current.set(i, el);
-                        else videoRefs.current.delete(i);
-                      }}
-                      src={img.url}
-                      muted
-                      loop
-                      playsInline
-                      preload="metadata"
-                      className="w-full h-full object-cover"
-                      style={{
-                        transform: i === activeIndex
-                          ? `scale(${isDragging ? 1.02 : 1})`
-                          : 'scale(1.05)',
-                        transition: 'transform 0.5s ease, filter 0.5s ease',
-                        filter: i === activeIndex ? 'brightness(1)' : 'brightness(0.5)',
-                      }}
-                    />
-                  ) : (
-                    <Image
-                      src={img.url}
-                      alt={img.alt}
-                      fill
-                      sizes="(max-width: 640px) 100vw, 384px"
-                      draggable={false}
-                      className="object-cover"
-                      style={{
-                        transform: i === activeIndex
-                          ? `scale(${isDragging ? 1.02 : 1})`
-                          : 'scale(1.05)',
-                        transition: 'transform 0.5s ease, filter 0.5s ease',
-                        filter: i === activeIndex ? 'brightness(1)' : 'brightness(0.5)',
-                      }}
-                    />
-                  )}
+              {images.map((img, i) => {
+                const isActive = i === activeIndex;
 
-                  {/* Vignette */}
+                return (
                   <div
-                    className="absolute inset-0 pointer-events-none"
-                    style={{
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 40%)',
-                    }}
-                  />
+                    key={img.id}
+                    className="relative h-full overflow-hidden"
+                    style={slideStyle}
+                  >
+                    {img.type === 'video' ? (
+                      <video
+                        ref={(el) => {
+                          if (el) videoRefs.current.set(i, el);
+                          else videoRefs.current.delete(i);
+                        }}
+                        src={img.url}
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover"
+                        style={isActive ? activeMediaStyle : inactiveMediaStyle}
+                      />
+                    ) : (
+                      <Image
+                        src={img.url}
+                        alt={img.alt}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 384px"
+                        draggable={false}
+                        className="object-cover"
+                        style={isActive ? activeMediaStyle : inactiveMediaStyle}
+                      />
+                    )}
 
-                </div>
-              ))}
+                    {/* Vignette */}
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={VIGNETTE_STYLE}
+                    />
+                  </div>
+                );
+              })}
             </div>
 
             {/* Tap hint */}
             <div className="absolute bottom-5 left-0 right-0 flex justify-center pointer-events-none">
               <span
                 className="text-white/50 text-xs tracking-widest uppercase px-3 py-1 rounded-full"
-                style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(8px)' }}
+                style={TAP_HINT_STYLE}
               >
                 toque para ampliar
               </span>
@@ -310,12 +372,12 @@ export default function Galeria({ images }: GaleriaProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center"
-            style={{ background: 'rgba(0,0,0,0.92)', backdropFilter: 'blur(20px)' }}
+            style={LIGHTBOX_STYLE}
             onClick={() => setLightbox(null)}
           >
             <button
               className="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center text-white/70 hover:text-white transition-colors z-10"
-              style={{ background: 'rgba(255,255,255,0.08)' }}
+              style={LIGHTBOX_CLOSE_STYLE}
               onClick={() => setLightbox(null)}
             >
               <X className="w-5 h-5" />

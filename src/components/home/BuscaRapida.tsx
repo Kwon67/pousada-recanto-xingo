@@ -66,7 +66,7 @@ export default function BuscaRapida() {
                     key={opt.value}
                     type="button"
                     onClick={() => setGuests(opt.value)}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all duration-200 ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-colors duration-200 ${
                       guests === opt.value
                         ? 'border-primary bg-primary/5 text-primary'
                         : 'border-cream-dark bg-white text-text-light hover:border-primary/40'

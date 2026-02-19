@@ -13,10 +13,10 @@ export default function Footer() {
   if (isAdmin) return null;
 
   return (
-    <footer className="bg-dark text-white dark-dots">
+    <footer className="footer-surface text-white">
       {/* Main Footer */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+      <div className="container mx-auto px-4 py-16 footer-inner">
+        <div className="footer-grid grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="space-y-4">
             <Link href="/" className="inline-block">
@@ -34,7 +34,7 @@ export default function Footer() {
                 href={`https://instagram.com/${SITE_CONFIG.instagram.replace('@', '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-primary transition-colors"
+                className="footer-social-link w-10 h-10 rounded-full flex items-center justify-center"
                 aria-label="Instagram"
               >
                 <Instagram className="w-5 h-5" />
@@ -43,7 +43,7 @@ export default function Footer() {
                 href={getWhatsAppLink(SITE_CONFIG.phoneClean)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-green-600 transition-colors"
+                className="footer-social-link w-10 h-10 rounded-full flex items-center justify-center"
                 aria-label="WhatsApp"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -53,7 +53,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-6 text-white">
+            <h4 className="footer-heading font-display text-lg font-semibold mb-6 text-white">
               Links Rápidos
             </h4>
             <ul className="space-y-3">
@@ -61,7 +61,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-white/70 hover:text-secondary transition-colors"
+                    className="footer-link"
                   >
                     {link.label}
                   </Link>
@@ -70,7 +70,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/reservas"
-                  className="text-white/70 hover:text-secondary transition-colors"
+                  className="footer-link"
                 >
                   Reservas
                 </Link>
@@ -80,16 +80,16 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-6 text-white">
+            <h4 className="footer-heading font-display text-lg font-semibold mb-6 text-white">
               Contato
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-4 footer-contact">
               <li>
                 <a
                   href={SITE_CONFIG.mapsLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-start gap-3 text-white/70 hover:text-secondary transition-colors"
+                  className="footer-link flex items-start gap-3"
                 >
                   <MapPin className="w-5 h-5 mt-0.5 shrink-0 text-secondary" />
                   <span>{SITE_CONFIG.address}</span>
@@ -100,7 +100,7 @@ export default function Footer() {
                   href={getWhatsAppLink(SITE_CONFIG.phoneClean)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 text-white/70 hover:text-secondary transition-colors"
+                  className="footer-link flex items-center gap-3"
                 >
                   <Phone className="w-5 h-5 shrink-0 text-secondary" />
                   <span>{SITE_CONFIG.phone}</span>
@@ -109,7 +109,7 @@ export default function Footer() {
               <li>
                 <a
                   href={`mailto:${SITE_CONFIG.email}`}
-                  className="flex items-center gap-3 text-white/70 hover:text-secondary transition-colors"
+                  className="footer-link flex items-center gap-3"
                 >
                   <Mail className="w-5 h-5 shrink-0 text-secondary" />
                   <span className="truncate">{SITE_CONFIG.email}</span>
@@ -120,10 +120,10 @@ export default function Footer() {
 
           {/* Hours */}
           <div>
-            <h4 className="font-display text-lg font-semibold mb-6 text-white">
+            <h4 className="footer-heading font-display text-lg font-semibold mb-6 text-white">
               Horários
             </h4>
-            <ul className="space-y-4">
+            <ul className="space-y-4 footer-hours">
               <li className="flex items-start gap-3 text-white/70">
                 <Clock className="w-5 h-5 mt-0.5 shrink-0 text-secondary" />
                 <div>
@@ -144,7 +144,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-white/10">
+      <div className="border-t border-white/10 footer-bottom">
         <div className="container mx-auto px-4 py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/50">
             <p>
