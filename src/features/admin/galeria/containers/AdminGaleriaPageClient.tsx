@@ -74,16 +74,26 @@ function isLikelyVideoFile(file: File): boolean {
 
 function formatAreaLabel(categoria: string | null | undefined): string {
   if (!categoria) return 'Sem área';
-  if (LEGACY_MOMENTOS_CATEGORIES.has(categoria)) {
-    return 'Home - Seção Momentos (legado)';
-  }
-  const match = CATEGORIAS.find((item) => item.value === categoria);
-  return match?.label || categoria;
+  
+  const cats = categoria.split(',').map(c => c.trim()).filter(Boolean);
+  if (cats.length === 0) return 'Sem área';
+
+  const labels = cats.map(cat => {
+    if (LEGACY_MOMENTOS_CATEGORIES.has(cat)) {
+      return 'Home - Seção Momentos (legado)';
+    }
+    const match = CATEGORIAS.find((item) => item.value === cat);
+    return match?.label || cat;
+  });
+
+  return labels.join(' + ');
 }
 
-function normalizeCategoriaForSelect(categoria: string | null | undefined): string {
-  if (!categoria || LEGACY_MOMENTOS_CATEGORIES.has(categoria)) return 'momentos';
-  return categoria;
+function normalizeCategorias(categoria: string | null | undefined): string[] {
+  if (!categoria) return ['momentos'];
+  const cats = categoria.split(',').map(c => c.trim()).filter(Boolean);
+  if (cats.length === 0) return ['momentos'];
+  return cats.map(cat => (LEGACY_MOMENTOS_CATEGORIES.has(cat) ? 'momentos' : cat));
 }
 
 function validateMediaFile(file: File): string | null {
@@ -105,7 +115,7 @@ function validateMediaFile(file: File): string | null {
 interface EditState {
   id: string;
   alt: string;
-  categoria: string;
+  categorias: string[];
   destaque: boolean;
   file: File | null;
 }
@@ -119,7 +129,7 @@ export default function AdminGaleriaPage() {
   const [showUpload, setShowUpload] = useState(false);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadAlt, setUploadAlt] = useState('');
-  const [uploadCategoria, setUploadCategoria] = useState('momentos');
+  const [uploadCategorias, setUploadCategorias] = useState<string[]>(['momentos']);
   const [uploadDestaque, setUploadDestaque] = useState(false);
   const [duplicates, setDuplicates] = useState<{ categoria: string; items: GaleriaItem[] }[]>([]);
   const { showToast } = useToast();
@@ -217,15 +227,39 @@ export default function AdminGaleriaPage() {
     setEditState({
       id: item.id,
       alt: item.alt || '',
-      categoria: normalizeCategoriaForSelect(item.categoria),
+      categorias: normalizeCategorias(item.categoria),
       destaque: item.destaque,
       file: null,
     });
   };
 
+  const handleToggleCategoria = (cat: string, isUpload = false) => {
+    if (isUpload) {
+      setUploadCategorias(prev => 
+        prev.includes(cat) 
+          ? prev.filter(c => c !== cat) 
+          : [...prev, cat]
+      );
+    } else {
+      setEditState(prev => {
+        if (!prev) return prev;
+        const current = prev.categorias;
+        const next = current.includes(cat)
+          ? current.filter(c => c !== cat)
+          : [...current, cat];
+        return { ...prev, categorias: next };
+      });
+    }
+  };
+
   const handleReplace = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editState) return;
+
+    if (editState.categorias.length === 0) {
+      showToast('Selecione pelo menos uma área.', 'error');
+      return;
+    }
 
     setSaving(true);
     try {
@@ -242,7 +276,7 @@ export default function AdminGaleriaPage() {
 
       const result = await atualizarFoto(editState.id, {
         alt: editState.alt || null,
-        categoria: editState.categoria || null,
+        categoria: editState.categorias.join(','),
         destaque: editState.destaque,
         ...(nextUrl ? { url: nextUrl } : {}),
       });
@@ -269,6 +303,11 @@ export default function AdminGaleriaPage() {
       return;
     }
 
+    if (uploadCategorias.length === 0) {
+      showToast('Selecione pelo menos uma área.', 'error');
+      return;
+    }
+
     setSaving(true);
     try {
       for (let i = 0; i < uploadFiles.length; i += 1) {
@@ -289,7 +328,7 @@ export default function AdminGaleriaPage() {
         const result = await adicionarFoto({
           url: uploaded.url,
           alt,
-          categoria: uploadCategoria,
+          categoria: uploadCategorias.join(','),
           destaque: i === 0 ? uploadDestaque : false,
         });
 
@@ -302,7 +341,7 @@ export default function AdminGaleriaPage() {
       setShowUpload(false);
       setUploadFiles([]);
       setUploadAlt('');
-      setUploadCategoria('momentos');
+      setUploadCategorias(['momentos']);
       setUploadDestaque(false);
       await carregarGaleria();
     } catch (err) {
@@ -517,24 +556,22 @@ export default function AdminGaleriaPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Área da alteração no site</label>
-                  <select
-                    value={editState.categoria}
-                    onChange={(e) =>
-                      setEditState((prev) =>
-                        prev ? { ...prev, categoria: e.target.value } : prev
-                      )
-                    }
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm bg-white"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Aparecer em quais áreas do site?</label>
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-100 rounded-xl bg-gray-50/50">
                     {CATEGORIAS.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </option>
+                      <label key={cat.value} className="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={editState.categorias.includes(cat.value)}
+                          onChange={() => handleToggleCategoria(cat.value)}
+                          className="w-4 h-4 rounded text-primary focus:ring-primary/20"
+                        />
+                        <span className="text-sm text-gray-700">{cat.label}</span>
+                      </label>
                     ))}
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Esta mídia será usada na área selecionada do site.
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Você pode selecionar várias áreas ao mesmo tempo.
                   </p>
                 </div>
 
@@ -649,20 +686,22 @@ export default function AdminGaleriaPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Área da alteração no site</label>
-                  <select
-                    value={uploadCategoria}
-                    onChange={(e) => setUploadCategoria(e.target.value)}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm bg-white"
-                  >
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Aparecer em quais áreas do site?</label>
+                  <div className="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto p-2 border border-gray-100 rounded-xl bg-gray-50/50">
                     {CATEGORIAS.map((cat) => (
-                      <option key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </option>
+                      <label key={cat.value} className="flex items-center gap-3 p-2 hover:bg-white rounded-lg cursor-pointer transition-colors border border-transparent hover:border-gray-100">
+                        <input
+                          type="checkbox"
+                          checked={uploadCategorias.includes(cat.value)}
+                          onChange={() => handleToggleCategoria(cat.value, true)}
+                          className="w-4 h-4 rounded text-primary focus:ring-primary/20"
+                        />
+                        <span className="text-sm text-gray-700">{cat.label}</span>
+                      </label>
                     ))}
-                  </select>
-                  <p className="mt-1 text-xs text-gray-500">
-                    Defina em qual área do site esta mídia deve aparecer.
+                  </div>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Selecione as áreas onde as mídias devem aparecer.
                   </p>
                 </div>
 

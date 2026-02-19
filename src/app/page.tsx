@@ -45,7 +45,8 @@ const MOMENTOS_CATEGORIES = new Set(['momentos', 'pousada', 'quartos', 'area_laz
 
 function isMomentosCategory(categoria: string | null | undefined): boolean {
   if (!categoria) return true;
-  return MOMENTOS_CATEGORIES.has(categoria);
+  const cats = categoria.split(',').map(c => c.trim());
+  return cats.some(c => MOMENTOS_CATEGORIES.has(c));
 }
 
 export default async function HomePage() {
@@ -70,8 +71,12 @@ export default async function HomePage() {
 
   const estruturaMediaOverrides: Record<string, MediaItem[]> = {};
   for (const id of ['1', '2', '3', '4', '5', '6']) {
+    const targetCategory = `home_structure_${id}`;
     const mediaFromGaleria = galeriaRaw
-      .filter((item) => item.categoria === `home_estrutura_${id}`)
+      .filter((item) => {
+        const cats = (item.categoria || '').split(',').map(c => c.trim());
+        return cats.includes(`home_estrutura_${id}`) || cats.includes(targetCategory);
+      })
       .map((item) => ({
         url: item.url.trim(),
         type: isLikelyVideoUrl(item.url) ? 'video' as const : 'image' as const,
@@ -84,7 +89,10 @@ export default async function HomePage() {
   }
 
   const homeSobreMediaFromGaleriaArea: MediaItem[] = galeriaRaw
-    .filter((item) => item.categoria === 'home_sobre')
+    .filter((item) => {
+      const cats = (item.categoria || '').split(',').map(c => c.trim());
+      return cats.includes('home_sobre');
+    })
     .sort((a, b) => a.ordem - b.ordem)
     .map((item) => ({ url: item.url, type: isLikelyVideoUrl(item.url) ? 'video' as const : 'image' as const }))
     .filter((item) => item.url?.trim())
@@ -106,11 +114,17 @@ export default async function HomePage() {
   ).slice(0, 7);
   const homeSobreImage = homeSobreMedia.find((item) => item.type === 'image')?.url;
   
-  // Buscar imagem de fundo do Hero da galeria
-  const heroBackgroundItem = galeriaRaw.find((item) => item.categoria === 'hero_background');
+  // Buscar imagem de fundo do Hero da galeria (suporta tags múltiplas)
+  const heroBackgroundItem = galeriaRaw.find((item) => {
+    const cats = (item.categoria || '').split(',').map(c => c.trim());
+    return cats.includes('hero_background');
+  });
   const heroBackgroundImage = heroBackgroundItem?.url?.trim() || homeSobreImage?.trim() || homeSobreImagemPadrao?.trim();
 
-  const heroLogoItem = galeriaRaw.find((item) => item.categoria === 'hero_logo');
+  const heroLogoItem = galeriaRaw.find((item) => {
+    const cats = (item.categoria || '').split(',').map(c => c.trim());
+    return cats.includes('hero_logo');
+  });
   const heroLogoUrl = heroLogoItem?.url || 'https://res.cloudinary.com/diuh0ditl/image/upload/v1771538229/recantodomatuto_keg3sl.png';
 
   return (
