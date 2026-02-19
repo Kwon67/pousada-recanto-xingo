@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useInView, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Sun, TreePine, Waves, ChevronDown } from 'lucide-react';
-import Button from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 const FALLBACK_HERO_IMAGE =
   'https://images.unsplash.com/photo-1533577116850-9cc66cad8a9b?auto=format&fit=crop&w=1920&q=80';
@@ -277,8 +277,8 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
             <Link href="/reservas">
               <Button
                 size="lg"
-                variant="secondary"
-                className="min-w-56 h-14 text-base font-semibold shadow-[0_15px_40px_rgba(212,168,67,0.25)] hover:shadow-[0_20px_50px_rgba(212,168,67,0.35)] transition-all duration-500 hover:scale-105"
+                variant="luxury"
+                className="min-w-56 font-bold"
               >
                 Reservar agora
               </Button>
@@ -287,7 +287,7 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
               <Button
                 size="lg"
                 variant="outline"
-                className="min-w-56 h-14 text-base border-white/20 text-white bg-white/5 backdrop-blur-sm hover:border-white/50 hover:bg-white/10 transition-all duration-500"
+                className="min-w-56 border-white/20 text-white bg-white/5 backdrop-blur-sm hover:border-white/50 hover:bg-white/10 transition-all duration-500"
               >
                 Conhecer a Pousada
               </Button>
