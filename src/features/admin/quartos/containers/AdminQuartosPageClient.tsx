@@ -81,11 +81,6 @@ export default function AdminQuartosPage() {
   };
 
   const categorias = ['todos', 'standard', 'superior', 'suite'];
-  const categoriaBadgeColors: Record<string, string> = {
-    standard: 'border border-[var(--color-badge-standard)]/20 text-[var(--color-badge-standard)] bg-[var(--color-badge-standard)]/5',
-    superior: 'border border-[var(--color-badge-superior)]/20 text-[var(--color-badge-superior)] bg-[var(--color-badge-superior)]/5',
-    suite: 'border border-[var(--color-badge-suite)]/20 text-[var(--color-badge-suite)] bg-[var(--color-badge-suite)]/5',
-  };
 
   if (loading) {
     return (
@@ -123,7 +118,7 @@ export default function AdminQuartosPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1], delay: 0.1 }}
         style={{ boxShadow: 'var(--shadow-elegant)' }}
-        className="bg-white rounded-[var(--radius-xl)] p-5 border border-gray-100/50 flex flex-col lg:flex-row gap-4"
+        className="bg-white rounded-xl p-5 border border-gray-100/50 flex flex-col lg:flex-row gap-4"
       >
         <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -134,19 +129,19 @@ export default function AdminQuartosPage() {
             onChange={(e) => setBusca(e.target.value)}
             aria-label="Pesquisar acomodações"
             style={{ transition: 'var(--transition-elegant)' }}
-            className="w-full pl-10 pr-4 py-2.5 rounded-[var(--radius-lg)] border border-gray-200/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-gray-200/80 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm bg-white"
           />
         </div>
-        <div className="flex flex-wrap gap-2 min-w-0">
+        <div className="flex flex-wrap gap-1.5 rounded-xl bg-dark/5 p-1 min-w-0">
           {categorias.map((cat) => (
             <button
               key={cat}
               onClick={() => setFiltroCategoria(cat)}
               style={{ transition: 'var(--transition-elegant)' }}
-              className={`px-4 py-2 rounded-[var(--radius-lg)] text-sm font-medium whitespace-nowrap ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap ${
                 filtroCategoria === cat
-                  ? 'bg-primary text-white shadow-sm'
-                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-gray-200/50'
+                  ? 'bg-white text-dark shadow-sm'
+                  : 'text-dark/50 hover:text-dark hover:bg-white/50'
               }`}
             >
               {cat === 'todos' ? 'Todos' : formatCategoria(cat)}
@@ -167,7 +162,7 @@ export default function AdminQuartosPage() {
               boxShadow: 'var(--shadow-elegant)',
               transition: 'var(--transition-elegant)'
             }}
-            className={`bg-white rounded-[var(--radius-xl)] border overflow-hidden hover:shadow-[var(--shadow-elegant-md)] ${
+            className={`bg-white rounded-xl border overflow-hidden hover:shadow-(--shadow-elegant-md) ${
               !quarto.ativo ? 'opacity-60 border-gray-200/50' : 'border-gray-100/50'
             }`}
           >
@@ -180,11 +175,11 @@ export default function AdminQuartosPage() {
                 className="w-full h-full object-cover"
               />
               {quarto.destaque && (
-                <div style={{ transition: 'var(--transition-elegant)' }} className="absolute top-3 left-3 bg-amber-400/90 backdrop-blur-sm text-amber-900 px-3 py-1.5 rounded-[var(--radius-lg)] text-xs font-medium flex items-center gap-1.5 shadow-sm">
-                  <Star className="w-3.5 h-3.5" /> Destaque
+                <div className="absolute top-3 left-3 bg-dark/70 backdrop-blur-md text-secondary px-3 py-1.5 rounded-full text-[11px] font-semibold flex items-center gap-1.5 shadow-lg border border-white/10">
+                  <Star className="w-3 h-3 fill-secondary" /> Destaque
                 </div>
               )}
-              <span className={`absolute top-3 right-3 px-3 py-1.5 rounded-[var(--radius-lg)] text-xs font-medium backdrop-blur-sm ${categoriaBadgeColors[quarto.categoria]}`}>
+              <span className="absolute top-3 right-3 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-white/85 backdrop-blur-md text-dark shadow-lg border border-white/20">
                 {formatCategoria(quarto.categoria)}
               </span>
             </div>
@@ -193,7 +188,7 @@ export default function AdminQuartosPage() {
             <div className="p-6">
               <div className="flex items-start justify-between mb-3">
                 <h3 className="font-semibold text-gray-900 text-base">{quarto.nome}</h3>
-                <span className={`text-xs px-2.5 py-1 rounded-[var(--radius-sm)] font-medium border ${quarto.ativo ? 'bg-green-50 text-green-700 border-green-200/50' : 'bg-gray-50 text-gray-500 border-gray-200/50'}`}>
+                <span className={`text-xs px-2.5 py-1 rounded-sm font-medium border ${quarto.ativo ? 'bg-green-50 text-green-700 border-green-200/50' : 'bg-gray-50 text-gray-500 border-gray-200/50'}`}>
                   {quarto.ativo ? 'Ativo' : 'Inativo'}
                 </span>
               </div>
@@ -216,14 +211,14 @@ export default function AdminQuartosPage() {
             {/* Actions */}
             <div className="px-6 pb-5 flex gap-2">
               <Link href={`/admin/quartos/${quarto.id}`} className="flex-1">
-                <button style={{ transition: 'var(--transition-elegant)' }} className="w-full px-4 py-2.5 text-sm font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-[var(--radius-lg)] flex items-center justify-center gap-2">
+                <button style={{ transition: 'var(--transition-elegant)' }} className="w-full px-4 py-2.5 text-sm font-medium text-primary bg-primary/5 hover:bg-primary/10 rounded-lg flex items-center justify-center gap-2">
                   <Pencil className="w-4 h-4" /> Editar
                 </button>
               </Link>
               <button
                 onClick={() => toggleAtivo(quarto.id)}
                 style={{ transition: 'var(--transition-elegant)' }}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:bg-gray-50 rounded-[var(--radius-lg)] border border-gray-200/50"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:bg-gray-50 rounded-lg border border-gray-200/50"
                 aria-label={quarto.ativo ? `Desativar ${quarto.nome}` : `Ativar ${quarto.nome}`}
                 title={quarto.ativo ? 'Desativar' : 'Ativar'}
               >
@@ -232,7 +227,7 @@ export default function AdminQuartosPage() {
               <button
                 onClick={() => setDeleteId(quarto.id)}
                 style={{ transition: 'var(--transition-elegant)' }}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-500 hover:bg-red-50 rounded-[var(--radius-lg)] border border-red-200/50"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-red-500 hover:bg-red-50 rounded-lg border border-red-200/50"
                 aria-label={`Excluir ${quarto.nome}`}
                 title="Excluir"
               >
@@ -244,7 +239,7 @@ export default function AdminQuartosPage() {
       </div>
 
       {quartosFiltrados.length === 0 && (
-        <div style={{ boxShadow: 'var(--shadow-elegant)' }} className="text-center py-16 bg-white rounded-[var(--radius-xl)] border border-gray-100/50">
+        <div style={{ boxShadow: 'var(--shadow-elegant)' }} className="text-center py-16 bg-white rounded-xl border border-gray-100/50">
           <p className="text-gray-400 font-light">Nenhuma acomodação encontrada</p>
         </div>
       )}
@@ -266,7 +261,7 @@ export default function AdminQuartosPage() {
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
               style={{ boxShadow: 'var(--shadow-elegant-xl)' }}
-              className="bg-white rounded-[var(--radius-xl)] p-8 max-w-sm w-full"
+              className="bg-white rounded-xl p-8 max-w-sm w-full"
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -285,14 +280,14 @@ export default function AdminQuartosPage() {
                 <button
                   onClick={() => setDeleteId(null)}
                   style={{ transition: 'var(--transition-elegant)' }}
-                  className="flex-1 py-3 px-4 rounded-[var(--radius-lg)] border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                  className="flex-1 py-3 px-4 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50"
                 >
                   Cancelar
                 </button>
                 <button
                   onClick={() => handleDelete(deleteId)}
                   style={{ transition: 'var(--transition-elegant)' }}
-                  className="flex-1 py-3 px-4 rounded-[var(--radius-lg)] bg-red-500 text-white text-sm font-medium hover:bg-red-600 shadow-sm"
+                  className="flex-1 py-3 px-4 rounded-lg bg-red-500 text-white text-sm font-medium hover:bg-red-600 shadow-sm"
                 >
                   Sim, excluir
                 </button>

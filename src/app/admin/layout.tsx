@@ -58,8 +58,8 @@ function AdminContent({ children }: { children: React.ReactNode }) {
     return (
       <div className="admin-texture-bg min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-3 border-primary border-t-transparent rounded-full animate-spin" />
-          <span className="text-gray-500 text-sm">Carregando...</span>
+          <div className="w-8 h-8 border-3 border-secondary border-t-transparent rounded-full animate-spin" />
+          <span className="text-dark/50 text-sm">Carregando...</span>
         </div>
       </div>
     );
@@ -84,13 +84,13 @@ function AdminContent({ children }: { children: React.ReactNode }) {
       <AdminSidebar />
 
       <div className="lg:ml-64 pt-16 lg:pt-0">
-        <header className="bg-white/90 backdrop-blur border-b border-gray-200 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
+        <header className="bg-dark/95 backdrop-blur-xl border-b border-white/10 px-6 lg:px-8 py-4 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-3 min-w-0">
             {canGoBack && (
               <button
                 type="button"
                 onClick={handleGoBack}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-white/10 text-sm text-white/70 hover:bg-white/10 hover:text-white transition-colors"
                 aria-label="Voltar"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -98,18 +98,18 @@ function AdminContent({ children }: { children: React.ReactNode }) {
               </button>
             )}
             <div className="min-w-0">
-              <p className="text-gray-800 font-semibold truncate">
-                Olá, <span className="text-primary">{user?.name || 'Admin'}</span>
+              <p className="text-white/90 font-semibold truncate">
+                Olá, <span className="text-secondary">{user?.name || 'Admin'}</span>
               </p>
-              <p className="text-xs text-gray-500">Painel administrativo seguro</p>
+              <p className="text-xs text-white/40">Painel administrativo seguro</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-100 px-2.5 py-1 text-xs font-medium">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 text-xs font-medium">
               <ShieldCheck className="w-3.5 h-3.5" />
               Sessão protegida
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200 px-2.5 py-1 text-xs font-medium">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/5 text-white/60 border border-white/10 px-2.5 py-1 text-xs font-medium">
               <Clock3 className="w-3.5 h-3.5" />
               {sessionLabel}
             </span>
@@ -117,7 +117,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
               href="/"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:inline-flex text-sm text-gray-500 hover:text-primary transition-colors"
+              className="hidden sm:inline-flex text-sm text-white/50 hover:text-secondary transition-colors"
             >
               Ver site →
             </a>

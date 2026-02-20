@@ -48,9 +48,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'text-[10px] px-4 py-2 gap-2 uppercase tracking-widest font-bold rounded-none',
-      md: 'text-xs px-6 py-3 gap-2 uppercase tracking-widest font-bold rounded-none',
-      lg: 'text-sm px-8 py-4 gap-2.5 uppercase tracking-widest font-bold rounded-none',
+      sm: 'text-[10px] px-4 py-2 gap-2 uppercase tracking-widest font-bold rounded-xl',
+      md: 'text-xs px-6 py-3 gap-2 uppercase tracking-widest font-bold rounded-xl',
+      lg: 'text-sm px-8 py-4 gap-2.5 uppercase tracking-widest font-bold rounded-xl',
     };
 
     const content = loading ? (

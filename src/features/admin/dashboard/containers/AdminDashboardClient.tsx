@@ -112,8 +112,8 @@ function getEventLabel(eventType: AdminAccessEventType): string {
 
 function getEventTone(eventType: AdminAccessEventType): string {
   if (eventType === 'login') return 'border-emerald-200 bg-emerald-50 text-emerald-700';
-  if (eventType === 'access') return 'border-slate-300 bg-slate-100 text-slate-700';
-  if (eventType === 'logout') return 'border-slate-300 bg-white text-slate-600';
+  if (eventType === 'access') return 'border-slate-200 bg-slate-50 text-slate-600';
+  if (eventType === 'logout') return 'border-slate-200 bg-white text-slate-500';
   return 'border-rose-200 bg-rose-50 text-rose-700';
 }
 
@@ -215,29 +215,29 @@ export default function AdminDashboardClient({
       label: 'Reservas este mês',
       value: estatisticas.totalReservas,
       icon: <Calendar className="w-6 h-6" />,
-      color: 'text-slate-700',
-      bgColor: 'border-slate-200 bg-slate-100',
+      color: 'text-dark',
+      bgColor: 'border-dark/10 bg-dark/5',
     },
     {
       label: 'Taxa de ocupação',
       value: `${estatisticas.taxaOcupacao}%`,
       icon: <TrendingUp className="w-6 h-6" />,
       color: 'text-emerald-700',
-      bgColor: 'border-emerald-200/80 bg-emerald-50',
+      bgColor: 'border-emerald-200 bg-emerald-50',
     },
     {
       label: 'Receita recebida',
       value: formatCurrency(estatisticas.receitaMes),
       icon: <DollarSign className="w-6 h-6" />,
-      color: 'text-blue-700',
-      bgColor: 'border-blue-200/80 bg-blue-50',
+      color: 'text-secondary-dark',
+      bgColor: 'border-secondary/20 bg-secondary/10',
     },
     {
       label: 'Pagamentos pendentes',
       value: pagamentosPendentes.length,
       icon: <Clock className="w-6 h-6" />,
       color: 'text-amber-700',
-      bgColor: 'border-amber-200/80 bg-amber-50',
+      bgColor: 'border-amber-200 bg-amber-50',
     },
   ], [estatisticas, pagamentosPendentes]);
 
@@ -326,10 +326,10 @@ export default function AdminDashboardClient({
     pendente: 'border border-amber-200 bg-amber-50 text-amber-700',
     confirmada: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
     cancelada: 'border border-rose-200 bg-rose-50 text-rose-700',
-    concluida: 'border border-slate-300 bg-slate-100 text-slate-700',
+    concluida: 'border border-slate-200 bg-slate-50 text-slate-600',
   };
   const paymentStatusColors: Record<string, string> = {
-    nao_iniciado: 'border border-slate-300 bg-slate-100 text-slate-700',
+    nao_iniciado: 'border border-slate-200 bg-slate-50 text-slate-600',
     pendente: 'border border-amber-200 bg-amber-50 text-amber-700',
     pago: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
     falhou: 'border border-rose-200 bg-rose-50 text-rose-700',
@@ -343,10 +343,15 @@ export default function AdminDashboardClient({
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Visão geral da pousada • {dashboardDateLabel}
-        </p>
+        <div className="flex items-center gap-3">
+          <div className="w-1 h-8 rounded-full bg-secondary" />
+          <div>
+            <h1 className="font-display text-2xl font-bold tracking-tight text-dark uppercase">Dashboard</h1>
+            <p className="mt-1 text-sm text-dark/50">
+              Visão geral da pousada • {dashboardDateLabel}
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       <section className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -359,16 +364,16 @@ export default function AdminDashboardClient({
           >
             <Link
               href={action.href}
-              className="group block rounded-2xl border border-slate-200 bg-white/90 px-4 py-4 transition-all hover:border-slate-300 hover:bg-slate-50/70 hover:shadow-sm"
+              className="group block rounded-2xl border border-dark/8 bg-white px-4 py-4 shadow-sm transition-all hover:border-secondary/30 hover:shadow-md"
             >
               <div className="flex items-center justify-between gap-3">
-                <div className="rounded-xl border border-slate-200 bg-slate-100 p-2.5 text-slate-700">
+                <div className="rounded-xl border border-dark/8 bg-cream-dark p-2.5 text-secondary-dark">
                   <action.icon className="w-5 h-5" />
                 </div>
-                <ArrowRight className="w-4 h-4 text-slate-400 transition-all group-hover:translate-x-0.5 group-hover:text-slate-700" />
+                <ArrowRight className="w-4 h-4 text-dark/30 transition-all group-hover:translate-x-0.5 group-hover:text-secondary" />
               </div>
-              <p className="mt-3 text-sm font-semibold text-slate-900">{action.label}</p>
-              <p className="mt-1 text-xs text-slate-500">{action.helper}</p>
+              <p className="mt-3 text-sm font-semibold text-dark">{action.label}</p>
+              <p className="mt-1 text-xs text-dark/50">{action.helper}</p>
             </Link>
           </motion.div>
         ))}
@@ -382,7 +387,7 @@ export default function AdminDashboardClient({
             initial={{ opacity: 0, y: -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10 }}
-            className="group block cursor-pointer rounded-2xl border border-amber-200/80 bg-amber-50/40 p-5 shadow-sm transition-all hover:border-amber-300/80 hover:bg-amber-50/60"
+            className="group block cursor-pointer rounded-2xl border border-amber-200 bg-amber-50/60 p-5 shadow-sm transition-all hover:border-amber-300 hover:shadow-md"
           >
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -394,25 +399,25 @@ export default function AdminDashboardClient({
                 </span>
               </div>
               <div className="flex-1">
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-base font-semibold text-dark">
                   {pendentes.length} {pendentes.length === 1 ? 'reserva pendente' : 'reservas pendentes'} aguardando confirmação
                 </p>
-                <p className="mt-0.5 text-sm text-slate-600">
+                <p className="mt-0.5 text-sm text-dark/60">
                   Clique aqui para revisar e aprovar as reservas
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-700" />
-                <ArrowRight className="w-5 h-5 text-slate-500 transition-transform group-hover:translate-x-1" />
+                <ArrowRight className="w-5 h-5 text-dark/40 transition-transform group-hover:translate-x-1" />
               </div>
             </div>
 
             {/* Pending reservations quick list */}
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {pendentes.slice(0, 3).map((r) => (
-                <div key={r.id} className="rounded-xl border border-amber-200/70 bg-white/95 px-3 py-2 text-sm">
-                  <p className="truncate font-medium text-slate-800">{r.hospede?.nome}</p>
-                  <p className="text-xs text-slate-500">{r.quarto?.nome} · {formatDate(r.check_in)}</p>
+                <div key={r.id} className="rounded-xl border border-amber-200/70 bg-white px-3 py-2 text-sm">
+                  <p className="truncate font-medium text-dark">{r.hospede?.nome}</p>
+                  <p className="text-xs text-dark/50">{r.quarto?.nome} · {formatDate(r.check_in)}</p>
                 </div>
               ))}
             </div>
@@ -427,22 +432,22 @@ export default function AdminDashboardClient({
             initial={{ opacity: 0, y: -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10 }}
-            className="group block cursor-pointer rounded-2xl border border-emerald-200/80 bg-emerald-50/40 p-5 shadow-sm transition-all hover:border-emerald-300/80 hover:bg-emerald-50/60"
+            className="group block cursor-pointer rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5 shadow-sm transition-all hover:border-emerald-300 hover:shadow-md"
           >
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-emerald-200 bg-white">
                 <CheckCircle className="w-6 h-6 text-emerald-700" />
               </div>
               <div className="flex-1">
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-base font-semibold text-dark">
                   Débito confirmado no Stripe
                 </p>
-                <p className="mt-0.5 text-sm text-slate-700">
+                <p className="mt-0.5 text-sm text-dark/70">
                   {ultimoPagamentoAprovado.hospede?.nome || 'Hóspede'} •{' '}
                   {ultimoPagamentoAprovado.quarto?.nome || 'Quarto'} •{' '}
                   {formatCurrency(ultimoPagamentoAprovado.valor_total)}
                 </p>
-                <p className="mt-0.5 text-xs text-slate-500">
+                <p className="mt-0.5 text-xs text-dark/50">
                   {ultimoPagamentoAprovado.payment_approved_at
                     ? `Aprovado em ${formatDate(ultimoPagamentoAprovado.payment_approved_at, 'dd/MM/yyyy HH:mm')}`
                     : 'Aprovação recebida'}
@@ -450,7 +455,7 @@ export default function AdminDashboardClient({
                   Método: {formatPaymentMethod(ultimoPagamentoAprovado.stripe_payment_method)}
                 </p>
               </div>
-              <ArrowRight className="w-5 h-5 text-slate-500 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 text-dark/40 transition-transform group-hover:translate-x-1" />
             </div>
           </motion.a>
         )}
@@ -463,34 +468,34 @@ export default function AdminDashboardClient({
             initial={{ opacity: 0, y: -10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10 }}
-            className="group block cursor-pointer rounded-2xl border border-rose-200/80 bg-rose-50/40 p-5 shadow-sm transition-all hover:border-rose-300/80 hover:bg-rose-50/60"
+            className="group block cursor-pointer rounded-2xl border border-rose-200 bg-rose-50/60 p-5 shadow-sm transition-all hover:border-rose-300 hover:shadow-md"
           >
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-rose-200 bg-white">
                 <AlertTriangle className="w-6 h-6 text-rose-700" />
               </div>
               <div className="flex-1">
-                <p className="text-base font-semibold text-slate-900">
+                <p className="text-base font-semibold text-dark">
                   {reservasConfirmadasSemDebito.length}{' '}
                   {reservasConfirmadasSemDebito.length === 1
                     ? 'reserva confirmada sem débito'
                     : 'reservas confirmadas sem débito'}
                 </p>
-                <p className="mt-0.5 text-sm text-slate-600">
+                <p className="mt-0.5 text-sm text-dark/60">
                   Revise o pagamento no Stripe antes de considerar o valor como recebido.
                 </p>
               </div>
-              <ArrowRight className="w-5 h-5 text-slate-500 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 text-dark/40 transition-transform group-hover:translate-x-1" />
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {reservasConfirmadasSemDebito.slice(0, 3).map((r) => (
                 <div
                   key={r.id}
-                  className="rounded-xl border border-rose-200/70 bg-white/95 px-3 py-2 text-sm"
+                  className="rounded-xl border border-rose-200/70 bg-white px-3 py-2 text-sm"
                 >
-                  <p className="truncate font-medium text-slate-800">{r.hospede?.nome}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="truncate font-medium text-dark">{r.hospede?.nome}</p>
+                  <p className="text-xs text-dark/50">
                     {r.quarto?.nome} • {formatPaymentStatus(r.stripe_payment_status)}
                   </p>
                 </div>
@@ -508,15 +513,15 @@ export default function AdminDashboardClient({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+            className="rounded-2xl border border-dark/8 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
           >
             <div className="mb-4 flex items-center justify-between">
               <div className={`rounded-xl border p-3 ${stat.bgColor}`}>
                 <div className={stat.color}>{stat.icon}</div>
               </div>
             </div>
-            <p className="text-2xl font-semibold text-slate-900">{stat.value}</p>
-            <p className="mt-1 text-sm text-slate-500">{stat.label}</p>
+            <p className="text-2xl font-semibold text-dark">{stat.value}</p>
+            <p className="mt-1 text-sm text-dark/50">{stat.label}</p>
           </motion.div>
         ))}
       </div>
@@ -525,20 +530,20 @@ export default function AdminDashboardClient({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.25 }}
-        className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        className="rounded-2xl border border-dark/8 bg-white p-6 shadow-sm"
       >
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="flex items-center gap-2 font-semibold text-slate-900">
-              <ShieldCheck className="w-5 h-5 text-slate-700" />
+            <h2 className="flex items-center gap-2 font-semibold text-dark">
+              <ShieldCheck className="w-5 h-5 text-secondary-dark" />
               Auditoria de Acesso Admin
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-dark/50">
               Autoatualiza a cada 30 segundos e quando a aba volta ao foco.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="inline-flex w-fit items-center rounded-full border border-slate-200 bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+            <span className="inline-flex w-fit items-center rounded-full border border-dark/10 bg-dark/5 px-2.5 py-1 text-xs font-medium text-dark/60">
               {acessosRecentes.length} registro(s)
             </span>
             <span className="inline-flex w-fit items-center rounded-full border border-rose-200 bg-rose-50 px-2.5 py-1 text-xs font-medium text-rose-700">
@@ -548,22 +553,22 @@ export default function AdminDashboardClient({
         </div>
 
         {ultimoAcesso ? (
-          <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50/80 px-4 py-3">
-            <p className="text-xs text-slate-500">Última atividade registrada</p>
-            <p className="mt-1 text-sm text-slate-900">
+          <div className="mt-4 rounded-xl border border-dark/8 bg-cream px-4 py-3">
+            <p className="text-xs text-dark/50">Última atividade registrada</p>
+            <p className="mt-1 text-sm text-dark">
               <span className="font-semibold">{ultimoAcesso.username}</span>
               {' • '}
               {getEventLabel(ultimoAcesso.event_type)}
               {' • '}
               {formatDate(ultimoAcesso.created_at, 'dd/MM/yyyy HH:mm')}
             </p>
-            <p className="mt-1 truncate text-xs text-slate-600">
+            <p className="mt-1 truncate text-xs text-dark/60">
               {ultimoAcesso.ip ? `IP: ${ultimoAcesso.ip}` : 'IP não identificado'}
               {ultimoAcesso.path ? ` • Rota: ${ultimoAcesso.path}` : ''}
             </p>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-slate-500">Nenhuma atividade registrada ainda.</p>
+          <p className="mt-4 text-sm text-dark/50">Nenhuma atividade registrada ainda.</p>
         )}
 
         <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-2">
@@ -572,18 +577,18 @@ export default function AdminDashboardClient({
             return (
               <div
                 key={acesso.id}
-                className="rounded-xl border border-slate-200 bg-slate-50/70 px-4 py-3"
+                className="rounded-xl border border-dark/8 bg-cream/80 px-4 py-3"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <p className="flex items-center gap-1.5 text-sm font-medium text-slate-900">
-                    <UserRound className="w-4 h-4 text-slate-500" />
+                  <p className="flex items-center gap-1.5 text-sm font-medium text-dark">
+                    <UserRound className="w-4 h-4 text-dark/50" />
                     {acesso.username}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-[11px] font-medium border ${getEventTone(acesso.event_type)}`}>
                       {getEventLabel(acesso.event_type)}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2 py-1 text-[11px] font-medium text-slate-600">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-dark/10 bg-white px-2 py-1 text-[11px] font-medium text-dark/60">
                       {isMobile ? (
                         <Smartphone className="w-3.5 h-3.5" />
                       ) : (
@@ -593,10 +598,10 @@ export default function AdminDashboardClient({
                     </span>
                   </div>
                 </div>
-                <p className="mt-1 text-xs text-slate-600">
+                <p className="mt-1 text-xs text-dark/60">
                   {formatDate(acesso.created_at, 'dd/MM/yyyy HH:mm')}
                 </p>
-                <p className="mt-1 flex items-center gap-1 truncate text-xs text-slate-500">
+                <p className="mt-1 flex items-center gap-1 truncate text-xs text-dark/50">
                   <Globe className="w-3.5 h-3.5" />
                   {acesso.ip || 'IP não identificado'}
                   {acesso.path ? ` • ${acesso.path}` : ''}
@@ -608,24 +613,23 @@ export default function AdminDashboardClient({
       </motion.section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Occupation Chart placeholder */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="lg:col-span-2 rounded-2xl border border-dark/8 bg-white p-6 shadow-sm"
         >
-          <h2 className="mb-6 font-semibold text-slate-900">Resumo de Reservas</h2>
+          <h2 className="mb-6 font-semibold text-dark">Resumo de Reservas</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
               { label: 'Pagamentos debitados', count: pagamentosAprovados.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
               { label: 'Pendentes', count: pendentes.length, color: 'border border-amber-200 bg-amber-50 text-amber-700' },
               { label: 'Confirmadas', count: confirmadas.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
-              { label: 'Concluídas', count: reservas.filter(r => r.status === 'concluida').length, color: 'border border-slate-300 bg-slate-100 text-slate-700' },
+              { label: 'Concluídas', count: reservas.filter(r => r.status === 'concluida').length, color: 'border border-slate-200 bg-slate-50 text-slate-600' },
               { label: 'Canceladas', count: reservas.filter(r => r.status === 'cancelada').length, color: 'border border-rose-200 bg-rose-50 text-rose-700' },
             ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 text-center">
-                <p className="text-2xl font-semibold text-slate-900">{item.count}</p>
+              <div key={item.label} className="rounded-xl border border-dark/8 bg-cream/80 p-4 text-center">
+                <p className="text-2xl font-semibold text-dark">{item.count}</p>
                 <span className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${item.color}`}>
                   {item.label}
                 </span>
@@ -634,34 +638,33 @@ export default function AdminDashboardClient({
           </div>
         </motion.div>
 
-        {/* Upcoming Check-ins */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="rounded-2xl border border-dark/8 bg-white p-6 shadow-sm"
         >
-          <h2 className="mb-4 font-semibold text-slate-900">Próximos Check-ins</h2>
+          <h2 className="mb-4 font-semibold text-dark">Próximos Check-ins</h2>
           <div className="space-y-4">
             {proximosCheckins.length === 0 ? (
-              <p className="py-6 text-center text-sm text-slate-500">
+              <p className="py-6 text-center text-sm text-dark/50">
                 Nenhum check-in próximo
               </p>
             ) : (
               proximosCheckins.map((reserva) => (
-                <div key={reserva.id} className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 transition-colors hover:bg-slate-100/80">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white">
-                    <Users className="w-5 h-5 text-slate-700" />
+                <div key={reserva.id} className="flex items-center gap-3 rounded-xl border border-dark/8 bg-cream/80 p-3 transition-colors hover:bg-cream">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-secondary/20 bg-secondary/10">
+                    <Users className="w-5 h-5 text-secondary-dark" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-800">
+                    <p className="truncate text-sm font-medium text-dark">
                       {reserva.hospede?.nome}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-dark/50">
                       {formatDate(reserva.check_in)} · {reserva.quarto?.nome}
                     </p>
                     {reserva.hospede?.telefone && (
-                      <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-dark/40">
                         <Phone className="w-3 h-3" />
                         {formatPhone(reserva.hospede.telefone)}
                       </p>
@@ -679,45 +682,45 @@ export default function AdminDashboardClient({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+        className="overflow-hidden rounded-2xl border border-dark/8 bg-white shadow-sm"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 p-6">
-          <h2 className="font-semibold text-slate-900">Reservas Recentes</h2>
+        <div className="flex items-center justify-between border-b border-dark/8 p-6">
+          <h2 className="font-semibold text-dark">Reservas Recentes</h2>
           <a
             href="/admin/reservas"
-            className="flex items-center gap-1 text-sm font-medium text-slate-700 hover:text-slate-900"
+            className="flex items-center gap-1 text-sm font-medium text-dark/60 hover:text-secondary-dark"
           >
             Ver todas <ArrowRight className="w-4 h-4" />
           </a>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50">
+            <thead className="bg-cream/80">
               <tr>
-                <th className="px-6 py-3 text-left font-medium text-slate-500">Hóspede</th>
-                <th className="hidden px-6 py-3 text-left font-medium text-slate-500 lg:table-cell">Telefone</th>
-                <th className="hidden px-6 py-3 text-left font-medium text-slate-500 sm:table-cell">Quarto</th>
-                <th className="hidden px-6 py-3 text-left font-medium text-slate-500 md:table-cell">Check-in</th>
-                <th className="hidden px-6 py-3 text-left font-medium text-slate-500 md:table-cell">Hóspedes</th>
-                <th className="px-6 py-3 text-left font-medium text-slate-500">Valor</th>
-                <th className="hidden px-6 py-3 text-left font-medium text-slate-500 md:table-cell">Pagamento</th>
-                <th className="px-6 py-3 text-left font-medium text-slate-500">Status</th>
+                <th className="px-6 py-3 text-left font-medium text-dark/50">Hóspede</th>
+                <th className="hidden px-6 py-3 text-left font-medium text-dark/50 lg:table-cell">Telefone</th>
+                <th className="hidden px-6 py-3 text-left font-medium text-dark/50 sm:table-cell">Quarto</th>
+                <th className="hidden px-6 py-3 text-left font-medium text-dark/50 md:table-cell">Check-in</th>
+                <th className="hidden px-6 py-3 text-left font-medium text-dark/50 md:table-cell">Hóspedes</th>
+                <th className="px-6 py-3 text-left font-medium text-dark/50">Valor</th>
+                <th className="hidden px-6 py-3 text-left font-medium text-dark/50 md:table-cell">Pagamento</th>
+                <th className="px-6 py-3 text-left font-medium text-dark/50">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-dark/5">
               {recentReservas.map((r) => (
-                <tr key={r.id} className="transition-colors hover:bg-slate-50/70">
+                <tr key={r.id} className="transition-colors hover:bg-cream/50">
                   <td className="px-6 py-4">
-                    <p className="font-medium text-slate-800">{r.hospede?.nome}</p>
-                    <p className="text-xs text-slate-500">{r.hospede?.email}</p>
+                    <p className="font-medium text-dark">{r.hospede?.nome}</p>
+                    <p className="text-xs text-dark/50">{r.hospede?.email}</p>
                   </td>
-                  <td className="hidden px-6 py-4 text-slate-600 lg:table-cell">
+                  <td className="hidden px-6 py-4 text-dark/60 lg:table-cell">
                     {r.hospede?.telefone ? formatPhone(r.hospede.telefone) : '-'}
                   </td>
-                  <td className="hidden px-6 py-4 text-slate-600 sm:table-cell">{r.quarto?.nome}</td>
-                  <td className="hidden px-6 py-4 text-slate-600 md:table-cell">{formatDate(r.check_in)}</td>
-                  <td className="hidden px-6 py-4 text-slate-600 md:table-cell">{r.num_hospedes}</td>
-                  <td className="px-6 py-4 font-medium text-slate-800">{formatCurrency(r.valor_total)}</td>
+                  <td className="hidden px-6 py-4 text-dark/60 sm:table-cell">{r.quarto?.nome}</td>
+                  <td className="hidden px-6 py-4 text-dark/60 md:table-cell">{formatDate(r.check_in)}</td>
+                  <td className="hidden px-6 py-4 text-dark/60 md:table-cell">{r.num_hospedes}</td>
+                  <td className="px-6 py-4 font-medium text-dark">{formatCurrency(r.valor_total)}</td>
                   <td className="hidden px-6 py-4 md:table-cell">
                     <span
                       className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ${
@@ -735,7 +738,7 @@ export default function AdminDashboardClient({
                           : ''}
                       </p>
                     ) : (
-                      <p className="mt-1 text-[11px] text-slate-500">
+                      <p className="mt-1 text-[11px] text-dark/50">
                         {formatPaymentMethod(r.stripe_payment_method)}
                       </p>
                     )}
@@ -757,41 +760,41 @@ export default function AdminDashboardClient({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="rounded-2xl border border-slate-200/80 bg-gradient-to-b from-white to-slate-50/50 p-6 shadow-sm"
+        className="rounded-2xl border border-dark/8 bg-white p-6 shadow-sm"
       >
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h2 className="text-base font-semibold tracking-tight text-slate-900">Disponibilidade de Hoje</h2>
-            <p className="mt-1 text-xs text-slate-500">
+            <h2 className="text-base font-semibold tracking-tight text-dark">Disponibilidade de Hoje</h2>
+            <p className="mt-1 text-xs text-dark/50">
               Leitura em tempo real baseada nas reservas ativas e quartos inativos
             </p>
           </div>
-          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600">
-            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-full border border-dark/10 bg-cream px-2.5 py-1 text-xs font-medium text-dark/60">
+            <span className="h-1.5 w-1.5 rounded-full bg-secondary" />
             {quartosComStatus.length} quartos monitorados
           </span>
         </div>
 
         <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Ocupados</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">{resumoQuartos.ocupados}</p>
-            <div className="mt-3 h-1.5 w-10 rounded-full bg-slate-900" />
+          <div className="rounded-2xl border border-dark/8 bg-cream/80 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-dark/50">Ocupados</p>
+            <p className="mt-1 text-2xl font-semibold text-dark">{resumoQuartos.ocupados}</p>
+            <div className="mt-3 h-1.5 w-10 rounded-full bg-dark" />
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Pendentes</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">{resumoQuartos.pendentes}</p>
-            <div className="mt-3 h-1.5 w-10 rounded-full bg-amber-500/70" />
+          <div className="rounded-2xl border border-dark/8 bg-cream/80 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-dark/50">Pendentes</p>
+            <p className="mt-1 text-2xl font-semibold text-dark">{resumoQuartos.pendentes}</p>
+            <div className="mt-3 h-1.5 w-10 rounded-full bg-amber-500" />
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Disponíveis</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">{resumoQuartos.disponiveis}</p>
-            <div className="mt-3 h-1.5 w-10 rounded-full bg-emerald-500/70" />
+          <div className="rounded-2xl border border-dark/8 bg-cream/80 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-dark/50">Disponíveis</p>
+            <p className="mt-1 text-2xl font-semibold text-dark">{resumoQuartos.disponiveis}</p>
+            <div className="mt-3 h-1.5 w-10 rounded-full bg-emerald-500" />
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-white/90 px-4 py-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Inativos</p>
-            <p className="mt-1 text-2xl font-semibold text-slate-900">{resumoQuartos.inativos}</p>
-            <div className="mt-3 h-1.5 w-10 rounded-full bg-slate-400/80" />
+          <div className="rounded-2xl border border-dark/8 bg-cream/80 px-4 py-3">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-dark/50">Inativos</p>
+            <p className="mt-1 text-2xl font-semibold text-dark">{resumoQuartos.inativos}</p>
+            <div className="mt-3 h-1.5 w-10 rounded-full bg-dark/30" />
           </div>
         </div>
 
@@ -802,20 +805,20 @@ export default function AdminDashboardClient({
             const disponivel = item.status === 'disponivel';
 
             const cardClass = ocupado
-              ? 'border-slate-300 bg-white'
+              ? 'border-dark/15 bg-dark/[0.03]'
               : pendente
-                ? 'border-amber-200/80 bg-amber-50/50'
+                ? 'border-amber-200 bg-amber-50/50'
                 : disponivel
                   ? 'border-emerald-200/70 bg-emerald-50/40'
-                  : 'border-slate-200 bg-slate-50/70';
+                  : 'border-dark/8 bg-cream/60';
 
             const badgeClass = ocupado
-              ? 'border border-slate-900 bg-slate-900 text-white'
+              ? 'border border-dark bg-dark text-white'
               : pendente
                 ? 'border border-amber-200 bg-amber-100 text-amber-800'
                 : disponivel
                   ? 'border border-emerald-200 bg-emerald-100 text-emerald-800'
-                  : 'border border-slate-300 bg-slate-200 text-slate-700';
+                  : 'border border-dark/15 bg-dark/5 text-dark/60';
 
             return (
               <div
@@ -824,10 +827,10 @@ export default function AdminDashboardClient({
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">
+                    <p className="truncate text-sm font-semibold text-dark">
                       {item.quarto.nome}
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-dark/50">
                       {ocupado
                         ? 'Com hóspede em estadia hoje'
                         : pendente
@@ -853,18 +856,18 @@ export default function AdminDashboardClient({
                 </div>
 
                 {(ocupado || pendente) && item.reservaAtiva ? (
-                  <div className="mt-3 rounded-xl border border-slate-200 bg-white/80 px-3 py-2">
-                    <p className="truncate text-xs text-slate-600">
-                      Hóspede <span className="font-medium text-slate-900">{item.reservaAtiva.hospede?.nome || 'Não informado'}</span>
+                  <div className="mt-3 rounded-xl border border-dark/8 bg-cream/80 px-3 py-2">
+                    <p className="truncate text-xs text-dark/60">
+                      Hóspede <span className="font-medium text-dark">{item.reservaAtiva.hospede?.nome || 'Não informado'}</span>
                     </p>
-                    <p className="mt-1 text-xs text-slate-500">
+                    <p className="mt-1 text-xs text-dark/50">
                       {pendente
                         ? `Confirmação pendente para ${formatDate(item.reservaAtiva.check_in)}`
                         : `Saída prevista: ${formatDate(item.reservaAtiva.check_out)}`}
                     </p>
                   </div>
                 ) : (
-                  <p className="mt-3 text-xs text-slate-500">
+                  <p className="mt-3 text-xs text-dark/50">
                     {disponivel
                       ? 'Sem conflito de reserva para hoje.'
                       : 'Quarto desativado manualmente no painel.'}
