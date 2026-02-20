@@ -40,10 +40,10 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect }: Seletor
               type="button"
               onClick={() => onSelect(quarto)}
               className={cn(
-                'w-full text-left bg-white rounded-2xl shadow-lg shadow-dark/5 overflow-hidden transition-all duration-300',
+                'w-full text-left bg-white rounded-none border border-dark/10 transition-all duration-300 relative group overflow-hidden',
                 isSelected
-                  ? 'ring-2 ring-primary shadow-xl'
-                  : 'hover:shadow-xl hover:-translate-y-1'
+                  ? 'ring-2 ring-dark bg-cream/30'
+                  : 'hover:border-dark/30 hover:bg-cream/10'
               )}
             >
               <div className="flex flex-col md:flex-row">
@@ -55,7 +55,7 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect }: Seletor
                     className="w-full h-full object-cover"
                   />
                   {isSelected && (
-                    <div className="absolute top-4 right-4 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
+                    <div className="absolute top-4 right-4 w-8 h-8 bg-dark rounded-none flex items-center justify-center">
                       <Check className="w-5 h-5 text-white" />
                     </div>
                   )}
@@ -70,7 +70,7 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect }: Seletor
                           {formatCategoria(quarto.categoria)}
                         </Badge>
                       </div>
-                      <h3 className="font-display text-xl font-semibold text-dark mb-2">
+                      <h3 className="font-display text-2xl font-black uppercase tracking-tight text-dark mb-2">
                         {quarto.nome}
                       </h3>
                       <p className="text-text-light text-sm mb-3 line-clamp-2">
@@ -85,20 +85,20 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect }: Seletor
                       </div>
                     </div>
 
-                    <div className="text-right md:shrink-0">
-                      <p className="text-xs text-text-light">a partir de</p>
-                      <p className="font-display text-2xl font-bold text-primary">
+                    <div className="text-right md:shrink-0 flex flex-col justify-end h-full">
+                      <p className="text-[10px] uppercase font-bold tracking-widest text-dark/40">Tarifa média</p>
+                      <p className="font-display text-3xl font-black tracking-tighter text-dark">
                         {formatCurrency(quarto.preco_diaria)}
                       </p>
-                      <p className="text-xs text-text-light">/noite</p>
+                      <p className="text-[10px] uppercase font-bold tracking-widest text-dark/40">/ noite</p>
                     </div>
                   </div>
 
                   {/* Amenidades Preview */}
-                  <div className="mt-4 pt-4 border-t border-cream-dark">
-                    <p className="text-xs text-text-light line-clamp-1">
-                      {quarto.amenidades.slice(0, 5).join(' • ')}
-                      {quarto.amenidades.length > 5 && ` + ${quarto.amenidades.length - 5} mais`}
+                  <div className="mt-6 pt-4 border-t border-dark/10">
+                    <p className="text-[10px] uppercase font-bold tracking-widest text-dark/60 line-clamp-1">
+                      {quarto.amenidades.slice(0, 5).join(' · ')}
+                      {quarto.amenidades.length > 5 && ` + ${quarto.amenidades.length - 5}`}
                     </p>
                   </div>
                 </div>

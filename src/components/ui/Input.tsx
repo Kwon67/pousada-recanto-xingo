@@ -33,7 +33,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-text mb-2"
+            className="block text-[10px] font-bold uppercase tracking-widest text-dark/60 mb-3"
           >
             {label}
           </label>
@@ -49,9 +49,9 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={type}
             className={cn(
-              'w-full px-4 py-3 rounded-xl border-2 border-cream-dark bg-white text-text placeholder:text-text-light/60 transition-all duration-200',
-              'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
-              'disabled:bg-cream-dark disabled:cursor-not-allowed',
+              'w-full px-4 py-3 rounded-none border-2 border-dark/10 bg-white text-dark placeholder:text-dark/40 transition-all duration-200 font-medium',
+              'focus:border-dark focus:outline-none focus:ring-0',
+              'disabled:bg-cream disabled:cursor-not-allowed',
               error && 'border-error focus:border-error focus:ring-error/20',
               leftIcon && 'pl-12',
               rightIcon && 'pr-12',
@@ -96,7 +96,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-sm font-medium text-text mb-2"
+            className="block text-[10px] font-bold uppercase tracking-widest text-dark/60 mb-3"
           >
             {label}
           </label>
@@ -105,9 +105,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           ref={ref}
           id={inputId}
           className={cn(
-            'w-full px-4 py-3 rounded-xl border-2 border-cream-dark bg-white text-text placeholder:text-text-light/60 transition-all duration-200 resize-none',
-            'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
-            'disabled:bg-cream-dark disabled:cursor-not-allowed',
+            'w-full px-4 py-3 rounded-none border-2 border-dark/10 bg-white text-dark placeholder:text-dark/40 transition-all duration-200 resize-none font-medium',
+            'focus:border-dark focus:outline-none focus:ring-0',
+            'disabled:bg-cream disabled:cursor-not-allowed',
             error && 'border-error focus:border-error focus:ring-error/20',
             className
           )}

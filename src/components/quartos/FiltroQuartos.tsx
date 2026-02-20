@@ -59,9 +59,9 @@ export default function FiltroQuartos({ filtros, onFiltroChange }: FiltroQuartos
         }}
         className="overflow-hidden lg:!h-auto lg:!opacity-100"
       >
-        <div className="bg-white rounded-2xl shadow-lg shadow-dark/5 p-6">
+        <div className="bg-white rounded-none border-2 border-dark/10 p-6">
           <div className="flex items-center justify-between mb-4 lg:hidden">
-            <h3 className="font-display text-lg font-semibold text-dark">Filtros</h3>
+            <h3 className="font-display text-[10px] uppercase font-black tracking-widest text-dark">Filtros</h3>
             <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-cream-dark rounded-lg">
               <X className="w-5 h-5 text-text-light" />
             </button>

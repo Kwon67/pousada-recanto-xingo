@@ -6,7 +6,6 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  isSameMonth,
   isSameDay,
   addMonths,
   subMonths,
@@ -22,11 +21,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface DatePickerProps {
   label?: string;
   value: Date | null;
-  onChange: (date: Date) => void;
+  onChange: (value: Date) => void;
   minDate?: Date;
   maxDate?: Date;
   disabledDates?: Date[];
   error?: string;
+  className?: string;
 }
 
 export default function DatePicker({
@@ -37,6 +37,7 @@ export default function DatePicker({
   maxDate,
   disabledDates = [],
   error,
+  className,
 }: DatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(value || new Date());
@@ -78,7 +79,8 @@ export default function DatePicker({
           'w-full px-4 py-3 rounded-xl border-2 border-cream-dark bg-white text-left flex items-center gap-3 transition-colors duration-200',
           'hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
           error && 'border-error focus:border-error focus:ring-error/20',
-          isOpen && 'border-primary ring-2 ring-primary/20'
+          isOpen && 'border-primary ring-2 ring-primary/20',
+          className
         )}
       >
         <Calendar className="w-5 h-5 text-text-light" />
@@ -100,7 +102,7 @@ export default function DatePicker({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="absolute top-full left-0 mt-2 p-4 bg-white rounded-2xl shadow-2xl shadow-dark/10 z-50 w-full min-w-[300px]"
+              className="absolute top-full left-0 mt-2 p-4 bg-cream rounded-none border border-black/10 shadow-2xl shadow-dark/10 z-50 w-full min-w-[300px]"
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-4">

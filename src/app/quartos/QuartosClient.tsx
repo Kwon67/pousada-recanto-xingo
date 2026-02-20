@@ -22,8 +22,8 @@ export default function QuartosClient() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <p className="text-primary font-medium mb-2">Acomodações</p>
-          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-dark mb-4">
+          <p className="text-dark/60 font-bold uppercase tracking-widest text-[10px] mb-4">Acomodações</p>
+          <h1 className="font-display text-4xl md:text-5xl lg:text-5xl font-black uppercase tracking-tight text-dark mb-4 drop-shadow-sm">
             Nossos Quartos
           </h1>
           <p className="text-text-light text-lg max-w-2xl mx-auto">

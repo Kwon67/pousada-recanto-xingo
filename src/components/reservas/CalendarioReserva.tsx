@@ -76,7 +76,7 @@ export default function CalendarioReserva({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg shadow-dark/5 p-6">
+    <div className="bg-white rounded-none border border-dark/10 p-6">
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Month 1 */}
         <div className="flex-1">
@@ -84,19 +84,19 @@ export default function CalendarioReserva({
             <button
               type="button"
               onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-              className="p-2 rounded-lg hover:bg-cream-dark transition-colors"
+              className="p-2 rounded-none border border-transparent hover:border-dark/10 hover:bg-cream transition-colors"
             >
-              <ChevronLeft className="w-5 h-5 text-text" />
+              <ChevronLeft className="w-5 h-5 text-dark" />
             </button>
-            <span className="font-display font-semibold text-dark capitalize">
+            <span className="font-display font-black text-dark uppercase tracking-widest text-sm">
               {format(currentMonth, 'MMMM yyyy', { locale: ptBR })}
             </span>
             <button
               type="button"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-2 rounded-lg hover:bg-cream-dark transition-colors lg:hidden"
+              className="p-2 rounded-none border border-transparent hover:border-dark/10 hover:bg-cream transition-colors lg:hidden"
             >
-              <ChevronRight className="w-5 h-5 text-text" />
+              <ChevronRight className="w-5 h-5 text-dark" />
             </button>
             <div className="hidden lg:block w-10" />
           </div>
@@ -130,13 +130,13 @@ export default function CalendarioReserva({
                   onClick={() => handleDateClick(day)}
                   disabled={disabled}
                   className={cn(
-                    'w-full aspect-square rounded-lg text-sm font-medium transition-all duration-200 relative',
-                    'hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/30',
-                    disabled && 'opacity-30 cursor-not-allowed hover:bg-transparent line-through',
-                    (isCheckIn || isCheckOut) && 'bg-primary text-white hover:bg-primary-dark',
-                    inRange && !isCheckIn && !isCheckOut && 'bg-primary/10',
-                    today && !isCheckIn && !isCheckOut && 'ring-2 ring-primary/30',
-                    !isCheckIn && !isCheckOut && !disabled && !inRange && 'text-text'
+                    'w-full aspect-square rounded-none text-sm font-bold transition-all duration-200 relative',
+                    'hover:bg-dark/5 focus:outline-none focus:ring-2 focus:ring-dark/20',
+                    disabled && 'opacity-30 cursor-not-allowed hover:bg-transparent line-through font-normal',
+                    (isCheckIn || isCheckOut) && 'bg-dark text-white hover:bg-black',
+                    inRange && !isCheckIn && !isCheckOut && 'bg-dark/5',
+                    today && !isCheckIn && !isCheckOut && 'ring-2 ring-dark/20',
+                    !isCheckIn && !isCheckOut && !disabled && !inRange && 'text-dark/80'
                   )}
                 >
                   {format(day, 'd')}
@@ -150,15 +150,15 @@ export default function CalendarioReserva({
         <div className="flex-1 hidden lg:block">
           <div className="flex items-center justify-between mb-4">
             <div className="w-10" />
-            <span className="font-display font-semibold text-dark capitalize">
+            <span className="font-display font-black text-dark uppercase tracking-widest text-sm">
               {format(addMonths(currentMonth, 1), 'MMMM yyyy', { locale: ptBR })}
             </span>
             <button
               type="button"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-              className="p-2 rounded-lg hover:bg-cream-dark transition-colors"
+              className="p-2 rounded-none border border-transparent hover:border-dark/10 hover:bg-cream transition-colors"
             >
-              <ChevronRight className="w-5 h-5 text-text" />
+              <ChevronRight className="w-5 h-5 text-dark" />
             </button>
           </div>
 
@@ -200,13 +200,13 @@ export default function CalendarioReserva({
                       onClick={() => handleDateClick(day)}
                       disabled={disabled}
                       className={cn(
-                        'w-full aspect-square rounded-lg text-sm font-medium transition-all duration-200 relative',
-                        'hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/30',
-                        disabled && 'opacity-30 cursor-not-allowed hover:bg-transparent line-through',
-                        (isCheckIn || isCheckOut) && 'bg-primary text-white hover:bg-primary-dark',
-                        inRange && !isCheckIn && !isCheckOut && 'bg-primary/10',
-                        today && !isCheckIn && !isCheckOut && 'ring-2 ring-primary/30',
-                        !isCheckIn && !isCheckOut && !disabled && !inRange && 'text-text'
+                        'w-full aspect-square rounded-none text-sm font-bold transition-all duration-200 relative',
+                        'hover:bg-dark/5 focus:outline-none focus:ring-2 focus:ring-dark/20',
+                        disabled && 'opacity-30 cursor-not-allowed hover:bg-transparent line-through font-normal',
+                        (isCheckIn || isCheckOut) && 'bg-dark text-white hover:bg-black',
+                        inRange && !isCheckIn && !isCheckOut && 'bg-dark/5',
+                        today && !isCheckIn && !isCheckOut && 'ring-2 ring-dark/20',
+                        !isCheckIn && !isCheckOut && !disabled && !inRange && 'text-dark/80'
                       )}
                     >
                       {format(day, 'd')}
@@ -220,20 +220,20 @@ export default function CalendarioReserva({
       </div>
 
       {/* Legend */}
-      <div className="mt-6 pt-4 border-t border-cream-dark flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-primary" />
-          <span className="text-text-light">Check-in / Check-out</span>
+      <div className="mt-6 pt-6 border-t border-dark/10 flex flex-wrap gap-6 text-xs uppercase tracking-widest font-bold">
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-none bg-dark" />
+          <span className="text-dark/60">Check-in / out</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-primary/10" />
-          <span className="text-text-light">Período selecionado</span>
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-none bg-dark/10" />
+          <span className="text-dark/60">Selecionado</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-cream-dark line-through flex items-center justify-center text-xs opacity-50">
-            X
+        <div className="flex items-center gap-3">
+          <div className="w-4 h-4 rounded-none border border-dark/20 bg-cream line-through flex items-center justify-center text-[10px] text-dark/40">
+            x
           </div>
-          <span className="text-text-light">Indisponível</span>
+          <span className="text-dark/40">Indisponível</span>
         </div>
       </div>
 
@@ -242,9 +242,9 @@ export default function CalendarioReserva({
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 p-4 bg-cream rounded-xl"
+          className="mt-6 p-4 bg-cream border border-dark/10 rounded-none"
         >
-          <p className="text-sm text-text-light">
+          <p className="text-xs uppercase tracking-widest font-bold text-dark/60">
             {selectingCheckOut
               ? 'Agora selecione a data de check-out'
               : 'Clique em uma data para começar uma nova seleção'}

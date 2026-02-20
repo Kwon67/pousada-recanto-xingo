@@ -44,15 +44,15 @@ export default function QuartoInfo({ quarto }: QuartoInfoProps) {
         <div className="flex items-center gap-3 mb-3">
           <Badge variant="primary">{formatCategoria(quarto.categoria)}</Badge>
         </div>
-        <h1 className="font-display text-3xl md:text-4xl font-bold text-dark mb-4">
+        <h1 className="font-display text-4xl md:text-5xl font-black uppercase tracking-tight text-dark mb-4 drop-shadow-sm">
           {quarto.nome}
         </h1>
         <div className="flex items-center gap-6 text-text-light">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
             <Users className="w-5 h-5" />
             <span>Até {quarto.capacidade} pessoas</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 font-bold uppercase tracking-widest text-[10px]">
             <Maximize2 className="w-5 h-5" />
             <span>{quarto.tamanho_m2}m²</span>
           </div>
@@ -61,7 +61,7 @@ export default function QuartoInfo({ quarto }: QuartoInfoProps) {
 
       {/* Description */}
       <div>
-        <h2 className="font-display text-xl font-semibold text-dark mb-3">
+        <h2 className="font-display text-xl font-black uppercase tracking-widest text-dark mb-3 border-b border-dark/10 pb-4">
           Sobre o quarto
         </h2>
         <p className="text-text-light leading-relaxed">{quarto.descricao}</p>
@@ -69,7 +69,7 @@ export default function QuartoInfo({ quarto }: QuartoInfoProps) {
 
       {/* Amenidades */}
       <div>
-        <h2 className="font-display text-xl font-semibold text-dark mb-4">
+        <h2 className="font-display text-xl font-black uppercase tracking-widest text-dark mb-4 border-b border-dark/10 pb-4">
           O que o quarto oferece
         </h2>
         <div className="grid grid-cols-2 gap-4">
@@ -81,10 +81,10 @@ export default function QuartoInfo({ quarto }: QuartoInfoProps) {
               transition={{ duration: 0.3, delay: index * 0.05 }}
               className="flex items-center gap-3 text-text"
             >
-              <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+              <div className="w-10 h-10 bg-primary/10 rounded-none flex items-center justify-center text-primary">
                 {amenidadeIconMap[amenidade] || <Check className="w-5 h-5" />}
               </div>
-              <span>{amenidade}</span>
+              <span className="font-bold text-xs uppercase tracking-widest">{amenidade}</span>
             </motion.div>
           ))}
         </div>
@@ -92,7 +92,7 @@ export default function QuartoInfo({ quarto }: QuartoInfoProps) {
 
       {/* Regras */}
       <div>
-        <h2 className="font-display text-xl font-semibold text-dark mb-4">
+        <h2 className="font-display text-xl font-black uppercase tracking-widest text-dark mb-4 border-b border-dark/10 pb-4">
           Regras e informações
         </h2>
         <ul className="space-y-3">

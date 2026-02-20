@@ -21,7 +21,7 @@ export default function QuartoCard({ quarto, index = 0 }: QuartoCardProps) {
       viewport={{ once: true }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
     >
-      <div className="bg-white rounded-2xl shadow-lg shadow-dark/5 overflow-hidden card-hover group h-full flex flex-col">
+      <div className="bg-white rounded-none border border-dark/10 overflow-hidden card-hover group h-full flex flex-col">
         {/* Image */}
         <Link href={`/quartos/${quarto.slug}`} className="relative aspect-[4/3] overflow-hidden block">
           <img
@@ -40,7 +40,7 @@ export default function QuartoCard({ quarto, index = 0 }: QuartoCardProps) {
         {/* Content */}
         <div className="p-6 flex-1 flex flex-col">
           <Link href={`/quartos/${quarto.slug}`}>
-            <h3 className="font-display text-xl font-semibold text-dark mb-2 group-hover:text-primary transition-colors">
+            <h3 className="font-display text-2xl font-black uppercase tracking-tight text-dark mb-2 group-hover:text-primary transition-colors">
               {quarto.nome}
             </h3>
           </Link>
@@ -50,11 +50,11 @@ export default function QuartoCard({ quarto, index = 0 }: QuartoCardProps) {
 
           {/* Icons Row */}
           <div className="flex items-center gap-4 mb-4 text-text-light text-sm">
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 font-bold uppercase tracking-widest text-[10px]">
               <Users className="w-4 h-4" />
               <span>Até {quarto.capacidade}</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1.5 font-bold uppercase tracking-widest text-[10px]">
               <Maximize2 className="w-4 h-4" />
               <span>{quarto.tamanho_m2}m²</span>
             </div>
@@ -63,10 +63,10 @@ export default function QuartoCard({ quarto, index = 0 }: QuartoCardProps) {
           {/* Price & Buttons */}
           <div className="flex items-center justify-between pt-4 border-t border-cream-dark">
             <div>
-              <p className="text-xs text-text-light">a partir de</p>
-              <p className="text-xl font-bold text-primary">
+              <p className="text-[10px] uppercase font-bold tracking-widest text-dark/40">a partir de</p>
+              <p className="font-display text-3xl font-black tracking-tighter text-dark">
                 {formatCurrency(quarto.preco_diaria)}
-                <span className="text-sm font-normal text-text-light">/noite</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest text-dark/40 ml-1">/noite</span>
               </p>
             </div>
             <div className="flex gap-2">

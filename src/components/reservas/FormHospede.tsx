@@ -66,9 +66,9 @@ export default function FormHospede({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       onSubmit={handleSubmit(handleFormSubmit)}
-      className="bg-white rounded-2xl shadow-lg shadow-dark/5 p-8"
+      className="bg-white rounded-none border border-dark/10 p-8"
     >
-      <h2 className="font-display text-2xl font-bold text-dark mb-6">
+      <h2 className="font-display text-2xl font-black uppercase tracking-widest text-dark mb-8">
         Seus dados
       </h2>
 
@@ -131,11 +131,11 @@ export default function FormHospede({
         />
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mt-8">
-        <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1">
+      <div className="flex flex-col sm:flex-row gap-4 mt-10">
+        <Button type="button" variant="outline" onClick={onBack} className="sm:flex-1 rounded-none border-2 border-dark/20 uppercase tracking-widest text-xs font-bold text-dark hover:bg-dark hover:text-white transition-colors">
           Voltar
         </Button>
-        <Button type="submit" className="sm:flex-1" loading={isSubmitting}>
+        <Button type="submit" className="sm:flex-1 rounded-none uppercase tracking-widest text-xs font-bold border-2 border-dark bg-dark text-white hover:bg-white hover:text-dark transition-colors" loading={isSubmitting}>
           Continuar
         </Button>
       </div>

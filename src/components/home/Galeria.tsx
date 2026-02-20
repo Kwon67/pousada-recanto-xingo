@@ -235,44 +235,58 @@ export default function Galeria({ images }: GaleriaProps) {
   };
 
   return (
-    <section className="relative overflow-hidden bg-dark py-20 dark-dots">
-      {/* Background glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/6 rounded-full blur-[120px]" />
-      </div>
+    <section className="relative overflow-hidden bg-[#0A161E] py-24 lg:py-32">
+      {/* Background noise */}
+      <div className="absolute inset-0 noise-bg opacity-20 mix-blend-overlay pointer-events-none"></div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-12"
-        >
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-4">
-            Momentos no <span className="text-secondary">Recanto</span>
-          </h2>
-          <p className="text-white/70 text-lg max-w-2xl mx-auto">
-            Confira alguns registros da nossa pousada e da beleza natural da região do Xingó.
-          </p>
-        </motion.div>
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+        
+        {/* Brutalist Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 lg:mb-24">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-xl"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <span className="h-px w-10 bg-secondary block"></span>
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/50">Galeria</span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[0.9]">
+              Momentos<br />
+              <span className="italic text-secondary/90 font-medium">No Recanto.</span>
+            </h2>
+          </motion.div>
 
-        {/* Counter */}
-        <div className="text-center mb-6">
-          <span className="text-white/80 text-lg font-medium tabular-nums">
-            {activeIndex + 1}
-          </span>
-          <span className="text-white/25 text-lg font-medium">
-            {' '}/ {images.length}
-          </span>
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="md:text-right flex flex-col items-start md:items-end justify-end"
+          >
+             {/* Counter moved to header for integration */}
+            <div className="text-right mb-4">
+              <span className="text-white text-3xl font-display font-medium tabular-nums">
+                {(activeIndex + 1).toString().padStart(2, '0')}
+              </span>
+              <span className="text-white/30 text-xl font-display font-medium">
+                {' '}/ {images.length.toString().padStart(2, '0')}
+              </span>
+            </div>
+            <p className="text-white/60 text-lg max-w-sm md:ml-auto">
+              Confira alguns registros da nossa pousada e da beleza natural da região do Xingó.
+            </p>
+          </motion.div>
         </div>
 
         {/* Card Deck Viewport */}
         <div className="flex justify-center">
           <div
             ref={containerRef}
-            className="relative w-full max-w-sm overflow-hidden rounded-3xl select-none"
+            className="relative w-full max-w-sm overflow-hidden select-none border border-white/10"
             style={{
               aspectRatio: '3/4',
               touchAction: 'pan-y',

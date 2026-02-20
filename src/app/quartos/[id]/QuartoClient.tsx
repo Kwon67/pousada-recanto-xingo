@@ -31,13 +31,13 @@ export default function QuartoClient({ id }: QuartoClientProps) {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <Skeleton className="aspect-16/10 rounded-2xl" />
-              <Skeleton className="h-8 w-3/4" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-32" />
+              <Skeleton className="aspect-16/10 rounded-none border border-dark/10" />
+              <Skeleton className="h-8 w-3/4 rounded-none" />
+              <Skeleton className="h-4 w-1/2 rounded-none" />
+              <Skeleton className="h-32 rounded-none" />
             </div>
             <div>
-              <Skeleton className="h-96 rounded-2xl" />
+              <Skeleton className="h-96 rounded-none border border-dark/10" />
             </div>
           </div>
         </div>
@@ -72,17 +72,17 @@ export default function QuartoClient({ id }: QuartoClientProps) {
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-2 text-sm text-text-light mb-8"
+          className="flex items-center gap-2 text-[10px] uppercase font-bold tracking-widest text-text-light mb-8"
         >
-          <Link href="/" className="hover:text-primary transition-colors">
+          <Link href="/" className="hover:text-dark transition-colors">
             Início
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <Link href="/quartos" className="hover:text-primary transition-colors">
+          <Link href="/quartos" className="hover:text-dark transition-colors">
             Quartos
           </Link>
           <ChevronRight className="w-4 h-4" />
-          <span className="text-dark font-medium">{quarto.nome}</span>
+          <span className="text-dark">{quarto.nome}</span>
         </motion.nav>
 
         {/* Main Content */}

@@ -36,21 +36,21 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variants = {
       primary:
-        'bg-primary text-white hover:bg-primary-dark active:scale-[0.98] shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-elegant-md)] rounded-[var(--radius-lg)]',
+        'bg-dark text-white border-2 border-dark hover:bg-white hover:text-dark active:scale-[0.98]',
       secondary:
-        'bg-secondary text-dark hover:bg-secondary-dark active:scale-[0.98] shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-elegant-md)] rounded-[var(--radius-lg)]',
+        'bg-cream border-2 border-dark/10 text-dark hover:border-dark hover:bg-white active:scale-[0.98]',
       outline:
-        'border-2 border-primary text-primary hover:bg-primary hover:text-white active:scale-[0.98] rounded-[var(--radius-lg)]',
+        'border-2 border-dark/20 text-dark hover:border-dark hover:bg-dark hover:text-white active:scale-[0.98]',
       ghost:
-        'text-text hover:bg-cream-dark active:scale-[0.98] rounded-[var(--radius-lg)]',
+        'text-dark/60 hover:text-dark hover:bg-cream active:scale-[0.98]',
       danger:
-        'bg-error text-white hover:bg-red-600 active:scale-[0.98] shadow-[var(--shadow-elegant)] hover:shadow-[var(--shadow-elegant-md)] rounded-[var(--radius-lg)]',
+        'bg-error text-white border-2 border-error hover:bg-white hover:text-error active:scale-[0.98]',
     };
 
     const sizes = {
-      sm: 'text-sm px-4 py-2 gap-2',
-      md: 'text-base px-6 py-3 gap-2',
-      lg: 'text-lg px-8 py-4 gap-2.5',
+      sm: 'text-[10px] px-4 py-2 gap-2 uppercase tracking-widest font-bold rounded-none',
+      md: 'text-xs px-6 py-3 gap-2 uppercase tracking-widest font-bold rounded-none',
+      lg: 'text-sm px-8 py-4 gap-2.5 uppercase tracking-widest font-bold rounded-none',
     };
 
     const content = loading ? (

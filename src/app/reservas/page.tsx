@@ -92,13 +92,13 @@ function ReservasContent() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-8"
+          className="text-center mb-12"
         >
-          <h1 className="font-display text-3xl md:text-4xl font-bold text-dark mb-4">
+          <h1 className="font-display text-4xl md:text-5xl font-black uppercase tracking-tight text-dark mb-4 drop-shadow-sm">
             Fazer Reserva
           </h1>
-          <p className="text-text-light text-lg max-w-2xl mx-auto">
-            Siga os passos abaixo para reservar seu quarto no Recanto do Matuto
+          <p className="text-dark/60 text-sm font-bold uppercase tracking-widest max-w-2xl mx-auto">
+            Siga os passos abaixo para garantir sua estada
           </p>
         </motion.div>
 
@@ -114,7 +114,7 @@ function ReservasContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <h2 className="font-display text-2xl font-bold text-dark mb-6 text-center">
+              <h2 className="font-display text-2xl font-black uppercase tracking-widest text-dark mb-8 text-center">
                 Selecione as datas
               </h2>
 
@@ -129,7 +129,7 @@ function ReservasContent() {
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="mt-6 p-6 bg-white rounded-2xl shadow-lg shadow-dark/5 space-y-6"
+                  className="mt-6 p-6 bg-white rounded-none border border-dark/10 space-y-6"
                 >
                   <div>
                     <p className="text-text-light text-sm">Período selecionado</p>
@@ -152,14 +152,14 @@ function ReservasContent() {
                           key={opt.value}
                           type="button"
                           onClick={() => setNumHospedes(opt.value)}
-                          className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all duration-200 ${
+                          className={`flex items-center gap-3 p-4 rounded-none border transition-all duration-200 ${
                             numHospedes === opt.value
-                              ? 'border-primary bg-primary/5 text-primary shadow-sm'
-                              : 'border-cream-dark bg-white text-text-light hover:border-primary/40 hover:bg-primary/2'
+                              ? 'border-dark bg-dark text-white shadow-none'
+                              : 'border-dark/10 bg-white text-dark/70 hover:border-dark/30 hover:bg-cream'
                           }`}
                         >
-                          <div className={`p-2 rounded-lg ${
-                            numHospedes === opt.value ? 'bg-primary/10' : 'bg-cream'
+                          <div className={`p-2 rounded-none border ${
+                            numHospedes === opt.value ? 'bg-white/10 border-white/20 text-white' : 'bg-cream border-dark/5 text-dark'
                           }`}>
                             {opt.icon}
                           </div>
@@ -169,7 +169,7 @@ function ReservasContent() {
                     </div>
                   </div>
 
-                  <Button onClick={nextStep} className="w-full">
+                  <Button onClick={nextStep} className="w-full rounded-none tracking-widest uppercase font-bold text-sm bg-dark text-white hover:bg-white hover:text-dark border-2 border-dark transition-colors">
                     Continuar
                   </Button>
                 </motion.div>
@@ -184,12 +184,12 @@ function ReservasContent() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
             >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="font-display text-2xl font-bold text-dark">
+              <div className="flex items-center justify-between mb-8 pb-4 border-b border-dark/10">
+                <h2 className="font-display text-2xl font-black uppercase tracking-widest text-dark">
                   Escolha seu quarto
                 </h2>
-                <p className="text-text-light">
-                  {quartosDisponivelList.length} quarto(s) disponível(is)
+                <p className="text-dark/60 font-bold text-xs uppercase tracking-widest">
+                  {quartosDisponivelList.length} quartos
                 </p>
               </div>
 
@@ -200,13 +200,13 @@ function ReservasContent() {
               />
 
               <div className="flex gap-4 mt-8">
-                <Button variant="outline" onClick={prevStep} className="flex-1">
+                <Button variant="outline" onClick={prevStep} className="flex-1 rounded-none border-2 border-dark/20 uppercase tracking-widest text-xs font-bold text-dark hover:bg-dark hover:text-white transition-colors">
                   Voltar
                 </Button>
                 <Button
                   onClick={nextStep}
                   disabled={!quarto}
-                  className="flex-1"
+                  className="flex-1 rounded-none uppercase tracking-widest text-xs font-bold border-2 border-dark bg-dark text-white hover:bg-white hover:text-dark transition-colors"
                 >
                   Continuar
                 </Button>

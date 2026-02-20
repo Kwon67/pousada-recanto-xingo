@@ -26,14 +26,14 @@ export default function Badge({
   };
 
   const sizes = {
-    sm: 'text-xs px-2 py-0.5',
-    md: 'text-sm px-3 py-1',
+    sm: 'text-[10px] px-2 py-0.5 uppercase tracking-widest font-bold',
+    md: 'text-xs px-3 py-1 uppercase tracking-widest font-bold',
   };
 
   return (
     <span
       className={cn(
-        'inline-flex items-center font-medium rounded-full',
+        'inline-flex items-center rounded-none',
         variants[variant],
         sizes[size],
         className

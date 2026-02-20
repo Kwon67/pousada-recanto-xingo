@@ -31,7 +31,7 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
     <>
       <div className="space-y-4">
         {/* Main Swiper */}
-        <div className="relative rounded-2xl overflow-hidden group">
+        <div className="relative rounded-none border border-dark/10 overflow-hidden group">
           <Swiper
             modules={[Navigation, Thumbs]}
             navigation={{
@@ -54,7 +54,7 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
                   />
                   <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/20 transition-colors flex items-center justify-center">
                     <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="bg-white/90 backdrop-blur-sm p-3 rounded-full">
+                      <div className="bg-white/90 backdrop-blur-sm p-3 rounded-none">
                         <Expand className="w-6 h-6 text-dark" />
                       </div>
                     </div>
@@ -65,10 +65,10 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
           </Swiper>
 
           {/* Custom Navigation */}
-          <button className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          <button className="swiper-button-prev-custom absolute left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-none border border-dark/10 flex items-center justify-center shadow-none opacity-0 group-hover:opacity-100 transition-opacity">
             <ChevronLeft className="w-5 h-5 text-dark" />
           </button>
-          <button className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          <button className="swiper-button-next-custom absolute right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white/90 backdrop-blur-sm rounded-none border border-dark/10 flex items-center justify-center shadow-none opacity-0 group-hover:opacity-100 transition-opacity">
             <ChevronRight className="w-5 h-5 text-dark" />
           </button>
         </div>
@@ -89,7 +89,7 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
         >
           {imagens.map((img, index) => (
             <SwiperSlide key={index}>
-              <div className="aspect-square rounded-xl overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors">
+              <div className="aspect-square rounded-none overflow-hidden cursor-pointer border-2 border-transparent hover:border-dark transition-colors">
                 <img
                   src={img}
                   alt={`${nome} - Miniatura ${index + 1}`}
@@ -145,7 +145,7 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
               exit={{ opacity: 0, scale: 0.9 }}
               src={imagens[lightboxIndex]}
               alt={`${nome} - Foto ${lightboxIndex + 1}`}
-              className="max-w-[90vw] max-h-[85vh] object-contain rounded-lg"
+              className="max-w-[90vw] max-h-[85vh] object-contain rounded-none border border-white/20"
               onClick={(e) => e.stopPropagation()}
             />
 

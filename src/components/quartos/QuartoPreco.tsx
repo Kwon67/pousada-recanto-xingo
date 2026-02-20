@@ -59,16 +59,16 @@ export default function QuartoPreco({ quarto }: QuartoPrecoProps) {
       transition={{ duration: 0.5, delay: 0.2 }}
       className="sticky top-24"
     >
-      <div className="bg-white rounded-2xl shadow-xl shadow-dark/10 p-6 border border-cream-dark">
+      <div className="bg-white rounded-none border-2 border-dark/10 p-6">
         {/* Price Header */}
         <div className="mb-6">
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-3xl font-bold text-primary">
+            <span className="font-display text-4xl font-black tracking-tighter text-dark">
               {formatCurrency(quarto.preco_diaria)}
             </span>
-            <span className="text-text-light">/noite</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-dark/40">/noite</span>
           </div>
-          <p className="text-sm text-text-light mt-1">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-dark/40 mt-1">
             Finais de semana: {formatCurrency(quarto.preco_fds)}/noite
           </p>
         </div>
@@ -104,16 +104,16 @@ export default function QuartoPreco({ quarto }: QuartoPrecoProps) {
 
         {/* Calculation */}
         {noites > 0 && (
-          <div className="mb-6 p-4 bg-cream rounded-xl space-y-2">
+          <div className="mb-6 p-4 bg-cream rounded-none space-y-2 border border-dark/10">
             <div className="flex justify-between text-sm">
               <span className="text-text-light">
                 {formatCurrency(quarto.preco_diaria)} x {noites} noite(s)
               </span>
               <span className="text-text">{formatCurrency(valorTotal)}</span>
             </div>
-            <div className="flex justify-between font-semibold pt-2 border-t border-cream-dark">
+            <div className="flex justify-between font-black uppercase tracking-widest text-xs pt-2 border-t border-dark/10">
               <span className="text-dark">Total</span>
-              <span className="text-primary text-lg">{formatCurrency(valorTotal)}</span>
+              <span className="text-dark text-lg md:text-xl tracking-tighter">{formatCurrency(valorTotal)}</span>
             </div>
           </div>
         )}

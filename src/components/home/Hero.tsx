@@ -49,7 +49,7 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
     <section
       ref={sectionRef}
       style={{ position: 'relative' }}
-      className="noise-bg flex min-h-svh items-center bg-[#1B3A4B] pt-20"
+      className="noise-bg flex min-h-svh items-center bg-[#1B3A4B] pt-32 md:pt-40"
     >
       {/* Subtle bottom fade to blend with check-in container */}
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/20 to-transparent pointer-events-none z-20" />

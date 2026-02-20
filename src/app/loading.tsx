@@ -7,7 +7,7 @@ export default function Loading() {
   const logoUrl = 'https://res.cloudinary.com/diuh0ditl/image/upload/v1771538229/recantodomatuto_keg3sl.png';
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#1B3A4B] overflow-hidden">
+    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-[#1B3A4B] overflow-hidden">
       {/* Background Liquid Shapes */}
       <motion.div
         animate={{
@@ -35,20 +35,37 @@ export default function Loading() {
         </div>
 
         {/* Logo with Magnetic Morph Effect */}
+        {/* Logo with Exact Hero Effects */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, filter: 'brightness(0) invert(1)' }}
-          animate={{ opacity: 1, scale: 1, filter: 'brightness(1) invert(0)' }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-48 h-48 sm:w-64 sm:h-64"
+          className="relative z-60 group"
         >
-          <div className="absolute inset-0 bg-secondary/20 rounded-full blur-3xl animate-pulse" />
-          <Image
-            src={logoUrl}
-            alt="Loading..."
-            fill
-            priority
-            className="object-contain drop-shadow-[0_0_40px_rgba(212,168,67,0.3)]"
-          />
+          {/* Outer glow/halo */}
+          <div className="absolute inset-0 bg-secondary/30 blur-[60px] rounded-full scale-125 opacity-70 transition-opacity duration-1000" />
+          
+          {/* Main Logo Container - Exact same size as Hero */}
+          <div className="relative h-40 w-40 sm:h-56 sm:w-56 md:h-64 md:w-64 lg:h-72 lg:w-72 rounded-full border-[3px] border-secondary/60 shadow-[0_20px_40px_rgba(0,0,0,0.5),0_0_30px_rgba(212,168,67,0.2)] overflow-hidden ring-4 ring-white/5 bg-white flex items-center justify-center">
+            <Image
+              src={logoUrl}
+              alt="Loading..."
+              fill
+              priority
+              className="object-cover rounded-full"
+            />
+            {/* Subtle glass reflection overlay */}
+            <div className="absolute inset-0 bg-linear-to-tr from-transparent via-white/5 to-white/15 pointer-events-none" />
+            {/* Dynamic light reflection sweep (simulating loading pulse) */}
+            <motion.div 
+              animate={{ x: ["-100%", "200%"] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 w-1/2 to-transparent" 
+            />
+          </div>
+
+          {/* Decorative orbiting ring - Exact match to Hero */}
+          <div className="absolute -inset-4 border border-secondary/15 rounded-full animate-[spin_35s_linear_infinite] pointer-events-none" />
         </motion.div>
 
         {/* Asymmetric Loading Text */}
@@ -76,7 +93,7 @@ export default function Loading() {
         </div>
 
         {/* Modern Minimalist Line */}
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-32 h-[1px] bg-white/10">
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 w-32 h-px bg-white/10">
           <motion.div
             initial={{ scaleX: 0, originX: 0 }}
             animate={{ scaleX: 1 }}

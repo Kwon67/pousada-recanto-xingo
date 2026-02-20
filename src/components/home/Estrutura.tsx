@@ -230,28 +230,43 @@ export default function Estrutura({ mediaOverrides }: EstruturaProps) {
   });
 
   return (
-    <section className="relative overflow-hidden bg-dark py-24 dark-dots">
-      <div className="container relative z-10 mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 22 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.65 }}
-          className="mb-16 text-center"
-        >
-          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-white/80">
-            Estrutura Premium
-          </span>
-          <h2 className="mt-5 mb-4 font-display text-3xl font-bold text-white md:text-5xl">
-            Tudo que você precisa para <span className="text-secondary">relaxar</span>
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-white/75">
-            Nossa pousada oferece uma estrutura completa para que você aproveite cada momento da
-            sua estadia com conforto e tranquilidade.
-          </p>
-        </motion.div>
+    <section className="relative overflow-hidden bg-[#050A0F] py-24 lg:py-32 dark-dots">
+      <div className="container relative z-10 mx-auto px-4 lg:px-8">
+        
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16 lg:mb-24">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8 }}
+            className="max-w-xl"
+          >
+            <div className="flex items-center gap-4 mb-6">
+              <span className="h-px w-10 bg-secondary block"></span>
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-white/50">Viver Bem</span>
+            </div>
+            <h2 className="font-display text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tighter leading-[0.9]">
+              Nossa<br />
+              <span className="italic text-secondary/90 font-medium">Estrutura.</span>
+            </h2>
+          </motion.div>
 
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="md:text-right"
+          >
+            <p className="text-white/60 text-lg max-w-sm md:ml-auto">
+              Cada detalhe pensado para a sua tranquilidade absoluta. Descubra espaços únicos.
+            </p>
+          </motion.div>
+        </div>
+
+        {/* Grid Brutalista */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-white/10 p-px border border-white/10">
           {estruturaItems.map((item, index) => {
             const Icon = iconMap[item.icone];
 
@@ -261,29 +276,34 @@ export default function Estrutura({ mediaOverrides }: EstruturaProps) {
                 initial={{ opacity: 0, y: 32 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.52, delay: index * 0.08 }}
-                className="group"
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="group w-full relative h-full bg-[#0A161E] hover:bg-[#071118] transition-colors duration-500"
               >
-                <article className="relative h-full overflow-hidden rounded-[28px] border border-white/15 bg-white/6 shadow-[0_12px_42px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-secondary/55 hover:shadow-[0_20px_54px_rgba(0,0,0,0.38)]">
-                  <MediaSlider media={item.media} alt={item.titulo} />
+                <div className="absolute inset-0 noise-bg opacity-10 pointer-events-none mix-blend-overlay"></div>
+                <article className="relative h-full overflow-hidden flex flex-col">
+                  {/* Media Section: Sharp Cut */}
+                  <div className="relative aspect-video lg:aspect-4/3 w-full border-b border-white/10 group-hover:border-white/20 transition-colors">
+                    <MediaSlider media={item.media} alt={item.titulo} />
 
-                  {/* Badge + Icon — positioned over media */}
-                  <div className="absolute right-4 top-4 rounded-full border border-white/30 bg-black/25 px-3 py-1 text-[11px] font-medium tracking-wide text-white/85 backdrop-blur">
-                    Ambiente
-                  </div>
-
-                  <div className="absolute bottom-[calc(100%-13rem+1rem)] left-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/30 bg-white/90 text-dark shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur">
-                    <div className="absolute inset-[3px] rounded-lg border border-dark/12" />
-                    <div className="relative transition-transform duration-300 group-hover:scale-110">
-                      {Icon ? <Icon className="h-6 w-6" strokeWidth={2} /> : null}
+                    {/* Minimalist Badge */}
+                    <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1 font-bold text-[10px] uppercase tracking-widest text-white/90 border border-white/10">
+                      Ambiente
                     </div>
                   </div>
 
-                  <div className="p-6">
-                    <h3 className="mb-2 font-display text-xl font-semibold text-white transition-colors duration-300 group-hover:text-secondary">
-                      {item.titulo}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-white/70">{item.descricao}</p>
+                  {/* Text Section */}
+                  <div className="p-6 md:p-8 flex-1 flex flex-col">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="flex h-12 w-12 items-center justify-center border border-white/20 bg-white/5 text-secondary group-hover:bg-secondary group-hover:text-[#050A0F] group-hover:border-secondary transition-all duration-300">
+                        {Icon ? <Icon className="h-5 w-5" strokeWidth={1.5} /> : null}
+                      </div>
+                      <h3 className="font-display text-xl sm:text-2xl font-semibold text-white group-hover:text-secondary transition-colors duration-300 uppercase tracking-wide">
+                        {item.titulo}
+                      </h3>
+                    </div>
+                    <p className="text-sm leading-relaxed text-white/60 group-hover:text-white/80 transition-colors duration-300">
+                      {item.descricao}
+                    </p>
                   </div>
                 </article>
               </motion.div>

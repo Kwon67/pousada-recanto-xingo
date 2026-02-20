@@ -3,10 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight, Heart, MapPin } from 'lucide-react';
-import Button from '@/components/ui/app-button';
-import EssenceMark from '@/components/icons/EssenceMark';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowUpRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 type MediaItem = {
   url: string;
@@ -61,7 +60,7 @@ function SobreMediaSlider({
   const hasMultiple = count > 1;
   const safeActiveIndex = count > 0 ? activeIndex % count : 0;
 
-  const IMAGE_DURATION = 3000;
+  const IMAGE_DURATION = 3500;
   const VIDEO_DURATION = 8000;
 
   useEffect(() => {
@@ -127,10 +126,13 @@ function SobreMediaSlider({
   return (
     <div
       ref={containerRef}
-      className="relative h-full w-full overflow-hidden bg-dark touch-pan-y"
+      className="relative h-full w-full bg-[#050A0F] touch-pan-y overflow-hidden"
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
+      {/* Subtle overlay over image slider to guarantee text contrast */}
+      <div className="absolute inset-0 bg-black/10 z-10 pointer-events-none" />
+
       {resolvedMedia.map((item, i) => {
         const isActive = i === safeActiveIndex;
 
@@ -144,7 +146,7 @@ function SobreMediaSlider({
               loop
               playsInline
               preload="auto"
-              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out"
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
               style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
             />
           );
@@ -153,7 +155,7 @@ function SobreMediaSlider({
         return (
           <div
             key={`sobre-i-${item.url}-${i}`}
-            className="absolute inset-0 transition-opacity duration-700 ease-in-out"
+            className="absolute inset-0 transition-opacity duration-1000 ease-in-out"
             style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
           >
             <Image
@@ -168,17 +170,18 @@ function SobreMediaSlider({
         );
       })}
 
+      {/* Brutalist Pagination Blocks */}
       {hasMultiple && (
-        <div className="absolute bottom-3 left-1/2 z-10 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/25 px-2 py-1 backdrop-blur-sm">
+        <div className="absolute bottom-6 left-6 z-20 flex gap-2">
           {resolvedMedia.map((_, i) => (
             <button
               key={i}
               onClick={() => goTo(i)}
               aria-label={`Mídia ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
+              className={`h-1 transition-all duration-500 ease-out ${
                 i === safeActiveIndex
-                  ? 'w-4 bg-white/95'
-                  : 'w-1.5 bg-white/55 hover:bg-white/80'
+                  ? 'w-12 bg-white'
+                  : 'w-4 bg-white/40 hover:bg-white/70'
               }`}
             />
           ))}
@@ -189,115 +192,94 @@ function SobreMediaSlider({
 }
 
 export default function SobrePreview({ imageUrl, media = [] }: SobrePreviewProps) {
-  return (
-    <section className="py-20 bg-white">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Image */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="relative"
-          >
-            <div className="relative rounded-2xl overflow-hidden shadow-md aspect-4/3">
-              <SobreMediaSlider media={media} fallbackImageUrl={imageUrl} />
-            </div>
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start end", "end start"]
+  });
 
-            {/* Floating Card */}
+  const y1 = useTransform(scrollYProgress, [0, 1], [100, -100]);
+  const y2 = useTransform(scrollYProgress, [0, 1], [-50, 50]);
+
+  return (
+    <section ref={containerRef} className="relative py-24 md:py-32 bg-cream overflow-hidden">
+      {/* Background large typography noise */}
+      <motion.div 
+        style={{ y: y2 }}
+        className="absolute top-10 left-[-5%] text-[15rem] leading-none font-display font-black text-dark/5 whitespace-nowrap pointer-events-none select-none z-0 hidden md:block"
+      >
+        ALMA NORDESTINA
+      </motion.div>
+
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-0">
+          
+          {/* LEFT: Text Content Overlapping */}
+          <div className="w-full lg:w-[45%] xl:w-[40%] z-20 relative lg:-mr-12 xl:-mr-24 pt-10">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="absolute -bottom-6 -right-6 bg-secondary text-dark p-6 rounded-2xl shadow-xl hidden md:block"
+              initial={{ opacity: 0, x: -40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="relative"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-dark/10 rounded-full flex items-center justify-center">
-                  <Heart className="w-8 h-8" fill="currentColor" />
-                </div>
-                <div>
-                  <p className="font-display text-3xl font-bold">10</p>
-                  <p className="text-sm font-medium opacity-80">Quartos aconchegantes</p>
-                </div>
+              <div className="flex items-center gap-4 mb-8">
+                <span className="h-px w-12 bg-secondary block"></span>
+                <span className="text-xs font-bold tracking-[0.2em] uppercase text-dark/60">Essência</span>
+              </div>
+
+              <h2 className="font-display text-5xl sm:text-7xl lg:text-[5.5rem] leading-[0.9] font-black text-dark tracking-tighter mb-8 max-w-2xl mix-blend-difference selection:bg-secondary selection:text-dark">
+                A Alma<br />
+                <span className="italic text-primary/90 font-medium padding-left-2">Sertaneja.</span>
+              </h2>
+
+              <div className="bg-white/80 backdrop-blur-md p-8 sm:p-10 border border-white/40 shadow-[0_20px_40px_rgba(0,0,0,0.03)] relative max-w-xl">
+                {/* Decorative sharp corner */}
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-primary -mt-[2px] -mr-[2px]"></div>
+
+                <p className="text-dark/70 text-lg leading-relaxed mb-8 font-medium">
+                  Mais que uma hospedagem, um refúgio de paz construído com afeto no coração de Piranhas. 
+                  Misturamos o conforto contemporâneo com a bravura e a rica hospitalidade nordestina.
+                </p>
+
+                <ul className="space-y-4 mb-10 text-dark/80 font-medium">
+                  <li className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 bg-secondary block"></span>
+                    Atendimento próximo e pessoal
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 bg-secondary block"></span>
+                    Localização a minutos do Canyon
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 bg-secondary block"></span>
+                    Conforto absoluto no semiárido
+                  </li>
+                </ul>
+
+                <Button asChild variant="luxury" size="lg" className="rounded-none uppercase tracking-widest text-xs font-bold w-full sm:w-auto h-14">
+                  <Link href="/sobre" className="flex items-center justify-center">
+                    Nossa História
+                    <ArrowUpRight className="ml-2 w-4 h-4" />
+                  </Link>
+                </Button>
               </div>
             </motion.div>
+          </div>
 
-            {/* Decorative Elements */}
-            <div className="absolute -top-4 -left-4 w-24 h-24 bg-primary/10 rounded-2xl -z-10" />
-            <div className="absolute -bottom-4 -right-4 w-32 h-32 bg-secondary/20 rounded-2xl -z-10" />
-          </motion.div>
+          {/* RIGHT: Photography Slider */}
+          <div className="w-full lg:w-[60%] xl:w-[65%]">
+            <motion.div
+              style={{ y: y1 }}
+              className="relative aspect-4/5 sm:aspect-square lg:aspect-4/3 w-full shadow-[0_40px_80px_rgba(0,0,0,0.15)] group"
+            >
+              <SobreMediaSlider media={media} fallbackImageUrl={imageUrl} />
+              
+              {/* Decorative border frame */}
+              <div className="absolute -inset-4 border border-dark/10 pointer-events-none hidden md:block transition-transform duration-700 ease-out group-hover:scale-[1.02]"></div>
+            </motion.div>
+          </div>
 
-          {/* Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="space-y-6"
-          >
-            <div className="inline-flex items-center gap-2 text-primary font-medium">
-              <EssenceMark className="w-5 h-5" />
-              <span>Sobre a Pousada</span>
-            </div>
-
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-dark">
-              Bem-vindo ao <span className="text-primary">Recanto do Matuto</span>
-            </h2>
-
-            <p className="text-text-light text-lg leading-relaxed">
-              Somos uma pousada nova, construída com carinho e atenção aos detalhes para
-              oferecer a você uma experiência única no coração do sertão alagoano. Localizada
-              em Piranhas, a poucos minutos do Canyon do Xingó, combinamos conforto moderno
-              com a autêntica hospitalidade nordestina.
-            </p>
-
-            <div className="space-y-4 pt-4">
-              {[
-                {
-                  icon: <Heart className="w-5 h-5" />,
-                  title: 'Hospitalidade Nordestina',
-                  desc: 'Atendimento acolhedor como se você estivesse em casa',
-                },
-                {
-                  icon: <MapPin className="w-5 h-5" />,
-                  title: 'Localização Privilegiada',
-                  desc: 'A poucos minutos do Canyon do Xingó e do Rio São Francisco',
-                },
-                {
-                  icon: <EssenceMark className="w-5 h-5" />,
-                  title: 'Estrutura Completa',
-                  desc: 'Piscina, área de redes, churrasqueira e muito mais',
-                },
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: 0.2 + index * 0.1 }}
-                  className="flex items-start gap-4"
-                >
-                  <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center text-primary shrink-0">
-                    {item.icon}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-dark">{item.title}</h4>
-                    <p className="text-text-light text-sm">{item.desc}</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="pt-4">
-              <Link href="/sobre">
-                <Button variant="outline" rightIcon={<ArrowRight className="w-5 h-5" />}>
-                  Conheça nossa história
-                </Button>
-              </Link>
-            </div>
-          </motion.div>
         </div>
       </div>
     </section>
