@@ -13,7 +13,7 @@ import {
 
 export const runtime = 'nodejs';
 
-type ReservaStatus = 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
+type ReservaStatus = 'pendente' | 'aguardando_pagamento' | 'confirmada' | 'cancelada' | 'concluida';
 type StripePaymentStatus =
   | 'nao_iniciado'
   | 'pendente'

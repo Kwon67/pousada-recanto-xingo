@@ -25,7 +25,7 @@ interface CriarReservaData {
   observacoes?: string;
 }
 
-const STATUSES_QUE_BLOQUEIAM: StatusReserva[] = ['pendente', 'confirmada'];
+const STATUSES_QUE_BLOQUEIAM: StatusReserva[] = ['pendente', 'aguardando_pagamento', 'confirmada'];
 
 export async function criarReserva(data: CriarReservaData) {
   let reservaCriadaId: string | null = null;
@@ -93,7 +93,7 @@ export async function criarReserva(data: CriarReservaData) {
       quartoNome: data.quarto_nome,
       hospedeNome: data.hospede_nome,
       hospedeEmail: data.hospede_email,
-      valorTotal: data.valor_total,
+      valorTotal: data.valor_total / 2, // 50% DEPÓSITO
       successUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&session_id={CHECKOUT_SESSION_ID}`,
       cancelUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&payment=cancelado`,
       metadata: {
@@ -102,8 +102,8 @@ export async function criarReserva(data: CriarReservaData) {
       },
     });
 
-    if (!checkoutSession.url) {
-      throw new Error('Stripe não retornou a URL de checkout para continuar o pagamento.');
+    if (!checkoutSession.client_secret) {
+      throw new Error('Stripe não retornou o client_secret para Embedded Checkout.');
     }
 
     const paymentIntentId = getStripePaymentIntentId(checkoutSession.payment_intent);
@@ -115,6 +115,7 @@ export async function criarReserva(data: CriarReservaData) {
         stripe_payment_status:
           checkoutSession.payment_status === 'paid' ? 'pago' : 'pendente',
         stripe_payment_method: checkoutSession.payment_method_types?.[0] || null,
+        status: 'aguardando_pagamento',
       })
       .eq('id', reserva.id);
 
@@ -130,7 +131,7 @@ export async function criarReserva(data: CriarReservaData) {
     return {
       success: true,
       reservaId: reserva.id,
-      checkoutUrl: checkoutSession.url,
+      clientSecret: checkoutSession.client_secret,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erro ao criar reserva';

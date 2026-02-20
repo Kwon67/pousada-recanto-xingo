@@ -10,6 +10,7 @@ export interface StripeCheckoutSession {
   id: string;
   object: 'checkout.session';
   url: string | null;
+  client_secret?: string | null;
   payment_status: 'paid' | 'unpaid' | 'no_payment_required';
   payment_intent: string | { id: string } | null;
   payment_method_types: string[];
@@ -131,8 +132,11 @@ function buildCheckoutParams(
   const params = new URLSearchParams();
   params.set('mode', 'payment');
   params.set('locale', 'pt-BR');
-  params.set('success_url', input.successUrl);
-  params.set('cancel_url', input.cancelUrl);
+  params.set('ui_mode', 'embedded');
+  params.set('return_url', input.successUrl);
+  // Hosted checkout fields (removed)
+  // params.set('success_url', input.successUrl);
+  // params.set('cancel_url', input.cancelUrl);
   params.set('customer_email', input.hospedeEmail);
   params.set('client_reference_id', input.reservaId);
   params.set('billing_address_collection', 'required');

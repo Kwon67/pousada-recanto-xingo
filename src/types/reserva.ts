@@ -1,4 +1,4 @@
-export type StatusReserva = 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
+export type StatusReserva = 'pendente' | 'aguardando_pagamento' | 'confirmada' | 'cancelada' | 'concluida';
 export type StatusPagamentoReserva =
   | 'nao_iniciado'
   | 'pendente'

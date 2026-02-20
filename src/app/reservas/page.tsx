@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, Suspense } from 'react';
+import { useEffect, useRef, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useReserva } from '@/hooks/useReserva';
@@ -13,10 +13,11 @@ import CalendarioReserva from '@/components/reservas/CalendarioReserva';
 import SeletorQuarto from '@/components/reservas/SeletorQuarto';
 import FormHospede from '@/components/reservas/FormHospede';
 import ResumoReserva from '@/components/reservas/ResumoReserva';
+import StripeCheckout from '@/components/checkout/StripeCheckout';
 import Button from '@/components/ui/app-button';
 import { User, Users } from 'lucide-react';
 
-const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação'];
+const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação', 'Pagamento'];
 
 function ReservasContent() {
   const searchParams = useSearchParams();
@@ -33,6 +34,7 @@ function ReservasContent() {
     noites,
     valorTotal,
     loading,
+    error,
     setStep,
     nextStep,
     prevStep,
@@ -87,10 +89,13 @@ function ReservasContent() {
     }
   }, [step]);
 
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+
   const handleConfirm = async () => {
     const result = await confirmarReserva();
-    if (result) {
-      window.location.href = result.checkoutUrl;
+    if (result && result.clientSecret) {
+      setClientSecret(result.clientSecret);
+      setStep(5);
     }
   };
 
@@ -242,19 +247,43 @@ function ReservasContent() {
 
           {/* Step 4: Confirmation */}
           {step === 4 && checkIn && checkOut && quarto && hospede && (
-            <ResumoReserva
-              quarto={quarto}
-              checkIn={checkIn}
-              checkOut={checkOut}
-              numHospedes={numHospedes}
-              hospede={hospede}
-              observacoes={observacoes}
-              valorTotal={valorTotal}
-              noites={noites}
-              onConfirm={handleConfirm}
-              onBack={prevStep}
-              isLoading={loading}
-            />
+            <div className="space-y-4">
+              <ResumoReserva
+                quarto={quarto}
+                checkIn={checkIn}
+                checkOut={checkOut}
+                numHospedes={numHospedes}
+                hospede={hospede}
+                observacoes={observacoes}
+                valorTotal={valorTotal}
+                noites={noites}
+                onConfirm={handleConfirm}
+                onBack={prevStep}
+                isLoading={loading}
+              />
+              {error && (
+                <div className="p-4 bg-error/10 border border-error/20 text-error text-center text-sm font-medium">
+                  {error}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 5: Pagamento Stripe */}
+          {step === 5 && clientSecret && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="max-w-2xl mx-auto"
+            >
+              <h2 className="font-display text-2xl font-black uppercase tracking-widest text-dark mb-4 text-center">
+                Pagamento do Sinal (50%)
+              </h2>
+              <p className="text-center text-dark/70 uppercase tracking-widest text-xs font-bold mb-8">
+                Pague com segurança para garantir sua reserva
+              </p>
+              <StripeCheckout clientSecret={clientSecret} />
+            </motion.div>
           )}
         </div>
       </div>

@@ -252,7 +252,11 @@ export default function AdminDashboardClient({
   const reservasAtivasHoje = useMemo(
     () =>
       reservas.filter((reserva) => {
-        if (reserva.status !== 'confirmada' && reserva.status !== 'pendente') return false;
+        if (
+          reserva.status !== 'confirmada' &&
+          reserva.status !== 'pendente' &&
+          reserva.status !== 'aguardando_pagamento'
+        ) return false;
         const checkIn = toISODatePart(reserva.check_in);
         const checkOut = toISODatePart(reserva.check_out);
         return checkIn <= todayISO && checkOut > todayISO;

@@ -38,29 +38,42 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect, onContinu
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={() => onSelect(quarto)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(quarto);
+                }
+              }}
               className={cn(
-                'w-full text-left bg-white rounded-none border border-dark/10 transition-all duration-300 relative group overflow-hidden',
+                'w-full text-left bg-white rounded-none border border-dark/10 transition-all duration-300 relative group overflow-hidden cursor-pointer outline-none',
                 isSelected
                   ? 'ring-2 ring-dark bg-cream/30'
-                  : 'hover:border-dark/30 hover:bg-cream/10'
+                  : 'hover:border-dark/30 hover:bg-cream/10 focus-visible:ring-2 focus-visible:ring-dark/50'
               )}
             >
               <div className="flex flex-col md:flex-row">
                 {/* Image */}
                 <div className="md:w-48 h-48 md:h-auto relative shrink-0">
-                  <Image
-                    src={quarto.imagem_principal}
-                    alt={quarto.nome}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 192px"
-                  />
+                  {quarto.imagem_principal ? (
+                    <Image
+                      src={quarto.imagem_principal}
+                      alt={quarto.nome}
+                      fill
+                      className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 192px"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-cream flex items-center justify-center">
+                      <span className="text-dark/30 font-bold tracking-widest uppercase text-xs">Sem foto</span>
+                    </div>
+                  )}
                   {isSelected && (
                     <div className="absolute top-4 right-4 w-8 h-8 bg-dark rounded-none flex items-center justify-center">
-                      <Check className="w-5 h-5 text-white" />
+                       <Check className="w-5 h-5 text-white" />
                     </div>
                   )}
                 </div>
@@ -128,7 +141,7 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect, onContinu
                   )}
                 </div>
               </div>
-            </button>
+            </div>
           </motion.div>
         );
       })}

@@ -125,7 +125,7 @@ export type Database = {
           check_out: string;
           num_hospedes: number;
           valor_total: number;
-          status: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
+          status: 'pendente' | 'aguardando_pagamento' | 'confirmada' | 'cancelada' | 'concluida';
           observacoes: string | null;
           stripe_checkout_session_id: string | null;
           stripe_payment_intent_id: string | null;
@@ -148,7 +148,7 @@ export type Database = {
           check_out: string;
           num_hospedes?: number;
           valor_total: number;
-          status?: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
+          status?: 'pendente' | 'aguardando_pagamento' | 'confirmada' | 'cancelada' | 'concluida';
           observacoes?: string | null;
           stripe_checkout_session_id?: string | null;
           stripe_payment_intent_id?: string | null;
@@ -171,7 +171,7 @@ export type Database = {
           check_out?: string;
           num_hospedes?: number;
           valor_total?: number;
-          status?: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
+          status?: 'pendente' | 'aguardando_pagamento' | 'confirmada' | 'cancelada' | 'concluida';
           observacoes?: string | null;
           stripe_checkout_session_id?: string | null;
           stripe_payment_intent_id?: string | null;
@@ -373,7 +373,7 @@ export type Database = {
     Functions: Record<string, never>;
     Enums: {
       categoria_quarto: 'standard' | 'superior' | 'suite';
-      status_reserva: 'pendente' | 'confirmada' | 'cancelada' | 'concluida';
+      status_reserva: 'pendente' | 'aguardando_pagamento' | 'confirmada' | 'cancelada' | 'concluida';
     };
     CompositeTypes: Record<string, never>;
   };
