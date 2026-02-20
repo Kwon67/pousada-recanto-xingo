@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Users, Check } from 'lucide-react';
 import { Quarto } from '@/types/quarto';
@@ -10,7 +11,7 @@ import Badge from '@/components/ui/Badge';
 interface SeletorQuartoProps {
   quartos: Quarto[];
   selectedId: string | null;
-  onSelect: (quarto: Quarto) => void;
+  onSelect: (_quarto: Quarto) => void;
   onContinue?: () => void;
 }
 
@@ -50,10 +51,12 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect, onContinu
               <div className="flex flex-col md:flex-row">
                 {/* Image */}
                 <div className="md:w-48 h-48 md:h-auto relative shrink-0">
-                  <img
+                  <Image
                     src={quarto.imagem_principal}
                     alt={quarto.nome}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 192px"
                   />
                   {isSelected && (
                     <div className="absolute top-4 right-4 w-8 h-8 bg-dark rounded-none flex items-center justify-center">

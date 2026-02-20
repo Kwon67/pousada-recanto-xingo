@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface DatePickerProps {
   label?: string;
   value: Date | null;
-  onChange: (value: Date) => void;
+  onChange: (_value: Date) => void;
   minDate?: Date;
   maxDate?: Date;
   disabledDates?: Date[];

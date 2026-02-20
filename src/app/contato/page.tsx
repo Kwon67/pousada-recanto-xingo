@@ -289,7 +289,7 @@ export default function ContatoPage() {
          >
            <iframe
              src={SITE_CONFIG.mapsEmbedLink}
-             className="w-full h-full filter grayscale-[30%] contrast-125"
+             className="w-full h-full filter grayscale-30 contrast-125"
              style={{ border: 0 }}
              allowFullScreen
              loading="lazy"

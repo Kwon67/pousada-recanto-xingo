@@ -7,6 +7,7 @@ import { Quarto } from '@/types/quarto';
 import { formatCurrency, formatCategoria } from '@/lib/formatters';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/app-button';
+import Image from 'next/image';
 
 interface QuartoCardProps {
   quarto: Quarto;
@@ -24,9 +25,11 @@ export default function QuartoCard({ quarto, index = 0 }: QuartoCardProps) {
       <div className="bg-white rounded-none border border-dark/10 overflow-hidden card-hover group h-full flex flex-col">
         {/* Image */}
         <Link href={`/quartos/${quarto.slug}`} className="relative aspect-[4/3] overflow-hidden block">
-          <img
+          <Image
             src={quarto.imagem_principal}
             alt={quarto.nome}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           {/* Category Badge */}

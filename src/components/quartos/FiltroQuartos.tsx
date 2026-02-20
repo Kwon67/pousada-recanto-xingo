@@ -10,7 +10,7 @@ import Button from '@/components/ui/app-button';
 
 interface FiltroQuartosProps {
   filtros: FiltroType;
-  onFiltroChange: (filtros: FiltroType) => void;
+  onFiltroChange: (_filtros: FiltroType) => void;
 }
 
 export default function FiltroQuartos({ filtros, onFiltroChange }: FiltroQuartosProps) {
@@ -57,7 +57,7 @@ export default function FiltroQuartos({ filtros, onFiltroChange }: FiltroQuartos
           height: isOpen ? 'auto' : 0,
           opacity: isOpen ? 1 : 0,
         }}
-        className="overflow-hidden lg:!h-auto lg:!opacity-100"
+        className="overflow-hidden lg:h-auto! lg:opacity-100!"
       >
         <div className="bg-white rounded-none border-2 border-dark/10 p-6">
           <div className="flex items-center justify-between mb-4 lg:hidden">

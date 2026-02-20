@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
 interface CardProps {
@@ -59,10 +60,13 @@ export function CardImage({
 
   return (
     <div className={cn('relative overflow-hidden rounded-xl img-zoom', aspectStyles[aspectRatio], className)}>
-      <img
+      <Image
         src={src}
         alt={alt}
-        className="w-full h-full object-cover"
+        fill
+        unoptimized
+        sizes="(max-width: 768px) 100vw, 50vw"
+        className="object-cover"
       />
       {overlay && (
         <div className="absolute inset-0 bg-gradient-to-t from-dark/60 to-transparent" />

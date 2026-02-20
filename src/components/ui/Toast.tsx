@@ -14,7 +14,7 @@ interface Toast {
 }
 
 interface ToastContextType {
-  showToast: (message: string, type?: ToastType) => void;
+  showToast: (_message: string, _type?: ToastType) => void;
 }
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -52,10 +52,10 @@ function ToastContainer({
   onRemove,
 }: {
   toasts: Toast[];
-  onRemove: (id: string) => void;
+  onRemove: (_id: string) => void;
 }) {
   return (
-    <div className="fixed bottom-4 right-4 z-[100] space-y-2">
+    <div className="fixed bottom-4 right-4 z-100 space-y-2">
       <AnimatePresence>
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
@@ -70,7 +70,7 @@ function ToastItem({
   onRemove,
 }: {
   toast: Toast;
-  onRemove: (id: string) => void;
+  onRemove: (_id: string) => void;
 }) {
   useEffect(() => {
     const timer = setTimeout(() => {

@@ -13,7 +13,7 @@ interface FormData extends NovoHospede {
 interface FormHospedeProps {
   initialData?: Partial<NovoHospede>;
   observacoes?: string;
-  onSubmit: (data: NovoHospede, observacoes: string) => void;
+  onSubmit: (_data: NovoHospede, _observacoes: string) => void;
   onBack: () => void;
 }
 

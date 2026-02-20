@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Calendar, Users, MessageCircle } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { addDays } from 'date-fns';
 import { Quarto } from '@/types/quarto';
 import { formatCurrency } from '@/lib/formatters';

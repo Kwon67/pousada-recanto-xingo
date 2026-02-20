@@ -6,6 +6,7 @@ import { Navigation, Thumbs, FreeMode } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight, Expand } from 'lucide-react';
+import Image from 'next/image';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -47,9 +48,11 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
                   className="relative w-full h-full cursor-pointer"
                   onClick={() => openLightbox(index)}
                 >
-                  <img
+                  <Image
                     src={img}
                     alt={`${nome} - Foto ${index + 1}`}
+                    fill
+                    sizes="(min-width: 768px) 66vw, 100vw"
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-dark/0 group-hover:bg-dark/20 transition-colors flex items-center justify-center">
@@ -89,10 +92,12 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
         >
           {imagens.map((img, index) => (
             <SwiperSlide key={index}>
-              <div className="aspect-square rounded-none overflow-hidden cursor-pointer border-2 border-transparent hover:border-dark transition-colors">
-                <img
+              <div className="relative aspect-square rounded-none overflow-hidden cursor-pointer border-2 border-transparent hover:border-dark transition-colors">
+                <Image
                   src={img}
                   alt={`${nome} - Miniatura ${index + 1}`}
+                  fill
+                  sizes="(min-width: 768px) 12vw, 25vw"
                   className="w-full h-full object-cover"
                 />
               </div>

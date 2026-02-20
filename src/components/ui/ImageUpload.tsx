@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { Upload, X, Star, ImageIcon, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { deleteUploadedFile, uploadFile as uploadAdminFile } from '@/lib/api/upload-client';
@@ -12,7 +13,7 @@ interface UploadedImage {
 
 interface ImageUploadProps {
   images: UploadedImage[];
-  onChange: (images: UploadedImage[]) => void;
+  onChange: (_images: UploadedImage[]) => void;
   maxImages?: number;
   label?: string;
   error?: string;
@@ -160,12 +161,15 @@ export default function ImageUpload({
           {images.map((image, index) => (
             <div
               key={`${image.public_id || image.url}-${index}`}
-              className="relative group aspect-[4/3] rounded-xl overflow-hidden border-2 border-cream-dark"
+              className="relative group aspect-4/3 rounded-xl overflow-hidden border-2 border-cream-dark"
             >
-              <img
+              <Image
                 src={image.url}
                 alt={`Imagem ${index + 1}`}
-                className="w-full h-full object-cover"
+                fill
+                unoptimized
+                sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
+                className="object-cover"
               />
 
               {/* Principal badge */}
@@ -211,7 +215,7 @@ export default function ImageUpload({
           {images.length < maxImages && (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="aspect-[4/3] rounded-xl border-2 border-dashed border-cream-dark hover:border-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
+              className="aspect-4/3 rounded-xl border-2 border-dashed border-cream-dark hover:border-primary/50 flex flex-col items-center justify-center cursor-pointer transition-colors"
             >
               <ImageIcon className="w-6 h-6 text-text-light/40" />
               <span className="text-xs text-text-light/40 mt-1">Adicionar</span>

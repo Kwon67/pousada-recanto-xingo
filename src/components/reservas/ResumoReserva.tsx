@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Calendar, Users, MapPin, User, Mail, Phone, FileText } from 'lucide-react';
 import { Quarto } from '@/types/quarto';
@@ -42,12 +43,14 @@ export default function ResumoReserva({
     >
       {/* Quarto Header */}
       <div className="relative h-48 md:h-64">
-        <img
+        <Image
           src={quarto.imagem_principal}
           alt={quarto.nome}
-          className="w-full h-full object-cover"
+          fill
+          className="object-cover"
+          sizes="100vw"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-dark/80 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-dark/80 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <h2 className="font-display text-3xl md:text-4xl font-black uppercase tracking-tighter text-white drop-shadow-md">
             {quarto.nome}

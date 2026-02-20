@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 interface CalendarioReservaProps {
   checkIn: Date | null;
   checkOut: Date | null;
-  onSelectDates: (checkIn: Date, checkOut: Date) => void;
+  onSelectDates: (_checkIn: Date, _checkOut: Date) => void;
   disabledDates?: Date[];
   minDate?: Date;
 }

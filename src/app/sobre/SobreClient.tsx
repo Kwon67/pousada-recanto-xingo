@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Button from '@/components/ui/app-button';
 import Link from 'next/link';
+import Image from 'next/image';
 import EssenceMark from '@/components/icons/EssenceMark';
 
 const diferenciais = [
@@ -128,26 +129,34 @@ export default function SobreClient({
             >
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-4">
-                  <img
+                  <Image
                     src={sobreCards.pousada.url}
                     alt={sobreCards.pousada.alt}
+                    width={800}
+                    height={600}
                     className="w-full rounded-none border border-dark/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-all duration-500"
                   />
-                  <img
+                  <Image
                     src={sobreCards.area.url}
                     alt={sobreCards.area.alt}
+                    width={800}
+                    height={600}
                     className="w-full rounded-none border border-dark/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-all duration-500"
                   />
                 </div>
                 <div className="space-y-4 pt-8">
-                  <img
+                  <Image
                     src={sobreCards.piscina.url}
                     alt={sobreCards.piscina.alt}
+                    width={800}
+                    height={600}
                     className="w-full rounded-none border border-dark/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-all duration-500 pt-4"
                   />
-                  <img
+                  <Image
                     src={sobreCards.quarto.url}
                     alt={sobreCards.quarto.alt}
+                    width={800}
+                    height={600}
                     className="w-full rounded-none border border-dark/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-all duration-500 pt-2"
                   />
                 </div>
@@ -206,9 +215,11 @@ export default function SobreClient({
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <img
+              <Image
                 src="https://placehold.co/800x600/1B3A4B/D4A843?text=Canyon+do+Xingo"
                 alt="Canyon do Xingó"
+                width={800}
+                height={600}
                 className="w-full rounded-none border border-white/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-duration-500"
               />
             </motion.div>
