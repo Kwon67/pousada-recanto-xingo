@@ -11,9 +11,10 @@ interface SeletorQuartoProps {
   quartos: Quarto[];
   selectedId: string | null;
   onSelect: (quarto: Quarto) => void;
+  onContinue?: () => void;
 }
 
-export default function SeletorQuarto({ quartos, selectedId, onSelect }: SeletorQuartoProps) {
+export default function SeletorQuarto({ quartos, selectedId, onSelect, onContinue }: SeletorQuartoProps) {
   if (quartos.length === 0) {
     return (
       <div className="text-center py-12">
@@ -101,6 +102,27 @@ export default function SeletorQuarto({ quartos, selectedId, onSelect }: Seletor
                       {quarto.amenidades.length > 5 && ` + ${quarto.amenidades.length - 5}`}
                     </p>
                   </div>
+
+                  {/* Inline Continue Button */}
+                  {isSelected && onContinue && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      className="mt-6 pt-6 border-t border-dark/10"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onContinue();
+                        }}
+                        className="w-full bg-dark text-white rounded-none py-4 px-6 font-bold uppercase tracking-widest text-sm hover:bg-dark-light transition-colors flex items-center justify-center gap-2"
+                      >
+                        Confirmar Quarto e Continuar
+                        <Check className="w-4 h-4" />
+                      </button>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             </button>

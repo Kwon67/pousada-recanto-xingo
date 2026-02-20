@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useReserva } from '@/hooks/useReserva';
@@ -20,6 +20,7 @@ const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação'];
 
 function ReservasContent() {
   const searchParams = useSearchParams();
+  const stepContainerRef = useRef<HTMLDivElement>(null);
 
   const {
     step,
@@ -76,6 +77,16 @@ function ReservasContent() {
     }
   }, [searchParams, allQuartos, setDatas, setNumHospedes, setQuarto, setStep]);
 
+  // Handle smooth scroll on step change
+  useEffect(() => {
+    if (stepContainerRef.current) {
+      const yOffset = -100; // Account for fixed header
+      const element = stepContainerRef.current;
+      const y = element.getBoundingClientRect().top + window.scrollY + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  }, [step]);
+
   const handleConfirm = async () => {
     const result = await confirmarReserva();
     if (result) {
@@ -106,7 +117,7 @@ function ReservasContent() {
         <StepIndicator currentStep={step} steps={STEPS} />
 
         {/* Step Content */}
-        <div className="max-w-4xl mx-auto">
+        <div ref={stepContainerRef} className="max-w-4xl mx-auto scroll-mt-24">
           {/* Step 1: Dates */}
           {step === 1 && (
             <motion.div
@@ -197,6 +208,7 @@ function ReservasContent() {
                 quartos={quartosDisponivelList}
                 selectedId={quarto?.id || null}
                 onSelect={setQuarto}
+                onContinue={nextStep}
               />
 
               <div className="flex gap-4 mt-8">
