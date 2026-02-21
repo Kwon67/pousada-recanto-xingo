@@ -166,7 +166,7 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
                 Piranhas, Alagoas | (82) 98133-4027
               </p>
               <p style="color:#999;margin:0;font-size:12px;">
-                pousada-recanto-xingo.vercel.app
+                recantoxingo.com.br
               </p>
             </td>
           </tr>
@@ -335,7 +335,7 @@ export async function enviarEmailStatus(data: EmailStatusData): Promise<{ succes
                 Piranhas, Alagoas | (82) 98133-4027
               </p>
               <p style="color:#999;margin:0;font-size:12px;">
-                pousada-recanto-xingo.vercel.app
+                recantoxingo.com.br
               </p>
             </td>
           </tr>

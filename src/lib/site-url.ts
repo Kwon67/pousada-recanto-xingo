@@ -1,4 +1,4 @@
-const FALLBACK_SITE_URL = 'https://pousada-recanto-xingo.vercel.app';
+const FALLBACK_SITE_URL = 'https://recantoxingo.com.br';
 
 export function getSiteUrl(): string {
   const candidate =

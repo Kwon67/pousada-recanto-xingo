@@ -1,7 +1,7 @@
 export const SITE_CONFIG = {
   name: 'Pousada Recanto do Matuto Xingó',
   description: 'Seu refúgio às margens do Canyon do Xingó',
-  url: 'https://pousada-recanto-xingo.vercel.app',
+  url: 'https://recantoxingo.com.br',
   phone: '(82) 98133-4027',
   phoneClean: '82981334027',
   email: 'kivora.dev@outlook.com',

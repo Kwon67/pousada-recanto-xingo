@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://pousada-recanto-xingo.vercel.app">🌐 Visitar Site</a>&nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="https://recantoxingo.com.br">🌐 Visitar Site</a>&nbsp;&nbsp;·&nbsp;&nbsp;
   <a href="https://instagram.com/recantodomatutoxingo">📸 Instagram</a>&nbsp;&nbsp;·&nbsp;&nbsp;
   <a href="https://wa.me/5582981334027">💬 WhatsApp</a>
 </p>
