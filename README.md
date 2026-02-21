@@ -1,91 +1,61 @@
-# Pousada Recanto do Matuto Xingó
+<p align="center">
+  <img src="public/logo.svg" alt="Recanto do Matuto" width="180" />
+</p>
 
-Projeto em Next.js + Supabase com reservas e painel admin.
+<h1 align="center">Pousada Recanto do Matuto Xingó</h1>
 
-## Rodar local
+<p align="center">
+  <strong>Seu refúgio às margens do Canyon do Xingó — Piranhas, Alagoas</strong>
+</p>
 
-```bash
-npm install
-npm run dev
+<p align="center">
+  <a href="https://pousada-recanto-xingo.vercel.app">🌐 Visitar Site</a>&nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="https://instagram.com/recantodomatutoxingo">📸 Instagram</a>&nbsp;&nbsp;·&nbsp;&nbsp;
+  <a href="https://wa.me/5582981334027">💬 WhatsApp</a>
+</p>
+
+---
+
+## Sobre
+
+Site institucional e sistema de reservas online da **Pousada Recanto do Matuto**, localizada em Piranhas — AL, a poucos minutos do Canyon do São Francisco (Xingó). O projeto oferece uma experiência completa para o hóspede, desde a descoberta dos quartos até a confirmação do pagamento.
+
+## Funcionalidades
+
+- **Catálogo de Quartos** — Standard, Superior e Suítes com galeria de fotos, amenidades e preços por noite
+- **Reservas Online** — Seleção de datas, cálculo automático de diárias e checkout com pagamento via **Stripe** (cartão e Pix)
+- **Página Sobre** — História da pousada e o que a torna especial
+- **Contato** — Formulário integrado, mapa do Google Maps e link direto para WhatsApp
+- **Painel Administrativo** — Gestão de quartos, reservas, galeria de mídia, conteúdo do site e configurações
+- **E-mails Transacionais** — Confirmação e cancelamento de reservas via Resend
+- **SEO Otimizado** — Metadata dinâmica, JSON-LD e OpenGraph por página
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Frontend | Next.js · React · Tailwind CSS |
+| Backend | Next.js API Routes · Server Actions |
+| Banco de Dados | Supabase (PostgreSQL) |
+| Pagamentos | Stripe Checkout (cartão + Pix) |
+| Mídia | Cloudinary |
+| E-mail | Resend |
+| Deploy | Vercel |
+
+## Estrutura do Site
+
+```
+/              → Página inicial (hero, quartos em destaque, sobre, contato)
+/quartos       → Catálogo de acomodações com filtros
+/quartos/[id]  → Detalhes do quarto + reserva
+/reservas      → Fluxo de reserva e checkout
+/sobre         → História e equipe
+/contato       → Formulário e localização
+/admin         → Painel administrativo (protegido)
 ```
 
-## Variáveis de ambiente
+---
 
-Configure no `.env.local`:
-
-```bash
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SECRET_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-
-RESEND_API_KEY=
-RESEND_FROM_EMAIL="Pousada Recanto do Matuto <no-reply@seudominio.com>"
-ADMIN_NOTIFICATION_EMAIL=
-
-ADMIN_USERNAME=
-ADMIN_PASSWORD=
-ADMIN_SESSION_SECRET=
-ADMIN_DELETE_PASSWORD=
-
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-
-NEXT_PUBLIC_SITE_URL=https://pousada-recanto-xingo.vercel.app
-
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-STRIPE_PAYMENT_METHOD_TYPES=card,pix
-STRIPE_WEBHOOK_TOLERANCE_SECONDS=300
-```
-
-## Stripe (checkout + webhook)
-
-Webhook do Stripe:
-
-```text
-POST /api/stripe/webhook
-```
-
-Eventos necessários:
-
-```text
-checkout.session.completed
-checkout.session.async_payment_succeeded
-checkout.session.async_payment_failed
-checkout.session.expired
-```
-
-Localmente com Stripe CLI:
-
-```bash
-stripe listen --forward-to localhost:3000/api/stripe/webhook
-```
-
-Depois copie o `whsec_...` retornado e salve em `STRIPE_WEBHOOK_SECRET`.
-
-## Banco (Supabase)
-
-A migration de pagamento Stripe está em:
-
-```text
-supabase/migrations/016_add_stripe_pagamentos_reservas.sql
-```
-
-Aplicar com seu fluxo de migrations do Supabase antes de usar em produção.
-
-## Deploy na Vercel
-
-1. Suba o repositório na Vercel.
-2. Configure todas as variáveis acima em `Project Settings > Environment Variables`.
-3. Faça deploy.
-4. Crie o webhook no Stripe apontando para:
-
-```text
-https://pousada-recanto-xingo.vercel.app/api/stripe/webhook
-```
-
-5. Copie o `whsec_...` do endpoint e salve em `STRIPE_WEBHOOK_SECRET`.
-6. Redeploy para carregar o segredo do webhook.
+<p align="center">
+  Desenvolvido por <strong>Kivora Inc.</strong>
+</p>

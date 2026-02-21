@@ -10,6 +10,7 @@ import {
   type StripeCheckoutSession,
   verifyStripeWebhookSignature,
 } from '@/lib/stripe';
+import { sendConversionEvent } from '@/lib/meta-conversions';
 
 export const runtime = 'nodejs';
 
@@ -30,8 +31,9 @@ interface ReservaWebhookRow {
   check_out: string;
   num_hospedes: number;
   valor_total: number;
-  hospede: { nome: string; email: string } | null;
+  hospede: { nome: string; email: string; telefone?: string | null } | null;
   quarto: { nome: string } | null;
+  pixel_disparado?: boolean;
 }
 
 function calcularNoites(checkIn: string, checkOut: string): number {
@@ -72,7 +74,7 @@ async function getReservaById(id: string): Promise<ReservaWebhookRow | null> {
       num_hospedes,
       valor_total,
       quarto:quartos(nome),
-      hospede:hospedes(nome, email)
+      hospede:hospedes(nome, email, telefone)
     `)
     .eq('id', id)
     .maybeSingle();
@@ -222,6 +224,27 @@ async function handlePagamentoAprovado(session: StripeCheckoutSession) {
         valorTotal: reservaAtual.valor_total,
         metodoPagamento: session.payment_method_types?.[0] || null,
       });
+    }
+  }
+
+  // Meta Pixel: Purchase via Conversions API (server-side)
+  if (!jaPago && !reservaAtual.pixel_disparado) {
+    const pixelOk = await sendConversionEvent({
+      eventName: 'Purchase',
+      email: reservaAtual.hospede?.email,
+      telefone: reservaAtual.hospede?.telefone,
+      valor: reservaAtual.valor_total,
+      currency: 'BRL',
+      reservaId: reservaAtual.id,
+      contentIds: [reservaAtual.id],
+    });
+
+    if (pixelOk) {
+      const supabase = createAdminClient();
+      await supabase
+        .from('reservas')
+        .update({ pixel_disparado: true })
+        .eq('id', reservaAtual.id);
     }
   }
 

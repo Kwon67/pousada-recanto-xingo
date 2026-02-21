@@ -1,6 +1,6 @@
 'use client';
 
-
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ChevronRight, ArrowLeft } from 'lucide-react';
@@ -11,6 +11,7 @@ import QuartoPreco from '@/components/quartos/QuartoPreco';
 import QuartoCard from '@/components/quartos/QuartoCard';
 import Skeleton from '@/components/ui/Skeleton';
 import Button from '@/components/ui/app-button';
+import * as fbq from '@/lib/pixel';
 
 interface QuartoClientProps {
   id: string;
@@ -19,6 +20,20 @@ interface QuartoClientProps {
 export default function QuartoClient({ id }: QuartoClientProps) {
   const { quarto, loading, error } = useQuarto(id);
   const { allQuartos } = useQuartos();
+
+  // Meta Pixel: ViewContent quando o quarto carrega
+  useEffect(() => {
+    if (quarto) {
+      fbq.event('ViewContent', {
+        content_name: quarto.nome,
+        content_category: quarto.categoria,
+        content_ids: [quarto.id],
+        content_type: 'product',
+        value: quarto.preco_diaria,
+        currency: 'BRL',
+      });
+    }
+  }, [quarto]);
 
   // Get related quartos (excluding current one)
   const quartosRelacionados = allQuartos

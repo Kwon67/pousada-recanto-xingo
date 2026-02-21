@@ -138,6 +138,7 @@ export type Database = {
             | 'expirado';
           stripe_payment_method: string | null;
           payment_approved_at: string | null;
+          pixel_disparado: boolean;
           created_at: string;
         };
         Insert: {
@@ -161,6 +162,7 @@ export type Database = {
             | 'expirado';
           stripe_payment_method?: string | null;
           payment_approved_at?: string | null;
+          pixel_disparado?: boolean;
           created_at?: string;
         };
         Update: {
@@ -184,6 +186,7 @@ export type Database = {
             | 'expirado';
           stripe_payment_method?: string | null;
           payment_approved_at?: string | null;
+          pixel_disparado?: boolean;
           created_at?: string;
         };
         Relationships: [];

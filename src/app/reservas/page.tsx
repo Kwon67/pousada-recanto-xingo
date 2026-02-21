@@ -16,6 +16,7 @@ import ResumoReserva from '@/components/reservas/ResumoReserva';
 import StripeCheckout from '@/components/checkout/StripeCheckout';
 import Button from '@/components/ui/app-button';
 import { User, Users } from 'lucide-react';
+import * as fbq from '@/lib/pixel';
 
 const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação', 'Pagamento'];
 
@@ -94,6 +95,15 @@ function ReservasContent() {
   const handleConfirm = async () => {
     const result = await confirmarReserva();
     if (result && result.clientSecret) {
+      // Meta Pixel: Lead — reserva criada, checkout Stripe iniciado
+      if (quarto) {
+        fbq.event('Lead', {
+          value: valorTotal,
+          currency: 'BRL',
+          content_name: quarto.nome,
+          content_category: quarto.categoria,
+        });
+      }
       setClientSecret(result.clientSecret);
       setStep(5);
     }
@@ -239,6 +249,16 @@ function ReservasContent() {
               onSubmit={(data, obs) => {
                 setHospede(data);
                 setObservacoes(obs);
+                // Meta Pixel: InitiateCheckout — dados do hóspede preenchidos
+                if (quarto) {
+                  fbq.event('InitiateCheckout', {
+                    value: valorTotal,
+                    currency: 'BRL',
+                    content_ids: [quarto.id],
+                    content_type: 'product',
+                    num_items: 1,
+                  });
+                }
                 nextStep();
               }}
               onBack={prevStep}
