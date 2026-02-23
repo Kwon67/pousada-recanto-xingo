@@ -139,9 +139,6 @@ export default async function SobrePage() {
   const canyonCategoryItems = sortedGaleria.filter((item) =>
     hasCategory(item.categoria, 'sobre_canyon')
   );
-  const canyonKeywordItems = orderedGaleria.filter((item) =>
-    /canyon|xingo/i.test(`${item.alt ?? ''} ${item.url ?? ''}`)
-  );
   const piscinaItems = [...areaItems, ...momentosItems]
     .filter((item) => /piscina/i.test(item.alt ?? '') || /piscina/i.test(item.url));
 
@@ -152,10 +149,7 @@ export default async function SobrePage() {
   const destaqueCandidates = toCandidates(destaqueItems, 'Foto em destaque');
 
   const homeSobreCandidates: SobreCardImage[] = [];
-  const canyonCandidates = toCandidates(
-    [...canyonCategoryItems, ...canyonKeywordItems, ...destaqueItems],
-    CANYON_CARD_FALLBACK.alt
-  );
+  const canyonCandidates = toCandidates(canyonCategoryItems, CANYON_CARD_FALLBACK.alt);
 
   const genericFallbackPool = [
     ...homeSobreCandidates,
