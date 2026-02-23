@@ -62,10 +62,36 @@ function sanitizeUrl(url: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function isLikelyVideoUrl(url: string): boolean {
+  return /\/video\/upload\//i.test(url) || /\.(mp4|webm|mov)(\?|$)/i.test(url);
+}
+
+function sanitizeImageUrl(url: string | null | undefined): string | null {
+  const sanitized = sanitizeUrl(url);
+  if (!sanitized) return null;
+  return isLikelyVideoUrl(sanitized) ? null : sanitized;
+}
+
+function hasCategory(categoria: string | null | undefined, target: string): boolean {
+  if (!categoria) return false;
+  return categoria
+    .split(',')
+    .map((value) => value.trim())
+    .some((value) => value === target);
+}
+
+function getCategories(categoria: string | null | undefined): string[] {
+  if (!categoria) return [];
+  return categoria
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function toCandidates(items: GaleriaItem[], defaultAlt: string): SobreCardImage[] {
   return items
     .map((item) => {
-      const url = sanitizeUrl(item.url);
+      const url = sanitizeImageUrl(item.url);
       if (!url) return null;
       return {
         url,
@@ -81,17 +107,32 @@ export default async function SobrePage() {
     getConteudoValor('sobre_canyon_imagem'),
   ]);
 
-  const orderedGaleria = [...galeria]
-    .filter((item) => !item.categoria || PUBLIC_GALERIA_CATEGORIES.has(item.categoria))
+  const sortedGaleria = [...galeria]
     .sort((a, b) => a.ordem - b.ordem);
 
-  const momentosItems = orderedGaleria.filter(
-    (item) => !item.categoria || item.categoria === 'momentos'
-  );
-  const pousadaItems = orderedGaleria.filter((item) => item.categoria === 'pousada');
-  const areaItems = orderedGaleria.filter((item) => item.categoria === 'area_lazer');
-  const quartoItems = orderedGaleria.filter((item) => item.categoria === 'quartos');
+  const orderedGaleria = sortedGaleria
+    .filter((item) => {
+      const categories = getCategories(item.categoria);
+      if (categories.length === 0) return true;
+      return categories.some((category) => PUBLIC_GALERIA_CATEGORIES.has(category));
+    })
+    .sort((a, b) => a.ordem - b.ordem);
+
+  const momentosItems = orderedGaleria.filter((item) => {
+    const categories = getCategories(item.categoria);
+    if (categories.length === 0) return true;
+    return categories.includes('momentos');
+  });
+  const pousadaItems = orderedGaleria.filter((item) => hasCategory(item.categoria, 'pousada'));
+  const areaItems = orderedGaleria.filter((item) => hasCategory(item.categoria, 'area_lazer'));
+  const quartoItems = orderedGaleria.filter((item) => hasCategory(item.categoria, 'quartos'));
   const destaqueItems = orderedGaleria.filter((item) => item.destaque);
+  const canyonCategoryItems = sortedGaleria.filter((item) =>
+    hasCategory(item.categoria, 'sobre_canyon')
+  );
+  const canyonKeywordItems = orderedGaleria.filter((item) =>
+    /canyon|xingo/i.test(`${item.alt ?? ''} ${item.url ?? ''}`)
+  );
   const piscinaItems = [...areaItems, ...momentosItems]
     .filter((item) => /piscina/i.test(item.alt ?? '') || /piscina/i.test(item.url));
 
@@ -102,6 +143,10 @@ export default async function SobrePage() {
   const destaqueCandidates = toCandidates(destaqueItems, 'Foto em destaque');
 
   const homeSobreCandidates: SobreCardImage[] = [];
+  const canyonCandidates = toCandidates(
+    [...canyonCategoryItems, ...canyonKeywordItems, ...destaqueItems],
+    CANYON_CARD_FALLBACK.alt
+  );
 
   const genericFallbackPool = [
     ...homeSobreCandidates,
@@ -152,8 +197,10 @@ export default async function SobrePage() {
   };
 
   const canyonCard: SobreCardImage = {
-    url: sanitizeUrl(sobreCanyonImagem) ?? CANYON_CARD_FALLBACK.url,
-    alt: CANYON_CARD_FALLBACK.alt,
+    ...(canyonCandidates[0] ?? {
+      url: sanitizeImageUrl(sobreCanyonImagem) ?? CANYON_CARD_FALLBACK.url,
+      alt: CANYON_CARD_FALLBACK.alt,
+    }),
   };
 
   return <SobreClient sobreCards={sobreCards} canyonCard={canyonCard} />;

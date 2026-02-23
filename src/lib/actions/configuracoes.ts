@@ -17,12 +17,12 @@ function normalizeTime(value: string | null | undefined): string {
 function toConfiguracoes(row: ConfiguracoesRow): Configuracoes {
   return {
     id: row.id,
-    nome_pousada: row.nome_pousada,
+    nome_pousada: row.nome_pousada ?? configuracoesMock.nome_pousada,
     descricao: row.descricao ?? '',
     cta_preco_noite: row.cta_preco_noite ?? 'R$ 380',
-    endereco: row.endereco,
-    telefone: row.telefone,
-    email: row.email,
+    endereco: row.endereco ?? configuracoesMock.endereco,
+    telefone: row.telefone ?? configuracoesMock.telefone,
+    email: row.email ?? configuracoesMock.email,
     instagram: row.instagram ?? '',
     facebook: row.facebook ?? '',
     booking_url: row.booking_url ?? '',
@@ -33,9 +33,9 @@ function toConfiguracoes(row: ConfiguracoesRow): Configuracoes {
     longitude: row.longitude ?? undefined,
     horario_checkin: normalizeTime(row.horario_checkin),
     horario_checkout: normalizeTime(row.horario_checkout),
-    whatsapp_notificacoes: row.whatsapp_notificacoes,
-    email_notificacoes: row.email_notificacoes,
-    nova_reserva_push: row.nova_reserva_push,
+    whatsapp_notificacoes: row.whatsapp_notificacoes ?? true,
+    email_notificacoes: row.email_notificacoes ?? true,
+    nova_reserva_push: row.nova_reserva_push ?? true,
   };
 }
 

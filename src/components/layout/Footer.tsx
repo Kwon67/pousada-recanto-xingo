@@ -7,9 +7,14 @@ import { SITE_CONFIG, NAV_LINKS } from '@/lib/constants';
 import { getWhatsAppLink } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
-export default function Footer() {
+interface FooterProps {
+  precoNoite?: string;
+}
+
+export default function Footer({ precoNoite = 'R$ 380' }: FooterProps) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith('/admin');
+  const precoNoiteExibido = precoNoite.trim() || 'R$ 380';
 
   if (isAdmin) return null;
 
@@ -35,6 +40,9 @@ export default function Footer() {
             <div className="flex flex-col sm:flex-row gap-6 max-w-2xl">
               <p className="text-lg text-white/60 font-medium leading-relaxed max-w-md">
                 O seu refúgio exclusivo às margens do Canyon do Xingó. Conforto contemporâneo com alma nordestina em Piranhas, AL.
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.18em] text-white/45 font-semibold self-end sm:self-auto">
+                A partir de <span className="text-secondary">{precoNoiteExibido}</span> / noite
               </p>
               <div className="flex gap-4 items-center">
                 <Button 

@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { getMetadataBase, getSiteUrl } from "@/lib/site-url";
 import { FB_PIXEL_ID } from "@/lib/pixel";
+import { getConfiguracoesPublic } from "@/lib/actions/configuracoes";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
@@ -83,11 +84,23 @@ export const viewport: Viewport = {
   themeColor: '#1B3A4B',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let precoNoiteFooter = 'R$ 380';
+
+  try {
+    const configuracoes = await getConfiguracoesPublic();
+    const candidate = configuracoes.cta_preco_noite?.trim();
+    if (candidate) {
+      precoNoiteFooter = candidate;
+    }
+  } catch {
+    // Keep safe fallback price in footer when public config fetch fails.
+  }
+
   return (
     <html lang="pt-BR" className="overflow-x-hidden">
       <body
@@ -128,7 +141,7 @@ export default function RootLayout({
         <div className="relative overflow-x-hidden w-full">
           <Header />
           <main>{children}</main>
-          <Footer />
+          <Footer precoNoite={precoNoiteFooter} />
         </div>
       </body>
     </html>

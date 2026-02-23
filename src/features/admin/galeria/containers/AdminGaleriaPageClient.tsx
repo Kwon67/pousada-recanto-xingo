@@ -44,6 +44,7 @@ const CATEGORIAS = [
   { value: 'home_estrutura_4', label: 'Home - Estrutura: Chuveirão' },
   { value: 'home_estrutura_5', label: 'Home - Estrutura: Espaço Amplo' },
   { value: 'home_estrutura_6', label: 'Home - Estrutura: Banheiro Privativo' },
+  { value: 'sobre_canyon', label: 'Sobre - Foto principal do Canyon' },
 ];
 
 const LEGACY_MOMENTOS_CATEGORIES = new Set(['pousada', 'quartos', 'area_lazer', 'cafe']);
