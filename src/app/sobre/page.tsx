@@ -101,6 +101,15 @@ function toCandidates(items: GaleriaItem[], defaultAlt: string): SobreCardImage[
     .filter((item): item is SobreCardImage => Boolean(item));
 }
 
+function dedupeByUrl(items: SobreCardImage[]): SobreCardImage[] {
+  const seen = new Set<string>();
+  return items.filter((item) => {
+    if (seen.has(item.url)) return false;
+    seen.add(item.url);
+    return true;
+  });
+}
+
 export default async function SobrePage() {
   const [galeria, sobreCanyonImagem] = await Promise.all([
     getGaleria(),
@@ -196,12 +205,13 @@ export default async function SobrePage() {
     ),
   };
 
-  const canyonCard: SobreCardImage = {
-    ...(canyonCandidates[0] ?? {
-      url: sanitizeImageUrl(sobreCanyonImagem) ?? CANYON_CARD_FALLBACK.url,
-      alt: CANYON_CARD_FALLBACK.alt,
-    }),
+  const canyonFallback: SobreCardImage = {
+    url: sanitizeImageUrl(sobreCanyonImagem) ?? CANYON_CARD_FALLBACK.url,
+    alt: CANYON_CARD_FALLBACK.alt,
   };
+  const canyonCards = dedupeByUrl(
+    canyonCandidates.length > 0 ? canyonCandidates : [canyonFallback]
+  );
 
-  return <SobreClient sobreCards={sobreCards} canyonCard={canyonCard} />;
+  return <SobreClient sobreCards={sobreCards} canyonCards={canyonCards} />;
 }

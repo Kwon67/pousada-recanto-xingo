@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Heart,
@@ -54,11 +55,27 @@ export type SobreCardImage = {
 
 export default function SobreClient({
   sobreCards,
-  canyonCard,
+  canyonCards,
 }: {
   sobreCards: Record<'pousada' | 'area' | 'piscina' | 'quarto', SobreCardImage>;
-  canyonCard: SobreCardImage;
+  canyonCards: SobreCardImage[];
 }) {
+  const canyonSlides = canyonCards.length > 0 ? canyonCards : [{ url: 'https://placehold.co/800x600/1B3A4B/D4A843?text=Canyon+do+Xingo', alt: 'Canyon do Xingó' }];
+  const [activeCanyonIndex, setActiveCanyonIndex] = useState(0);
+
+  useEffect(() => {
+    if (canyonSlides.length <= 1) return;
+    const interval = setInterval(() => {
+      setActiveCanyonIndex((current) => (current + 1) % canyonSlides.length);
+    }, 4500);
+
+    return () => clearInterval(interval);
+  }, [canyonSlides.length]);
+
+  useEffect(() => {
+    setActiveCanyonIndex(0);
+  }, [canyonSlides.length]);
+
   return (
     <div className="pt-24 pb-20">
       {/* Hero */}
@@ -217,13 +234,36 @@ export default function SobreClient({
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <Image
-                src={canyonCard.url}
-                alt={canyonCard.alt}
-                width={800}
-                height={600}
-                className="w-full rounded-none border border-white/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-duration-500"
-              />
+              <div className="relative w-full aspect-[4/3] rounded-none border border-white/10 shadow-none overflow-hidden">
+                {canyonSlides.map((slide, index) => (
+                  <Image
+                    key={`${slide.url}-${index}`}
+                    src={slide.url}
+                    alt={slide.alt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className={`object-cover filter grayscale-[20%] hover:grayscale-0 transition-all duration-700 ${
+                      index === activeCanyonIndex ? 'opacity-100' : 'opacity-0'
+                    }`}
+                  />
+                ))}
+
+                {canyonSlides.length > 1 && (
+                  <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/20 px-2 py-1 rounded-full">
+                    {canyonSlides.map((slide, index) => (
+                      <button
+                        key={`canyon-dot-${slide.url}-${index}`}
+                        type="button"
+                        onClick={() => setActiveCanyonIndex(index)}
+                        className={`h-2 rounded-full transition-all ${
+                          index === activeCanyonIndex ? 'w-6 bg-secondary' : 'w-2 bg-white/60'
+                        }`}
+                        aria-label={`Exibir imagem ${index + 1} do Canyon`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             </motion.div>
 
             <motion.div
