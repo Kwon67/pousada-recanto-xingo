@@ -431,6 +431,7 @@ export const configuracoesMock: Configuracoes = {
   id: '1',
   nome_pousada: 'Pousada Recanto do Matuto Xingó',
   descricao: 'Seu refúgio às margens do Canyon do Xingó. Pousada nova e aconchegante em Piranhas, Alagoas, com 10 quartos, piscina, área de lazer e hospitalidade nordestina.',
+  cta_preco_noite: 'R$ 380',
   endereco: 'Piranhas, Alagoas',
   telefone: '(82) 98133-4027',
   email: 'kivora.dev@outlook.com',

@@ -14,6 +14,7 @@ import type { Avaliacao } from '@/types/avaliacao';
 
 import { Metadata } from 'next';
 import { getConteudoValor } from '@/lib/actions/conteudo';
+import { getConfiguracoesPublic } from '@/lib/actions/configuracoes';
 import { getMetadataBase } from '@/lib/site-url';
 
 export const dynamic = 'force-dynamic';
@@ -50,10 +51,11 @@ function isMomentosCategory(categoria: string | null | undefined): boolean {
 }
 
 export default async function HomePage() {
-  const [avaliacoesRaw, galeriaRaw, homeSobreImagemPadrao] = await Promise.all([
+  const [avaliacoesRaw, galeriaRaw, homeSobreImagemPadrao, configuracoes] = await Promise.all([
     getAvaliacoes({ aprovada: true }),
     getGaleria(),
     getConteudoValor('home_sobre_imagem'),
+    getConfiguracoesPublic(),
   ]);
 
   const avaliacoes = (avaliacoesRaw as Avaliacao[])
@@ -138,7 +140,7 @@ export default async function HomePage() {
       <Galeria images={galeria} />
       <Depoimentos avaliacoes={avaliacoes} />
       <Localizacao />
-      <CTAReserva />
+      <CTAReserva precoNoite={configuracoes.cta_preco_noite} />
     </>
   );
 }

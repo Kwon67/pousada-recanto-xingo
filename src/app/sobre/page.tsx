@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { getGaleria, GaleriaItem } from '@/lib/actions/galeria';
+import { getConteudoValor } from '@/lib/actions/conteudo';
 import { getMetadataBase, getSiteUrl } from '@/lib/site-url';
 import SobreClient, { SobreCardImage } from './SobreClient';
 
@@ -48,6 +49,11 @@ const SOBRE_CARD_FALLBACKS: Record<'pousada' | 'area' | 'piscina' | 'quarto', So
   },
 };
 
+const CANYON_CARD_FALLBACK: SobreCardImage = {
+  url: 'https://placehold.co/800x600/1B3A4B/D4A843?text=Canyon+do+Xingo',
+  alt: 'Canyon do Xingó',
+};
+
 const PUBLIC_GALERIA_CATEGORIES = new Set(['momentos', 'pousada', 'quartos', 'area_lazer', 'cafe']);
 
 function sanitizeUrl(url: string | null | undefined): string | null {
@@ -70,7 +76,10 @@ function toCandidates(items: GaleriaItem[], defaultAlt: string): SobreCardImage[
 }
 
 export default async function SobrePage() {
-  const galeria = await getGaleria();
+  const [galeria, sobreCanyonImagem] = await Promise.all([
+    getGaleria(),
+    getConteudoValor('sobre_canyon_imagem'),
+  ]);
 
   const orderedGaleria = [...galeria]
     .filter((item) => !item.categoria || PUBLIC_GALERIA_CATEGORIES.has(item.categoria))
@@ -142,5 +151,10 @@ export default async function SobrePage() {
     ),
   };
 
-  return <SobreClient sobreCards={sobreCards} />;
+  const canyonCard: SobreCardImage = {
+    url: sanitizeUrl(sobreCanyonImagem) ?? CANYON_CARD_FALLBACK.url,
+    alt: CANYON_CARD_FALLBACK.alt,
+  };
+
+  return <SobreClient sobreCards={sobreCards} canyonCard={canyonCard} />;
 }

@@ -2,6 +2,7 @@ export interface Configuracoes {
   id: string;
   nome_pousada: string;
   descricao: string;
+  cta_preco_noite?: string;
   endereco: string;
   telefone: string;
   email: string;
@@ -226,6 +227,7 @@ export type Database = {
           id: string;
           nome_pousada: string;
           descricao: string | null;
+          cta_preco_noite: string | null;
           endereco: string;
           telefone: string;
           email: string;
@@ -247,6 +249,7 @@ export type Database = {
           id?: string;
           nome_pousada: string;
           descricao?: string | null;
+          cta_preco_noite?: string | null;
           endereco: string;
           telefone: string;
           email: string;
@@ -268,6 +271,7 @@ export type Database = {
           id?: string;
           nome_pousada?: string;
           descricao?: string | null;
+          cta_preco_noite?: string | null;
           endereco?: string;
           telefone?: string;
           email?: string;

@@ -5,7 +5,13 @@ import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function CTAReserva() {
+interface CTAReservaProps {
+  precoNoite?: string;
+}
+
+export default function CTAReserva({ precoNoite = 'R$ 380' }: CTAReservaProps) {
+  const precoExibido = precoNoite.trim() || 'R$ 380';
+
   return (
     <section className="relative overflow-hidden bg-[#0A161E] py-32 md:py-48 mix-blend-multiply">
       {/* Background Textures */}
@@ -52,7 +58,7 @@ export default function CTAReserva() {
               </Link>
             </Button>
             <div className="text-white/40 text-sm font-medium tracking-widest uppercase">
-              A partir de <span className="text-white font-bold">R$ 380</span> / noite
+              A partir de <span className="text-white font-bold">{precoExibido}</span> / noite
             </div>
           </motion.div>
         </motion.div>

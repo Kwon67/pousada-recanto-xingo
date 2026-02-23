@@ -57,6 +57,7 @@ export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean
 
 export async function criarAvaliacao(data: {
   hospede_nome: string;
+  hospede_cidade?: string;
   quarto_id?: string | null;
   nota: number;
   comentario: string;
@@ -73,6 +74,7 @@ export async function criarAvaliacao(data: {
       .insert({
         nome: data.hospede_nome,
         email: generatedEmail,
+        cidade: data.hospede_cidade?.trim() || null,
       })
       .select('id')
       .single();

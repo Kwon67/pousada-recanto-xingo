@@ -53,9 +53,11 @@ export type SobreCardImage = {
 };
 
 export default function SobreClient({
-  sobreCards
+  sobreCards,
+  canyonCard,
 }: {
-  sobreCards: Record<'pousada' | 'area' | 'piscina' | 'quarto', SobreCardImage>
+  sobreCards: Record<'pousada' | 'area' | 'piscina' | 'quarto', SobreCardImage>;
+  canyonCard: SobreCardImage;
 }) {
   return (
     <div className="pt-24 pb-20">
@@ -216,8 +218,8 @@ export default function SobreClient({
               viewport={{ once: true }}
             >
               <Image
-                src="https://placehold.co/800x600/1B3A4B/D4A843?text=Canyon+do+Xingo"
-                alt="Canyon do Xingó"
+                src={canyonCard.url}
+                alt={canyonCard.alt}
                 width={800}
                 height={600}
                 className="w-full rounded-none border border-white/10 shadow-none filter grayscale-[20%] hover:grayscale-0 transition-duration-500"

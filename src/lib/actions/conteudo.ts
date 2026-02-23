@@ -30,6 +30,7 @@ const conteudoDefault: Record<string, { valor: string; categoria: string }> = {
   home_estrutura_6_media: { valor: '[]', categoria: 'home' },
   sobre_titulo: { valor: 'Nossa História', categoria: 'sobre' },
   sobre_texto: { valor: 'A Pousada Recanto do Matuto Xingó nasceu do sonho de criar um espaço onde os visitantes pudessem se sentir em casa, cercados pela beleza natural do sertão alagoano.', categoria: 'sobre' },
+  sobre_canyon_imagem: { valor: 'https://placehold.co/800x600/1B3A4B/D4A843?text=Canyon+do+Xingo', categoria: 'sobre' },
   contato_como_chegar: { valor: 'De avião: O aeroporto mais próximo é o de Aracaju (SE) ou Maceió (AL). De lá, são aproximadamente 3 horas de carro até Piranhas.', categoria: 'contato' },
   politica_cancelamento: { valor: 'Cancelamento gratuito até 48 horas antes do check-in. Após esse prazo, será cobrada a primeira diária como taxa.', categoria: 'geral' },
   regras_pousada: { valor: 'Check-in a partir das 14h. Check-out até as 12h. Silêncio após as 22h. Pets não permitidos. Café da manhã incluso.', categoria: 'geral' },

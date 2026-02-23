@@ -19,6 +19,7 @@ function toConfiguracoes(row: ConfiguracoesRow): Configuracoes {
     id: row.id,
     nome_pousada: row.nome_pousada,
     descricao: row.descricao ?? '',
+    cta_preco_noite: row.cta_preco_noite ?? 'R$ 380',
     endereco: row.endereco,
     telefone: row.telefone,
     email: row.email,
@@ -80,6 +81,7 @@ export async function getConfiguracoes(): Promise<Configuracoes> {
 export async function atualizarConfiguracoes(data: {
   nome_pousada: string;
   descricao: string;
+  cta_preco_noite?: string;
   endereco: string;
   telefone: string;
   email: string;
@@ -112,6 +114,7 @@ export async function atualizarConfiguracoes(data: {
       ...(existing?.id ? { id: existing.id } : {}),
       nome_pousada: data.nome_pousada,
       descricao: data.descricao || null,
+      cta_preco_noite: data.cta_preco_noite || null,
       endereco: data.endereco,
       telefone: data.telefone,
       email: data.email,

@@ -29,12 +29,14 @@ import PageHeader from '@/features/admin/shared/components/PageHeader';
 
 interface NovaAvaliacaoForm {
   hospede_nome: string;
+  hospede_cidade: string;
   nota: string;
   comentario: string;
 }
 
 const initialForm: NovaAvaliacaoForm = {
   hospede_nome: '',
+  hospede_cidade: '',
   nota: '5',
   comentario: '',
 };
@@ -149,6 +151,7 @@ export default function AdminAvaliacoesPage() {
     setSubmitting(true);
     const result = await criarAvaliacao({
       hospede_nome: form.hospede_nome.trim(),
+      hospede_cidade: form.hospede_cidade.trim() || undefined,
       nota: Number(form.nota),
       comentario: form.comentario.trim(),
       aprovada: true,
@@ -351,6 +354,15 @@ export default function AdminAvaliacoesPage() {
                     value={form.hospede_nome}
                     onChange={(e) => setForm((prev) => ({ ...prev, hospede_nome: e.target.value }))}
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Cidade</label>
+                  <input
+                    value={form.hospede_cidade}
+                    onChange={(e) => setForm((prev) => ({ ...prev, hospede_cidade: e.target.value }))}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+                    placeholder="Ex: Piranhas - AL"
                   />
                 </div>
                 <div>

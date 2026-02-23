@@ -27,6 +27,7 @@ const TABS = [
 interface ConfigForm {
   nome_pousada: string;
   descricao: string;
+  cta_preco_noite: string;
   telefone: string;
   email: string;
   endereco: string;
@@ -47,6 +48,7 @@ interface ConfigForm {
 const defaultConfig: ConfigForm = {
   nome_pousada: 'Pousada Recanto do Matuto Xingó',
   descricao: '',
+  cta_preco_noite: 'R$ 380',
   telefone: '(82) 99999-0000',
   email: 'contato@recantodomatuto.com.br',
   endereco: 'Piranhas - AL, Brasil',
@@ -78,6 +80,7 @@ export default function AdminConfiguracoesPage() {
       setConfig({
         nome_pousada: data.nome_pousada || defaultConfig.nome_pousada,
         descricao: data.descricao || '',
+        cta_preco_noite: data.cta_preco_noite || defaultConfig.cta_preco_noite,
         telefone: data.telefone || defaultConfig.telefone,
         email: data.email || defaultConfig.email,
         endereco: data.endereco || defaultConfig.endereco,
@@ -118,6 +121,7 @@ export default function AdminConfiguracoesPage() {
     const result = await atualizarConfiguracoes({
       nome_pousada: config.nome_pousada,
       descricao: config.descricao,
+      cta_preco_noite: config.cta_preco_noite,
       endereco: config.endereco,
       telefone: config.telefone,
       email: config.email,
@@ -216,6 +220,17 @@ export default function AdminConfiguracoesPage() {
               onChange={(e) => updateConfig('descricao', e.target.value)}
               rows={3}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm resize-none"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Preço inicial exibido na Home (CTA perto do footer)
+            </label>
+            <input
+              value={config.cta_preco_noite}
+              onChange={(e) => updateConfig('cta_preco_noite', e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm"
+              placeholder="Ex: R$ 380"
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
