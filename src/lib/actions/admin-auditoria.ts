@@ -22,7 +22,11 @@ export async function getUltimosAcessosAdmin(limit: number = 12): Promise<AdminA
   } catch (err) {
     const message =
       err instanceof Error ? err.message : 'Erro desconhecido ao buscar auditoria admin';
-    console.error('getUltimosAcessosAdmin error:', message);
+
+    // Only log if it's not the missing config error, to prevent dev overlay spam
+    if (!message.includes('não configurado')) {
+      console.error('getUltimosAcessosAdmin error:', message);
+    }
     return [];
   }
 }
