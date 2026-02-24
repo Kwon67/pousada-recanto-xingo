@@ -4,12 +4,17 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { NAV_LINKS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
-import MobileMenu from './MobileMenu';
+
+const MobileMenu = dynamic(() => import('./MobileMenu'), {
+  ssr: false,
+  loading: () => null,
+});
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -17,12 +22,27 @@ export default function Header() {
   const pathname = usePathname() || '/';
 
   useEffect(() => {
+    let rafId: number | null = null;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (rafId !== null) return;
+
+      rafId = window.requestAnimationFrame(() => {
+        const nextScrolled = window.scrollY > 20;
+        setIsScrolled((prev) => (prev === nextScrolled ? prev : nextScrolled));
+        rafId = null;
+      });
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const isHome = pathname === '/';

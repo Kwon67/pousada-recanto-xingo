@@ -145,7 +145,7 @@ function SobreMediaSlider({
               muted
               loop
               playsInline
-              preload="auto"
+              preload={isActive ? 'metadata' : 'none'}
               className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
               style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
             />
@@ -162,7 +162,6 @@ function SobreMediaSlider({
               src={item.url}
               alt={`Pousada Recanto do Matuto ${i + 1}`}
               fill
-              unoptimized
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
             />

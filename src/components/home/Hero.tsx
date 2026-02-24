@@ -32,13 +32,6 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
     [backgroundImageUrl]
   );
 
-  const heroBackgroundStyle = useMemo(
-    () => ({
-      backgroundImage: `${HERO_PHOTO_OVERLAY}, url("${heroBackgroundImage}")`,
-    }),
-    [heroBackgroundImage]
-  );
-
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ['start start', 'end start'],
@@ -55,9 +48,19 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
       <div className="absolute bottom-0 left-0 right-0 h-32 bg-linear-to-t from-black/20 to-transparent pointer-events-none z-20" />
       {/* — Background — */}
       <motion.div className="absolute inset-0 z-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={heroBackgroundImage}
+          alt=""
+          aria-hidden="true"
+          loading="eager"
+          decoding="async"
+          fetchPriority="high"
+          className="hero-bg-photo absolute inset-0 h-full w-full object-cover"
+        />
         <div
-          className="hero-bg-photo absolute inset-0"
-          style={heroBackgroundStyle}
+          className="absolute inset-0"
+          style={{ background: HERO_PHOTO_OVERLAY }}
         />
       </motion.div>
 

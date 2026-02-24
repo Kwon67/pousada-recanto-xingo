@@ -130,7 +130,7 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
             className="h-full w-full object-cover opacity-0 transition-opacity duration-500"
             onCanPlay={(e) => {
               e.currentTarget.classList.replace('opacity-0', 'opacity-100');
@@ -147,6 +147,9 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
         <img
           src={item.url}
           alt={alt}
+          loading="lazy"
+          decoding="async"
+          fetchPriority="low"
           className="h-full w-full object-cover transition-transform duration-600 group-hover:scale-110"
         />
         <div className={mediaOverlayClass} />
@@ -174,7 +177,7 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
               muted
               loop
               playsInline
-              preload="auto"
+              preload={isActive ? 'metadata' : 'none'}
               className="absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-in-out"
               style={{ opacity: isActive ? 1 : 0, zIndex: isActive ? 2 : 1 }}
             />
@@ -187,6 +190,9 @@ function MediaSlider({ media, alt }: { media: MediaItem[]; alt: string }) {
             key={item.url}
             src={item.url}
             alt={`${alt} ${i + 1}`}
+            loading="lazy"
+            decoding="async"
+            fetchPriority="low"
             className="absolute inset-0 h-full w-full object-cover transition-transform duration-600 group-hover:scale-110"
             style={{
               opacity: isActive ? 1 : 0,

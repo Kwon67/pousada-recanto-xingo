@@ -52,6 +52,7 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
                     src={img}
                     alt={`${nome} - Foto ${index + 1}`}
                     fill
+                    priority={index === 0}
                     sizes="(min-width: 768px) 66vw, 100vw"
                     className="w-full h-full object-cover"
                   />
@@ -97,6 +98,7 @@ export default function QuartoGaleria({ imagens, nome }: QuartoGaleriaProps) {
                   src={img}
                   alt={`${nome} - Miniatura ${index + 1}`}
                   fill
+                  loading="lazy"
                   sizes="(min-width: 768px) 12vw, 25vw"
                   className="w-full h-full object-cover"
                 />

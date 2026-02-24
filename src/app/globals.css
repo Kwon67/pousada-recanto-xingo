@@ -330,6 +330,8 @@ body::-webkit-scrollbar {
 }
 
 .hero-bg-photo {
+  object-fit: cover;
+  object-position: center;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -342,6 +344,7 @@ body::-webkit-scrollbar {
 
 @media (max-width: 1024px) {
   .hero-bg-photo {
+    object-position: center 30%;
     background-position: center 30%;
   }
 }

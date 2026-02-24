@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, Suspense, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { useReserva } from '@/hooks/useReserva';
 import { useQuartos } from '@/hooks/useQuartos';
@@ -13,12 +14,23 @@ import CalendarioReserva from '@/components/reservas/CalendarioReserva';
 import SeletorQuarto from '@/components/reservas/SeletorQuarto';
 import FormHospede from '@/components/reservas/FormHospede';
 import ResumoReserva from '@/components/reservas/ResumoReserva';
-import StripeCheckout from '@/components/checkout/StripeCheckout';
 import Button from '@/components/ui/app-button';
 import { User, Users } from 'lucide-react';
 import * as fbq from '@/lib/pixel';
 
 const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação', 'Pagamento'];
+
+const StripeCheckout = dynamic(
+  () => import('@/components/checkout/StripeCheckout'),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="w-full rounded-none border border-dark/10 bg-white p-4 text-center text-sm text-dark/60">
+        Carregando pagamento...
+      </div>
+    ),
+  }
+);
 
 function ReservasContent() {
   const searchParams = useSearchParams();

@@ -62,6 +62,7 @@ export default function SobreClient({
 }) {
   const canyonSlides = canyonCards.length > 0 ? canyonCards : [{ url: 'https://placehold.co/800x600/1B3A4B/D4A843?text=Canyon+do+Xingo', alt: 'Canyon do Xingó' }];
   const [activeCanyonIndex, setActiveCanyonIndex] = useState(0);
+  const safeActiveCanyonIndex = canyonSlides.length > 0 ? activeCanyonIndex % canyonSlides.length : 0;
 
   useEffect(() => {
     if (canyonSlides.length <= 1) return;
@@ -70,10 +71,6 @@ export default function SobreClient({
     }, 4500);
 
     return () => clearInterval(interval);
-  }, [canyonSlides.length]);
-
-  useEffect(() => {
-    setActiveCanyonIndex(0);
   }, [canyonSlides.length]);
 
   return (
@@ -243,7 +240,7 @@ export default function SobreClient({
                     fill
                     sizes="(max-width: 1024px) 100vw, 50vw"
                     className={`object-cover filter grayscale-[20%] hover:grayscale-0 transition-all duration-700 ${
-                      index === activeCanyonIndex ? 'opacity-100' : 'opacity-0'
+                      index === safeActiveCanyonIndex ? 'opacity-100' : 'opacity-0'
                     }`}
                   />
                 ))}
@@ -256,7 +253,7 @@ export default function SobreClient({
                         type="button"
                         onClick={() => setActiveCanyonIndex(index)}
                         className={`h-2 rounded-full transition-all ${
-                          index === activeCanyonIndex ? 'w-6 bg-secondary' : 'w-2 bg-white/60'
+                          index === safeActiveCanyonIndex ? 'w-6 bg-secondary' : 'w-2 bg-white/60'
                         }`}
                         aria-label={`Exibir imagem ${index + 1} do Canyon`}
                       />
