@@ -67,6 +67,7 @@ function buildContentSecurityPolicy(): string {
       'https://js.stripe.com',
       'https://hooks.stripe.com',
       'https://checkout.stripe.com',
+      'https://www.google.com',
     ]),
     'media-src': uniqueValues(["'self'", 'blob:', 'data:', 'https://res.cloudinary.com']),
     'form-action': ["'self'"],
