@@ -62,14 +62,8 @@ ALTER TABLE quartos ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access on quartos" ON quartos
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow anon insert on quartos" ON quartos
-  FOR INSERT WITH CHECK (true);
-
-CREATE POLICY "Allow anon update on quartos" ON quartos
-  FOR UPDATE USING (true);
-
-CREATE POLICY "Allow anon delete on quartos" ON quartos
-  FOR DELETE USING (true);
+CREATE POLICY "Allow authenticated users to modify quartos" ON quartos
+  FOR ALL USING (auth.role() = 'authenticated');
 
 -- 002: Create hospedes
 CREATE TABLE hospedes (
@@ -88,14 +82,14 @@ CREATE INDEX idx_hospedes_cpf ON hospedes(cpf);
 
 ALTER TABLE hospedes ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read hospedes" ON hospedes
-  FOR SELECT USING (true);
+CREATE POLICY "Allow authenticated users to read hospedes" ON hospedes
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Allow anyone to insert hospedes" ON hospedes
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow anyone to update hospedes" ON hospedes
-  FOR UPDATE USING (true);
+CREATE POLICY "Allow authenticated users to modify hospedes" ON hospedes
+  FOR UPDATE USING (auth.role() = 'authenticated');
 
 -- 003: Create reservas
 CREATE TYPE status_reserva AS ENUM ('pendente', 'confirmada', 'cancelada', 'concluida');
@@ -122,17 +116,17 @@ CREATE INDEX idx_reservas_dates ON reservas(check_in, check_out);
 
 ALTER TABLE reservas ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow public read reservas" ON reservas
-  FOR SELECT USING (true);
+CREATE POLICY "Allow authenticated users to read reservas" ON reservas
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Allow anyone to insert reservas" ON reservas
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow anyone to update reservas" ON reservas
-  FOR UPDATE USING (true);
+CREATE POLICY "Allow authenticated users to modify reservas" ON reservas
+  FOR UPDATE USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Allow anyone to delete reservas" ON reservas
-  FOR DELETE USING (true);
+CREATE POLICY "Allow authenticated users to delete reservas" ON reservas
+  FOR DELETE USING (auth.role() = 'authenticated');
 
 -- 004: Create avaliacoes
 CREATE TABLE avaliacoes (
@@ -153,16 +147,19 @@ CREATE INDEX idx_avaliacoes_nota ON avaliacoes(nota);
 ALTER TABLE avaliacoes ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public read approved avaliacoes" ON avaliacoes
-  FOR SELECT USING (true);
+  FOR SELECT USING (aprovada = true);
+
+CREATE POLICY "Allow authenticated users to read all avaliacoes" ON avaliacoes
+  FOR SELECT USING (auth.role() = 'authenticated');
 
 CREATE POLICY "Allow anyone to insert avaliacoes" ON avaliacoes
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Allow anyone to update avaliacoes" ON avaliacoes
-  FOR UPDATE USING (true);
+CREATE POLICY "Allow authenticated users to modify avaliacoes" ON avaliacoes
+  FOR UPDATE USING (auth.role() = 'authenticated');
 
-CREATE POLICY "Allow anyone to delete avaliacoes" ON avaliacoes
-  FOR DELETE USING (true);
+CREATE POLICY "Allow authenticated users to delete avaliacoes" ON avaliacoes
+  FOR DELETE USING (auth.role() = 'authenticated');
 
 -- 005: Create configuracoes
 CREATE TABLE configuracoes (
@@ -193,8 +190,8 @@ ALTER TABLE configuracoes ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access on configuracoes" ON configuracoes
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow anyone to update configuracoes" ON configuracoes
-  FOR UPDATE USING (true);
+CREATE POLICY "Allow authenticated users to modify configuracoes" ON configuracoes
+  FOR UPDATE USING (auth.role() = 'authenticated');
 
 -- 006: Create conteudo_site
 CREATE TABLE conteudo_site (
@@ -218,8 +215,8 @@ ALTER TABLE conteudo_site ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access on conteudo_site" ON conteudo_site
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow anyone to modify conteudo_site" ON conteudo_site
-  FOR ALL USING (true);
+CREATE POLICY "Allow authenticated users to modify conteudo_site" ON conteudo_site
+  FOR ALL USING (auth.role() = 'authenticated');
 
 INSERT INTO conteudo_site (chave, valor, categoria) VALUES
 ('hero_titulo', 'Seu refugio as margens do Canyon do Xingo', 'home'),
@@ -255,8 +252,8 @@ ALTER TABLE galeria ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public read access on galeria" ON galeria
   FOR SELECT USING (true);
 
-CREATE POLICY "Allow anyone to modify galeria" ON galeria
-  FOR ALL USING (true);
+CREATE POLICY "Allow authenticated users to modify galeria" ON galeria
+  FOR ALL USING (auth.role() = 'authenticated');
 
 -- SEED: Dados iniciais dos quartos
 INSERT INTO quartos (nome, slug, descricao, descricao_curta, categoria, preco_diaria, preco_fds, capacidade, tamanho_m2, amenidades, ativo, destaque, ordem) VALUES

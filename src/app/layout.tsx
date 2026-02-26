@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import { getMetadataBase, getSiteUrl } from "@/lib/site-url";
 import { FB_PIXEL_ID } from "@/lib/pixel";
 import { getConfiguracoesPublic } from "@/lib/actions/configuracoes";
+import { validateCriticalServerEnv } from '@/lib/env-validation';
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
@@ -89,6 +90,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  validateCriticalServerEnv();
+
   let precoNoiteFooter = 'R$ 380';
 
   try {
@@ -128,6 +131,8 @@ export default async function RootLayout({
               }}
             />
             <noscript>
+              {/* Tracking pixel fallback requires plain <img> inside noscript. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 height="1"
                 width="1"

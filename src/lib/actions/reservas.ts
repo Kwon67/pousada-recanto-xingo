@@ -1,13 +1,17 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import { enviarEmailConfirmacao, enviarEmailStatus } from '@/lib/email';
+import { createReservaPublicToken, verifyReservaPublicToken } from '@/lib/reserva-public-token';
+import { checkAndConsumeReservaRateLimit, getClientIpFromHeaders } from '@/lib/reserva-rate-limit';
 import { getSiteUrl } from '@/lib/site-url';
 import { createStripeCheckoutSession, getStripePaymentIntentId } from '@/lib/stripe';
 import { reservasMock } from '@/data/mock';
 import type { Reserva, StatusReserva } from '@/types/reserva';
+import { z } from 'zod';
 
 interface CriarReservaData {
   quarto_id: string;
@@ -26,23 +30,204 @@ interface CriarReservaData {
 }
 
 const STATUSES_QUE_BLOQUEIAM: StatusReserva[] = ['pendente', 'aguardando_pagamento', 'confirmada'];
+const DAY_MS = 1000 * 60 * 60 * 24;
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const criarReservaSchema = z.object({
+  quarto_id: z.string().trim().min(1, 'Quarto inválido.').max(120, 'Quarto inválido.'),
+  quarto_nome: z.string().trim().max(120).optional().default(''),
+  hospede_nome: z
+    .string()
+    .trim()
+    .min(2, 'Nome do hóspede inválido.')
+    .max(120, 'Nome do hóspede inválido.'),
+  hospede_email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email('E-mail inválido.')
+    .max(160, 'E-mail inválido.'),
+  hospede_telefone: z
+    .string()
+    .trim()
+    .min(8, 'Telefone inválido.')
+    .max(40, 'Telefone inválido.'),
+  hospede_cpf: z.string().trim().max(32).optional().default(''),
+  hospede_cidade: z.string().trim().max(120).optional().default(''),
+  check_in: z
+    .string()
+    .trim()
+    .regex(ISO_DATE_REGEX, 'Data de check-in inválida.'),
+  check_out: z
+    .string()
+    .trim()
+    .regex(ISO_DATE_REGEX, 'Data de check-out inválida.'),
+  num_hospedes: z
+    .number()
+    .int('Quantidade de hóspedes inválida.')
+    .min(1, 'Quantidade de hóspedes inválida.')
+    .max(10, 'Quantidade de hóspedes inválida.'),
+  noites: z.number().int().min(1).max(60).optional(),
+  valor_total: z.number().min(0).optional(),
+  observacoes: z.string().trim().max(2000).optional(),
+});
+
+function parseIsoDate(value: string): Date | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  if (
+    date.getUTCFullYear() !== year ||
+    date.getUTCMonth() !== month - 1 ||
+    date.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return date;
+}
+
+function startOfUtcToday(): Date {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+function calculateNights(checkIn: Date, checkOut: Date): number {
+  return Math.round((checkOut.getTime() - checkIn.getTime()) / DAY_MS);
+}
+
+function calculateStayTotal(
+  checkIn: Date,
+  checkOut: Date,
+  precoDiaria: number,
+  precoFds?: number | null
+): number {
+  const weekendPrice = Number.isFinite(precoFds) ? Number(precoFds) : precoDiaria;
+  let total = 0;
+
+  const current = new Date(checkIn.getTime());
+  while (current < checkOut) {
+    const day = current.getUTCDay();
+    const isWeekend = day === 0 || day === 6;
+    total += isWeekend ? weekendPrice : precoDiaria;
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
+  return Math.round(total * 100) / 100;
+}
+
+function parseMoneyValue(value: unknown): number | null {
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  return null;
+}
 
 export async function criarReserva(data: CriarReservaData) {
   let reservaCriadaId: string | null = null;
 
   try {
+    const parsedInput = criarReservaSchema.safeParse(data);
+    if (!parsedInput.success) {
+      return {
+        success: false,
+        error: parsedInput.error.issues[0]?.message || 'Dados da reserva inválidos.',
+      };
+    }
+
+    const input = parsedInput.data;
     const supabase = createAdminClient();
+    const quartoId = input.quarto_id;
+    const hospedeNome = input.hospede_nome;
+    const hospedeEmail = input.hospede_email;
+    const hospedeTelefone = input.hospede_telefone;
+    const hospedeCpf = input.hospede_cpf;
+    const hospedeCidade = input.hospede_cidade;
+    const observacoes =
+      typeof input.observacoes === 'string' && input.observacoes.trim().length > 0
+        ? input.observacoes.trim().slice(0, 2000)
+        : null;
+
+    const requestHeaders = await headers();
+    const clientIp = getClientIpFromHeaders(requestHeaders);
+    const rateLimitState = checkAndConsumeReservaRateLimit({
+      ip: clientIp,
+      email: hospedeEmail,
+    });
+
+    if (!rateLimitState.allowed) {
+      return {
+        success: false,
+        error:
+          'Muitas tentativas de reserva em sequência. Aguarde alguns minutos para tentar novamente.',
+        retryAfterSeconds: rateLimitState.retryAfterSeconds,
+      };
+    }
+
+    const checkInDate = parseIsoDate(input.check_in);
+    const checkOutDate = parseIsoDate(input.check_out);
+    if (!checkInDate || !checkOutDate) {
+      return { success: false, error: 'Datas inválidas.' };
+    }
+
+    const noites = calculateNights(checkInDate, checkOutDate);
+    if (noites <= 0 || noites > 60) {
+      return { success: false, error: 'Período de reserva inválido.' };
+    }
+
+    if (checkInDate < startOfUtcToday()) {
+      return { success: false, error: 'Data de check-in não pode ser no passado.' };
+    }
+
+    const { data: quarto, error: quartoError } = await supabase
+      .from('quartos')
+      .select('id, nome, preco_diaria, preco_fds, capacidade, ativo')
+      .eq('id', quartoId)
+      .maybeSingle();
+
+    if (quartoError) throw new Error(`Erro ao validar quarto: ${quartoError.message}`);
+    if (!quarto || quarto.ativo !== true) {
+      return { success: false, error: 'Quarto indisponível para reserva.' };
+    }
+
+    if (typeof quarto.capacidade === 'number' && input.num_hospedes > quarto.capacidade) {
+      return {
+        success: false,
+        error: `Este quarto suporta no máximo ${quarto.capacidade} hóspede(s).`,
+      };
+    }
+
+    const precoDiaria = parseMoneyValue(quarto.preco_diaria);
+    const precoFds = parseMoneyValue(quarto.preco_fds);
+    if (!precoDiaria || precoDiaria <= 0) {
+      return { success: false, error: 'Preço do quarto inválido para reserva.' };
+    }
+
+    const valorTotalCalculado = calculateStayTotal(checkInDate, checkOutDate, precoDiaria, precoFds);
+    if (!Number.isFinite(valorTotalCalculado) || valorTotalCalculado <= 0) {
+      return { success: false, error: 'Não foi possível calcular o valor da reserva.' };
+    }
 
     // 1. Upsert hóspede por email
     const { data: hospede, error: hospedeError } = await supabase
       .from('hospedes')
       .upsert(
         {
-          nome: data.hospede_nome,
-          email: data.hospede_email,
-          telefone: data.hospede_telefone,
-          cpf: data.hospede_cpf,
-          cidade: data.hospede_cidade,
+          nome: hospedeNome,
+          email: hospedeEmail,
+          telefone: hospedeTelefone,
+          cpf: hospedeCpf,
+          cidade: hospedeCidade,
         },
         { onConflict: 'email' }
       )
@@ -55,10 +240,10 @@ export async function criarReserva(data: CriarReservaData) {
     const { data: conflitos, error: conflitosError } = await supabase
       .from('reservas')
       .select('id')
-      .eq('quarto_id', data.quarto_id)
+      .eq('quarto_id', quartoId)
       .in('status', STATUSES_QUE_BLOQUEIAM)
-      .lt('check_in', data.check_out)
-      .gt('check_out', data.check_in);
+      .lt('check_in', input.check_out)
+      .gt('check_out', input.check_in);
 
     if (conflitosError) throw new Error(`Erro ao verificar disponibilidade: ${conflitosError.message}`);
 
@@ -70,35 +255,36 @@ export async function criarReserva(data: CriarReservaData) {
     const { data: reserva, error: reservaError } = await supabase
       .from('reservas')
       .insert({
-        quarto_id: data.quarto_id,
+        quarto_id: quartoId,
         hospede_id: hospede.id,
-        check_in: data.check_in,
-        check_out: data.check_out,
-        num_hospedes: data.num_hospedes,
-        valor_total: data.valor_total,
+        check_in: input.check_in,
+        check_out: input.check_out,
+        num_hospedes: input.num_hospedes,
+        valor_total: valorTotalCalculado,
         status: 'pendente',
         stripe_payment_status: 'pendente',
-        observacoes: data.observacoes || null,
+        observacoes,
       })
       .select('id')
       .single();
 
     if (reservaError) throw new Error(`Erro ao criar reserva: ${reservaError.message}`);
     reservaCriadaId = reserva.id;
+    const reservaPublicToken = createReservaPublicToken(reserva.id);
 
     // 4. Criar sessão de checkout no Stripe
     const siteUrl = getSiteUrl();
     const checkoutSession = await createStripeCheckoutSession({
       reservaId: reserva.id,
-      quartoNome: data.quarto_nome,
-      hospedeNome: data.hospede_nome,
-      hospedeEmail: data.hospede_email,
-      valorTotal: data.valor_total / 2, // 50% DEPÓSITO
-      successUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&payment=cancelado`,
+      quartoNome: quarto.nome,
+      hospedeNome,
+      hospedeEmail,
+      valorTotal: valorTotalCalculado / 2, // 50% DEPÓSITO
+      successUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&token=${encodeURIComponent(reservaPublicToken)}&session_id={CHECKOUT_SESSION_ID}`,
+      cancelUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&token=${encodeURIComponent(reservaPublicToken)}&payment=cancelado`,
       metadata: {
-        check_in: data.check_in,
-        check_out: data.check_out,
+        check_in: input.check_in,
+        check_out: input.check_out,
       },
     });
 
@@ -131,6 +317,9 @@ export async function criarReserva(data: CriarReservaData) {
     return {
       success: true,
       reservaId: reserva.id,
+      reservaPublicToken,
+      valorTotal: valorTotalCalculado,
+      noites,
       clientSecret: checkoutSession.client_secret,
     };
   } catch (err) {
@@ -204,6 +393,8 @@ export async function getReservas(filtro?: { status?: string; busca?: string }):
 }
 
 export async function getReservaById(id: string) {
+  await assertAdminActionSession();
+
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase
@@ -219,7 +410,45 @@ export async function getReservaById(id: string) {
     if (error) throw error;
     return data;
   } catch {
-    return reservasMock.find((r) => r.id === id) || null;
+    return null;
+  }
+}
+
+export async function getReservaPublicaById(id: string, token: string) {
+  const reservaId = id.trim();
+  const reservaToken = token.trim();
+
+  if (!reservaId || !reservaToken) {
+    return null;
+  }
+
+  if (!verifyReservaPublicToken(reservaId, reservaToken)) {
+    return null;
+  }
+
+  try {
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
+      .from('reservas')
+      .select(`
+        id,
+        check_in,
+        check_out,
+        num_hospedes,
+        valor_total,
+        status,
+        stripe_payment_status,
+        stripe_payment_method,
+        payment_approved_at,
+        quarto:quartos(nome, imagem_principal)
+      `)
+      .eq('id', reservaId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch {
+    return null;
   }
 }
 

@@ -4,7 +4,7 @@ import { registrarAcessoAdmin } from '@/lib/admin-audit';
 import { isSameOriginRequest } from '@/lib/request-origin';
 
 export async function POST(request: NextRequest) {
-  if (!isSameOriginRequest(request)) {
+  if (!isSameOriginRequest(request, { requireOriginForStateChanging: true })) {
     return NextResponse.json(
       { success: false, error: 'Origem inválida para logout.' },
       { status: 403 }

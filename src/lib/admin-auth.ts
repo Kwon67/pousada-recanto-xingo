@@ -11,6 +11,9 @@ const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
 const DEV_FALLBACK_SECRET = generateRandomHex(32);
+const ADMIN_ALLOW_DEV_DEFAULTS =
+  process.env.NODE_ENV !== 'production' &&
+  process.env.ADMIN_ALLOW_INSECURE_DEV_DEFAULTS === 'true';
 
 interface AdminSessionPayload {
   u: string;
@@ -140,8 +143,8 @@ function getAdminEnv() {
   const password = process.env.ADMIN_PASSWORD?.trim();
   const secret = process.env.ADMIN_SESSION_SECRET?.trim();
 
-  // Fallback only for local/dev to avoid lockout when env is missing.
-  if (process.env.NODE_ENV !== 'production') {
+  // Insecure defaults are opt-in only in local/dev.
+  if (ADMIN_ALLOW_DEV_DEFAULTS) {
     return {
       username: username || 'admin',
       password: password || 'admin123',
@@ -249,7 +252,7 @@ export async function createAdminSession(username: string): Promise<{
 
 export async function getAdminSession(sessionValue?: string | null): Promise<AdminSession | null> {
   const { username: expectedUsername, secret } = getAdminEnv();
-  if (!sessionValue || !secret) return null;
+  if (!sessionValue || !secret || !expectedUsername) return null;
 
   const payload = await parseSessionToken(sessionValue, secret, expectedUsername);
   if (!payload) return null;

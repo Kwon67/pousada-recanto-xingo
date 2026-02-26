@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary';
 import { getAdminSessionCookieNames, hasValidAdminSession } from '@/lib/admin-auth';
 import { isSameOriginRequest } from '@/lib/request-origin';
+import { validateCriticalServerEnv } from '@/lib/env-validation';
+
+const DEFAULT_UPLOAD_FOLDER = 'pousada-recanto-xingo/quartos';
+const ALLOWED_UPLOAD_ROOTS = [
+  'pousada-recanto-xingo/quartos',
+  'pousada-recanto-xingo/galeria',
+  'pousada-recanto-xingo/conteudo',
+];
 
 function getSessionCookieValue(request: NextRequest): string | null {
   return getAdminSessionCookieNames()
@@ -9,9 +17,43 @@ function getSessionCookieValue(request: NextRequest): string | null {
     .find((cookieValue) => Boolean(cookieValue)) ?? null;
 }
 
+function isAllowedManagedPath(path: string): boolean {
+  return ALLOWED_UPLOAD_ROOTS.some(
+    (root) => path === root || path.startsWith(`${root}/`)
+  );
+}
+
+function normalizeFolder(raw: FormDataEntryValue | null): string | null {
+  if (!raw) return DEFAULT_UPLOAD_FOLDER;
+  if (typeof raw !== 'string') return null;
+
+  const normalized = raw.trim().replace(/^\/+|\/+$/g, '');
+  if (!normalized) return DEFAULT_UPLOAD_FOLDER;
+  if (normalized.length > 160) return null;
+  if (!/^[a-zA-Z0-9/_-]+$/.test(normalized)) return null;
+  if (normalized.includes('..')) return null;
+
+  return isAllowedManagedPath(normalized) ? normalized : null;
+}
+
+function normalizePublicId(value: unknown): string | null {
+  if (typeof value !== 'string') return null;
+
+  const normalized = value.trim().replace(/^\/+|\/+$/g, '');
+  if (!normalized) return null;
+  if (normalized.length > 220) return null;
+  if (!/^[a-zA-Z0-9/_\-.]+$/.test(normalized)) return null;
+  if (normalized.includes('..')) return null;
+  if (!isAllowedManagedPath(normalized)) return null;
+
+  return normalized;
+}
+
 export async function POST(request: NextRequest) {
   try {
-    if (!isSameOriginRequest(request)) {
+    validateCriticalServerEnv();
+
+    if (!isSameOriginRequest(request, { requireOriginForStateChanging: true })) {
       return NextResponse.json({ error: 'Origem inválida.' }, { status: 403 });
     }
 
@@ -22,11 +64,18 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File | null;
-    const folder = (formData.get('folder') as string) || 'pousada-recanto-xingo/quartos';
+    const folder = normalizeFolder(formData.get('folder'));
 
     if (!file) {
       return NextResponse.json(
         { error: 'Nenhum arquivo enviado' },
+        { status: 400 }
+      );
+    }
+
+    if (!folder) {
+      return NextResponse.json(
+        { error: 'Pasta de upload inválida.' },
         { status: 400 }
       );
     }
@@ -96,7 +145,9 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    if (!isSameOriginRequest(request)) {
+    validateCriticalServerEnv();
+
+    if (!isSameOriginRequest(request, { requireOriginForStateChanging: true })) {
       return NextResponse.json({ error: 'Origem inválida.' }, { status: 403 });
     }
 
@@ -105,16 +156,17 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const { public_id } = await request.json();
+    const body = await request.json() as { public_id?: unknown };
+    const publicId = normalizePublicId(body?.public_id);
 
-    if (!public_id) {
+    if (!publicId) {
       return NextResponse.json(
-        { error: 'public_id é obrigatório' },
+        { error: 'public_id inválido.' },
         { status: 400 }
       );
     }
 
-    await cloudinary.uploader.destroy(public_id);
+    await cloudinary.uploader.destroy(publicId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

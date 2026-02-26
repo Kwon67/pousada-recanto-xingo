@@ -11,6 +11,7 @@ import {
   verifyStripeWebhookSignature,
 } from '@/lib/stripe';
 import { sendConversionEvent } from '@/lib/meta-conversions';
+import { validateCriticalServerEnv } from '@/lib/env-validation';
 
 export const runtime = 'nodejs';
 
@@ -279,6 +280,8 @@ async function handlePagamentoComFalha(
 }
 
 export async function POST(request: Request) {
+  validateCriticalServerEnv();
+
   const payload = await request.text();
   const signature = request.headers.get('stripe-signature');
 

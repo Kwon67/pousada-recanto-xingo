@@ -20,7 +20,7 @@ import {
 import Button from '@/components/ui/app-button';
 import { SITE_CONFIG } from '@/lib/constants';
 import { getWhatsAppLink } from '@/lib/utils';
-import { getReservaById } from '@/lib/actions/reservas';
+import { getReservaPublicaById } from '@/lib/actions/reservas';
 import { formatDate, formatPaymentMethod, formatPaymentStatus } from '@/lib/formatters';
 import type { StatusPagamentoReserva } from '@/types/reserva';
 
@@ -100,16 +100,17 @@ function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
 function ConfirmacaoContent() {
   const searchParams = useSearchParams();
   const reservaId = searchParams.get('id') || 'RES-XXXXX';
+  const reservaToken = searchParams.get('token') || '';
   const paymentQuery = searchParams.get('payment');
   const [reserva, setReserva] = useState<ReservaDetalhes | null>(null);
 
   useEffect(() => {
-    if (reservaId && reservaId !== 'RES-XXXXX') {
-      getReservaById(reservaId).then((data) => {
+    if (reservaId && reservaId !== 'RES-XXXXX' && reservaToken) {
+      getReservaPublicaById(reservaId, reservaToken).then((data) => {
         if (data) setReserva(data as ReservaDetalhes);
       });
     }
-  }, [reservaId]);
+  }, [reservaId, reservaToken]);
 
   const whatsappMessage = `Olá! Gostaria de ajuda com a reserva ${reservaId}.`;
 

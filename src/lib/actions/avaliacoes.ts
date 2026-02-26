@@ -17,6 +17,7 @@ function slugify(text: string) {
 
 export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean }) {
   const hasAdminSession = await isAdminActionAuthenticated();
+  const aprovadaFilter = hasAdminSession ? filtro?.aprovada : true;
 
   try {
     const supabase = createAdminClient();
@@ -31,10 +32,8 @@ export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean
     if (filtro?.nota) {
       query = query.eq('nota', filtro.nota);
     }
-    if (filtro?.aprovada !== undefined) {
-      query = query.eq('aprovada', filtro.aprovada);
-    } else if (!hasAdminSession) {
-      query = query.eq('aprovada', true);
+    if (aprovadaFilter !== undefined) {
+      query = query.eq('aprovada', aprovadaFilter);
     }
 
     const { data, error } = await query;
@@ -43,13 +42,13 @@ export async function getAvaliacoes(filtro?: { nota?: number; aprovada?: boolean
   } catch {
     let avaliacoes = [...avaliacoesMock];
     if (!hasAdminSession) {
-      avaliacoes = avaliacoes.filter((a) => a.aprovada);
+      avaliacoes = avaliacoes.filter((a) => a.aprovada === true);
     }
     if (filtro?.nota) {
       avaliacoes = avaliacoes.filter((a) => a.nota === filtro.nota);
     }
-    if (filtro?.aprovada !== undefined) {
-      avaliacoes = avaliacoes.filter((a) => a.aprovada === filtro.aprovada);
+    if (aprovadaFilter !== undefined) {
+      avaliacoes = avaliacoes.filter((a) => a.aprovada === aprovadaFilter);
     }
     return avaliacoes;
   }

@@ -17,6 +17,16 @@ interface ReservaState {
   observacoes: string;
 }
 
+function formatRetryAfter(seconds: number): string {
+  if (seconds <= 0) return 'alguns instantes';
+  if (seconds < 60) return `${seconds}s`;
+
+  const minutes = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  if (rest === 0) return `${minutes}min`;
+  return `${minutes}min ${rest}s`;
+}
+
 const initialState: ReservaState = {
   step: 1,
   checkIn: null,
@@ -108,7 +118,14 @@ export function useReserva() {
       });
 
       if (!result.success) {
-        setError(result.error || 'Erro ao confirmar reserva');
+        const retryAfterSeconds =
+          typeof result.retryAfterSeconds === 'number' ? result.retryAfterSeconds : 0;
+        const message = result.error || 'Erro ao confirmar reserva';
+        const rateLimitMessage =
+          retryAfterSeconds > 0
+            ? `${message} Tente novamente em ${formatRetryAfter(retryAfterSeconds)}.`
+            : message;
+        setError(rateLimitMessage);
         return null;
       }
 

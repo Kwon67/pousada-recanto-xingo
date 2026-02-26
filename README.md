@@ -42,6 +42,35 @@ Site institucional e sistema de reservas online da **Pousada Recanto do Matuto**
 | E-mail | Resend |
 | Deploy | Vercel |
 
+## Segurança de Ambiente
+
+- Use o arquivo [`.env.example`](./.env.example) como base e **nunca** comite chaves reais.
+- Em produção, o app valida variáveis críticas no startup/runtime e falha se faltar segredo essencial.
+- Se alguma chave já foi exposta (admin, Stripe, Supabase, Cloudinary, Resend, Meta), a rotação é obrigatória.
+
+### Preflight (sem rotação)
+
+Rode para validar automaticamente os principais hardenings aplicados:
+
+```bash
+npm run security:check
+```
+
+O check cobre:
+
+- Regras de `.env` e `.gitignore` (somente `.env.example` versionado)
+- Proteções de login/logout admin, upload e reserva pública com token
+- Headers globais de segurança no `next.config.ts`
+- Validação de env crítico em produção
+- Busca por políticas RLS de escrita aberta nas migrations
+
+### Checklist rápido
+
+1. Gere novas chaves para todos os provedores.
+2. Atualize as variáveis no ambiente de deploy (Vercel/Supabase/etc).
+3. Revogue as chaves antigas.
+4. Remova `.env.local` e `.env.production` do controle de versão (se estiverem versionados).
+
 ## Estrutura do Site
 
 ```

@@ -7,6 +7,20 @@ import {
   resetFailedAdminLoginAttempts,
 } from '@/lib/admin-rate-limit';
 import { isSameOriginRequest } from '@/lib/request-origin';
+import { validateCriticalServerEnv } from '@/lib/env-validation';
+import { z } from 'zod';
+
+const adminLoginSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(1, 'Preencha usuário e senha.')
+    .max(120, 'Credenciais inválidas.'),
+  password: z
+    .string()
+    .min(1, 'Preencha usuário e senha.')
+    .max(200, 'Credenciais inválidas.'),
+});
 
 function setRateLimitHeaders(
   response: NextResponse,
@@ -35,23 +49,34 @@ async function delayOnFailure(): Promise<void> {
 
 export async function POST(request: NextRequest) {
   try {
-    if (!isSameOriginRequest(request)) {
+    validateCriticalServerEnv();
+
+    if (!isSameOriginRequest(request, { requireOriginForStateChanging: true })) {
       return NextResponse.json(
         { success: false, error: 'Origem inválida para login.' },
         { status: 403 }
       );
     }
 
-    const body = await request.json();
-    const username = String(body?.username ?? '').trim();
-    const password = String(body?.password ?? '');
-
-    if (!username || !password) {
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
       return NextResponse.json(
-        { success: false, error: 'Preencha usuário e senha.' },
+        { success: false, error: 'Corpo da requisição inválido.' },
         { status: 400 }
       );
     }
+
+    const parsedBody = adminLoginSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { success: false, error: parsedBody.error.issues[0]?.message || 'Dados inválidos.' },
+        { status: 400 }
+      );
+    }
+
+    const { username, password } = parsedBody.data;
 
     const rateLimitState = await checkAdminLoginRateLimit(request, username);
     const maxAttempts = getMaxAttemptsFromEnv();
@@ -78,7 +103,8 @@ export async function POST(request: NextRequest) {
     const result = await validateAdminCredentials(username, password);
     if (!result.success) {
       await delayOnFailure();
-      const status = result.error.includes('não configuradas') ? 500 : 401;
+      const isConfigError = result.error.includes('não configuradas');
+      const status = isConfigError ? 500 : 401;
       if (status !== 500) {
         recordFailedAdminLoginAttempt(request, username);
         await registrarAcessoAdmin({
@@ -97,7 +123,9 @@ export async function POST(request: NextRequest) {
           success: false,
           error: blockedNow
             ? 'Muitas tentativas de login. Aguarde alguns minutos antes de tentar novamente.'
-            : result.error,
+            : status === 500
+              ? 'Não foi possível autenticar no momento.'
+              : result.error,
           retryAfterSeconds: updatedRateLimitState.retryAfterSeconds || undefined,
         },
         { status: blockedNow ? 429 : status }
