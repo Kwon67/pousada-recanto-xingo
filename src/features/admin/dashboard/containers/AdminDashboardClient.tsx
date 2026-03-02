@@ -444,7 +444,7 @@ export default function AdminDashboardClient({
               </div>
               <div className="flex-1">
                 <p className="text-base font-semibold text-dark">
-                  Débito confirmado no Stripe
+                  Pagamento confirmado
                 </p>
                 <p className="mt-0.5 text-sm text-dark/70">
                   {ultimoPagamentoAprovado.hospede?.nome || 'Hóspede'} •{' '}

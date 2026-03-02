@@ -50,7 +50,7 @@ function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
       return {
         title: 'Pagamento aprovado!',
         message:
-          'Recebemos seu pagamento no Stripe e sua reserva já está confirmada. Você também receberá um e-mail com os detalhes.',
+          'Recebemos seu pagamento e sua reserva já está confirmada. Você também receberá um e-mail com os detalhes.',
         icon: CheckCircle,
         circleClass: 'bg-success/10',
         iconClass: 'text-success',
@@ -59,7 +59,7 @@ function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
       return {
         title: 'Pagamento não aprovado',
         message:
-          'O Stripe informou falha no pagamento. Você pode tentar novamente usando outro método de pagamento.',
+          'Houve uma falha no pagamento. Você pode tentar novamente fazendo uma nova reserva.',
         icon: XCircle,
         circleClass: 'bg-error/10',
         iconClass: 'text-error',
@@ -89,7 +89,7 @@ function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
       return {
         title: 'Aguardando confirmação do pagamento',
         message:
-          'Estamos aguardando a confirmação do Stripe. Em pagamentos Pix isso pode levar alguns minutos.',
+          'Estamos aguardando a confirmação do pagamento. Em pagamentos Pix isso pode levar alguns minutos.',
         icon: Clock3,
         circleClass: 'bg-warning/10',
         iconClass: 'text-warning',

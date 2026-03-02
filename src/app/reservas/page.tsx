@@ -20,8 +20,8 @@ import * as fbq from '@/lib/pixel';
 
 const STEPS = ['Datas', 'Quarto', 'Dados', 'Confirmação', 'Pagamento'];
 
-const StripeCheckout = dynamic(
-  () => import('@/components/checkout/StripeCheckout'),
+const AbacatePayCheckout = dynamic(
+  () => import('@/components/checkout/AbacatePayCheckout'),
   {
     ssr: false,
     loading: () => (
@@ -102,12 +102,12 @@ function ReservasContent() {
     }
   }, [step]);
 
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
   const handleConfirm = async () => {
     const result = await confirmarReserva();
-    if (result && result.clientSecret) {
-      // Meta Pixel: Lead — reserva criada, checkout Stripe iniciado
+    if (result && result.paymentUrl) {
+      // Meta Pixel: Lead — reserva criada, checkout iniciado
       if (quarto) {
         fbq.event('Lead', {
           value: valorTotal,
@@ -116,7 +116,7 @@ function ReservasContent() {
           content_category: quarto.categoria,
         });
       }
-      setClientSecret(result.clientSecret);
+      setPaymentUrl(result.paymentUrl);
       setStep(5);
     }
   };
@@ -301,8 +301,8 @@ function ReservasContent() {
             </div>
           )}
 
-          {/* Step 5: Pagamento Stripe */}
-          {step === 5 && clientSecret && (
+          {/* Step 5: Pagamento AbacatePay */}
+          {step === 5 && paymentUrl && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -312,9 +312,9 @@ function ReservasContent() {
                 Pagamento do Sinal (50%)
               </h2>
               <p className="text-center text-dark/70 uppercase tracking-widest text-xs font-bold mb-8">
-                Pague com segurança para garantir sua reserva
+                Pague via PIX com segurança para garantir sua reserva
               </p>
-              <StripeCheckout clientSecret={clientSecret} />
+              <AbacatePayCheckout paymentUrl={paymentUrl} />
             </motion.div>
           )}
         </div>

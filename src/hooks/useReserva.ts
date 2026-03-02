@@ -129,14 +129,14 @@ export function useReserva() {
         return null;
       }
 
-      if (!result.clientSecret) {
-        setError('Não foi possível iniciar o checkout no Stripe.');
+      if (!result.paymentUrl) {
+        setError('Não foi possível iniciar o pagamento.');
         return null;
       }
 
       return {
         id: result.reservaId!,
-        clientSecret: result.clientSecret,
+        paymentUrl: result.paymentUrl,
         quarto: state.quarto,
         checkIn: state.checkIn,
         checkOut: state.checkOut,

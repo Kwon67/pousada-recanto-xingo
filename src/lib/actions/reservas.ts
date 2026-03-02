@@ -8,7 +8,7 @@ import { enviarEmailConfirmacao, enviarEmailStatus } from '@/lib/email';
 import { createReservaPublicToken, verifyReservaPublicToken } from '@/lib/reserva-public-token';
 import { checkAndConsumeReservaRateLimit, getClientIpFromHeaders } from '@/lib/reserva-rate-limit';
 import { getSiteUrl } from '@/lib/site-url';
-import { createStripeCheckoutSession, getStripePaymentIntentId } from '@/lib/stripe';
+import { createAbacatePayBilling } from '@/lib/abacatepay';
 import { reservasMock } from '@/data/mock';
 import type { Reserva, StatusReserva } from '@/types/reserva';
 import { z } from 'zod';
@@ -272,41 +272,41 @@ export async function criarReserva(data: CriarReservaData) {
     reservaCriadaId = reserva.id;
     const reservaPublicToken = createReservaPublicToken(reserva.id);
 
-    // 4. Criar sessão de checkout no Stripe
+    // 4. Criar cobrança no AbacatePay
     const siteUrl = getSiteUrl();
-    const checkoutSession = await createStripeCheckoutSession({
+    const completionUrl = `${siteUrl}/reservas/confirmacao?id=${reserva.id}&token=${encodeURIComponent(reservaPublicToken)}`;
+    const returnUrl = `${siteUrl}/reservas/confirmacao?id=${reserva.id}&token=${encodeURIComponent(reservaPublicToken)}&payment=cancelado`;
+
+    const billing = await createAbacatePayBilling({
       reservaId: reserva.id,
       quartoNome: quarto.nome,
       hospedeNome,
       hospedeEmail,
+      hospedeTelefone,
+      hospedeCpf,
       valorTotal: valorTotalCalculado / 2, // 50% DEPÓSITO
-      successUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&token=${encodeURIComponent(reservaPublicToken)}&session_id={CHECKOUT_SESSION_ID}`,
-      cancelUrl: `${siteUrl}/reservas/confirmacao?id=${reserva.id}&token=${encodeURIComponent(reservaPublicToken)}&payment=cancelado`,
-      metadata: {
-        check_in: input.check_in,
-        check_out: input.check_out,
-      },
+      returnUrl,
+      completionUrl,
     });
 
-    if (!checkoutSession.client_secret) {
-      throw new Error('Stripe não retornou o client_secret para Embedded Checkout.');
+    if (!billing.url) {
+      throw new Error('AbacatePay não retornou a URL de pagamento.');
     }
 
-    const paymentIntentId = getStripePaymentIntentId(checkoutSession.payment_intent);
-    const { error: stripeRefError } = await supabase
+    const { error: paymentRefError } = await supabase
       .from('reservas')
       .update({
-        stripe_checkout_session_id: checkoutSession.id,
-        stripe_payment_intent_id: paymentIntentId,
+        stripe_checkout_session_id: billing.id,
+        stripe_payment_intent_id: billing.id,
         stripe_payment_status:
-          checkoutSession.payment_status === 'paid' ? 'pago' : 'pendente',
-        stripe_payment_method: checkoutSession.payment_method_types?.[0] || null,
+          billing.status === 'PAID' ? 'pago' : 'pendente',
+        stripe_payment_method: 'pix',
         status: 'aguardando_pagamento',
       })
       .eq('id', reserva.id);
 
-    if (stripeRefError) {
-      throw new Error(`Erro ao vincular checkout Stripe à reserva: ${stripeRefError.message}`);
+    if (paymentRefError) {
+      throw new Error(`Erro ao vincular cobrança AbacatePay à reserva: ${paymentRefError.message}`);
     }
 
     // 5. Revalidar paths
@@ -320,7 +320,7 @@ export async function criarReserva(data: CriarReservaData) {
       reservaPublicToken,
       valorTotal: valorTotalCalculado,
       noites,
-      clientSecret: checkoutSession.client_secret,
+      paymentUrl: billing.url,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Erro ao criar reserva';

@@ -186,7 +186,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Reservas</h1>
           <p className="text-gray-500 text-sm mt-1">
-            {filtered.length} reservas · Recebido (Stripe): {formatCurrency(totalReceitaRecebida)} · Previsto: {formatCurrency(totalReceitaPrevista)}
+            {filtered.length} reservas · Recebido: {formatCurrency(totalReceitaRecebida)} · Previsto: {formatCurrency(totalReceitaPrevista)}
           </p>
         </div>
         <div className="flex gap-2">
@@ -527,11 +527,11 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                   </span>
                   {selectedReserva.stripe_payment_status === 'pago' ? (
                     <p className="text-xs text-green-700 mt-2 font-medium">
-                      Débito confirmado no Stripe.
+                      Pagamento confirmado.
                     </p>
                   ) : (
                     <p className="text-xs text-amber-700 mt-2">
-                      Débito ainda não confirmado no Stripe.
+                      Pagamento ainda não confirmado.
                     </p>
                   )}
                   <p className="text-sm text-gray-600 mt-2">
@@ -544,7 +544,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                   )}
                   {selectedReserva.stripe_payment_intent_id && (
                     <p className="text-xs text-gray-500 mt-1 break-all font-mono">
-                      Stripe PI: {selectedReserva.stripe_payment_intent_id}
+                      ID Pagamento: {selectedReserva.stripe_payment_intent_id}
                     </p>
                   )}
                 </div>
