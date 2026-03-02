@@ -106,11 +106,12 @@ async function createOrUpdateCustomer(input: {
   telefone: string;
   cpf: string;
 }): Promise<AbacatePayCustomer> {
+  const taxId = input.cpf.replace(/\D/g, '');
   return abacatePayPost<AbacatePayCustomer>('/customer/create', {
     name: input.nome,
     email: input.email,
     cellphone: input.telefone,
-    taxId: input.cpf,
+    taxId,
   });
 }
 
