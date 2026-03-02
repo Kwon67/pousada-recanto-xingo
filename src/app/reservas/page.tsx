@@ -312,7 +312,7 @@ function ReservasContent() {
                 Pagamento do Sinal (50%)
               </h2>
               <p className="text-center text-dark/70 uppercase tracking-widest text-xs font-bold mb-8">
-                Pague via PIX com segurança para garantir sua reserva
+                Pague com PIX ou cartão de crédito para garantir sua reserva
               </p>
               <AbacatePayCheckout paymentUrl={paymentUrl} />
             </motion.div>

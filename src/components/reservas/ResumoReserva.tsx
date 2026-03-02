@@ -182,7 +182,7 @@ export default function ResumoReserva({
             </div>
           </div>
           <p className="text-[10px] text-white/50 mt-6 tracking-widest uppercase">
-            * Você será redirecionado para pagar via PIX de forma rápida e segura.
+            * Você será redirecionado para pagar via PIX ou cartão de crédito.
           </p>
         </div>
 

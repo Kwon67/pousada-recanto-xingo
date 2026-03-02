@@ -102,7 +102,7 @@ export async function createAbacatePayBilling(
 
   const billing = await abacatePayPost<AbacatePayBilling>('/billing/create', {
     frequency: 'ONE_TIME',
-    methods: ['PIX'],
+    methods: ['PIX', 'CARD'],
     products: [
       {
         externalId: input.reservaId,

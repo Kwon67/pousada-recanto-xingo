@@ -26,7 +26,7 @@ export default function AbacatePayCheckout({ paymentUrl }: AbacatePayCheckoutPro
         Redirecionando para pagamento...
       </p>
       <p className="text-dark/60 text-xs uppercase tracking-widest">
-        Você será levado para a página de pagamento PIX
+        Você será levado para a página de pagamento
       </p>
       <a
         href={paymentUrl}
