@@ -311,8 +311,11 @@ function ReservasContent() {
               <h2 className="font-display text-2xl font-black uppercase tracking-widest text-dark mb-4 text-center">
                 Pagamento do Sinal (50%)
               </h2>
-              <p className="text-center text-dark/70 uppercase tracking-widest text-xs font-bold mb-8">
+              <p className="text-center text-dark/70 uppercase tracking-widest text-xs font-bold mb-2">
                 Pague com PIX ou cartão de crédito para garantir sua reserva
+              </p>
+              <p className="text-center text-dark/50 text-xs mb-8">
+                Valor do sinal: <strong className="text-dark">{(valorTotal / 2).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</strong> — os outros 50% são pagos no check-in
               </p>
               <AbacatePayCheckout paymentUrl={paymentUrl} />
             </motion.div>

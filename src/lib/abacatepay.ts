@@ -92,6 +92,28 @@ async function abacatePayPost<T>(path: string, body: unknown): Promise<T> {
   return parsed.data;
 }
 
+interface AbacatePayCustomer {
+  id: string;
+  name: string;
+  email: string;
+  cellphone: string;
+  taxId: string;
+}
+
+async function createOrUpdateCustomer(input: {
+  nome: string;
+  email: string;
+  telefone: string;
+  cpf: string;
+}): Promise<AbacatePayCustomer> {
+  return abacatePayPost<AbacatePayCustomer>('/customer/create', {
+    name: input.nome,
+    email: input.email,
+    cellphone: input.telefone,
+    taxId: input.cpf,
+  });
+}
+
 export async function createAbacatePayBilling(
   input: CreateAbacatePayBillingInput
 ): Promise<AbacatePayBilling> {
@@ -99,6 +121,14 @@ export async function createAbacatePayBilling(
   if (valorCentavos <= 0) {
     throw new Error('Valor da reserva inválido para pagamento.');
   }
+
+  // Sempre cria/atualiza o cliente antes de criar a cobrança
+  const customer = await createOrUpdateCustomer({
+    nome: input.hospedeNome,
+    email: input.hospedeEmail,
+    telefone: input.hospedeTelefone,
+    cpf: input.hospedeCpf,
+  });
 
   const billing = await abacatePayPost<AbacatePayBilling>('/billing/create', {
     frequency: 'ONE_TIME',
@@ -113,12 +143,7 @@ export async function createAbacatePayBilling(
     ],
     returnUrl: input.returnUrl,
     completionUrl: input.completionUrl,
-    customer: {
-      name: input.hospedeNome,
-      email: input.hospedeEmail,
-      cellphone: input.hospedeTelefone,
-      taxId: input.hospedeCpf,
-    },
+    customerId: customer.id,
   });
 
   return billing;

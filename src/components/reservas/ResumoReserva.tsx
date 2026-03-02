@@ -174,11 +174,22 @@ export default function ResumoReserva({
               <span>{formatNights(noites)}</span>
               <span>{formatCurrency(valorTotal)}</span>
             </div>
-            <div className="border-t border-white/20 pt-4 flex justify-between items-end">
-              <span className="font-bold text-sm tracking-widest uppercase text-white/70">Total</span>
-              <span className="font-display text-4xl font-black text-secondary">
-                {formatCurrency(valorTotal)}
-              </span>
+            <div className="border-t border-white/20 pt-4">
+              <div className="flex justify-between items-end">
+                <span className="font-bold text-sm tracking-widest uppercase text-white/70">Total da estadia</span>
+                <span className="font-display text-2xl font-black text-white/70">
+                  {formatCurrency(valorTotal)}
+                </span>
+              </div>
+              <div className="flex justify-between items-end mt-4 pt-4 border-t border-white/20">
+                <div>
+                  <span className="font-bold text-sm tracking-widest uppercase text-secondary">Sinal para reserva (50%)</span>
+                  <p className="text-[11px] text-white/50 mt-1">Os outros 50% são pagos no check-in</p>
+                </div>
+                <span className="font-display text-4xl font-black text-secondary">
+                  {formatCurrency(valorTotal / 2)}
+                </span>
+              </div>
             </div>
           </div>
           <p className="text-[10px] text-white/50 mt-6 tracking-widest uppercase">
