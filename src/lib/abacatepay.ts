@@ -1,15 +1,20 @@
 import { createHmac, timingSafeEqual } from 'crypto';
+import { normalizePaymentMethod, roundCurrency } from '@/lib/payment';
 
 const ABACATE_API_BASE = 'https://api.abacatepay.com/v1';
 
 export interface AbacatePayBilling {
   id: string;
-  url: string;
-  amount: number;
-  status: 'PENDING' | 'PAID' | 'EXPIRED' | 'CANCELLED';
-  methods: ('PIX' | 'CARD')[];
-  frequency: 'ONE_TIME';
-  products: Array<{
+  url?: string | null;
+  amount?: number | null;
+  paidAmount?: number | null;
+  status?: string | null;
+  externalId?: string | null;
+  methods?: string[];
+  frequency?: string | null;
+  paymentMethod?: string | null;
+  method?: string | null;
+  products?: Array<{
     externalId: string;
     name: string;
     quantity: number;
@@ -22,15 +27,20 @@ export interface AbacatePayBilling {
     cellphone: string;
     taxId: string;
   } | null;
-  metadata?: Record<string, string> | null;
+  payerInformation?: {
+    method?: string | null;
+    [key: string]: unknown;
+  } | null;
+  metadata?: Record<string, unknown> | null;
+  [key: string]: unknown;
 }
 
 export interface AbacatePayWebhookEvent {
   event: string;
-  data: {
+  data?: {
     billing?: AbacatePayBilling;
     [key: string]: unknown;
-  };
+  } | AbacatePayBilling | null;
 }
 
 export interface CreateAbacatePayBillingInput {
@@ -153,31 +163,114 @@ export async function createAbacatePayBilling(
 export function verifyAbacatePayWebhookSignature(
   rawBody: string,
   signatureHeader: string | null,
-  querySecret: string | null
+  querySecrets: Array<string | null | undefined>
 ): boolean {
   const webhookSecret = getAbacatePayWebhookSecret();
 
-  // Layer 1: Query string secret validation
-  if (querySecret && querySecret === webhookSecret) {
+  if (querySecrets.some((candidate) => candidate?.trim() === webhookSecret)) {
     return true;
   }
 
-  // Layer 2: HMAC-SHA256 signature validation
-  if (signatureHeader) {
-    const publicKey = process.env.ABACATEPAY_WEBHOOK_PUBLIC_KEY?.trim();
-    if (publicKey) {
-      const expectedSignature = createHmac('sha256', publicKey)
-        .update(rawBody, 'utf8')
-        .digest('hex');
+  if (!signatureHeader) {
+    return false;
+  }
 
-      const sigBuffer = Buffer.from(signatureHeader, 'hex');
-      const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+  const normalizedSignature = signatureHeader.trim().replace(/^sha256=/i, '');
+  if (!normalizedSignature) {
+    return false;
+  }
 
-      if (sigBuffer.length === expectedBuffer.length) {
-        return timingSafeEqual(sigBuffer, expectedBuffer);
+  const hmacKeys = [
+    webhookSecret,
+    process.env.ABACATEPAY_WEBHOOK_PUBLIC_KEY?.trim() || null,
+  ].filter((value): value is string => Boolean(value));
+
+  for (const key of hmacKeys) {
+    const digest = createHmac('sha256', key).update(rawBody, 'utf8').digest();
+    for (const encoding of ['base64', 'hex'] as const) {
+      const parsed = decodeSignature(normalizedSignature, encoding);
+      if (parsed && parsed.length === digest.length && timingSafeEqual(parsed, digest)) {
+        return true;
       }
     }
   }
 
   return false;
+}
+
+function decodeSignature(signature: string, encoding: 'base64' | 'hex'): Buffer | null {
+  try {
+    const decoded = Buffer.from(signature, encoding);
+    if (!decoded.length) return null;
+
+    if (encoding === 'hex' && decoded.toString('hex') !== signature.toLowerCase()) {
+      return null;
+    }
+
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+export function getBillingFromWebhookEvent(event: AbacatePayWebhookEvent): AbacatePayBilling | null {
+  if (!event?.data || typeof event.data !== 'object') {
+    return null;
+  }
+
+  if ('billing' in event.data && event.data.billing && typeof event.data.billing === 'object') {
+    return event.data.billing as AbacatePayBilling;
+  }
+
+  return event.data as AbacatePayBilling;
+}
+
+export function getAbacatePayBillingExternalId(billing: AbacatePayBilling): string | null {
+  const externalId =
+    (typeof billing.externalId === 'string' && billing.externalId.trim()) ||
+    billing.products?.[0]?.externalId;
+
+  return externalId?.trim() || null;
+}
+
+export function getAbacatePayBillingAmount(billing: AbacatePayBilling): number | null {
+  const amountCandidate = [billing.paidAmount, billing.amount]
+    .map((value) => {
+      if (typeof value === 'number') return value;
+      if (typeof value === 'string') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+      return null;
+    })
+    .find((value): value is number => typeof value === 'number' && Number.isFinite(value) && value > 0);
+
+  if (!amountCandidate) {
+    return null;
+  }
+
+  return roundCurrency(amountCandidate / 100);
+}
+
+export function getAbacatePayBillingPaymentMethod(billing: AbacatePayBilling): string | null {
+  const directCandidates = [
+    typeof billing.paymentMethod === 'string' ? billing.paymentMethod : null,
+    typeof billing.method === 'string' ? billing.method : null,
+    typeof billing.payerInformation?.method === 'string' ? billing.payerInformation.method : null,
+    typeof billing.metadata?.paymentMethod === 'string' ? billing.metadata.paymentMethod : null,
+    typeof billing.metadata?.metodoPagamento === 'string' ? billing.metadata.metodoPagamento : null,
+  ];
+
+  for (const candidate of directCandidates) {
+    const normalized = normalizePaymentMethod(candidate);
+    if (normalized) {
+      return normalized;
+    }
+  }
+
+  if (billing.methods?.length === 1) {
+    return normalizePaymentMethod(billing.methods[0]);
+  }
+
+  return null;
 }

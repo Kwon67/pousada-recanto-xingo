@@ -19,9 +19,10 @@ import {
 } from 'lucide-react';
 import Button from '@/components/ui/app-button';
 import { SITE_CONFIG } from '@/lib/constants';
+import { getReservaOutstandingAmount, getReservaPaidAmount } from '@/lib/payment';
 import { getWhatsAppLink } from '@/lib/utils';
 import { getReservaPublicaById } from '@/lib/actions/reservas';
-import { formatDate, formatPaymentMethod, formatPaymentStatus } from '@/lib/formatters';
+import { formatCurrency, formatDate, formatPaymentMethod, formatPaymentStatus } from '@/lib/formatters';
 import type { StatusPagamentoReserva } from '@/types/reserva';
 
 interface ReservaDetalhes {
@@ -30,6 +31,7 @@ interface ReservaDetalhes {
   check_out: string;
   num_hospedes: number;
   valor_total: number;
+  valor_pago?: number | null;
   status: string;
   stripe_payment_status?: StatusPagamentoReserva;
   stripe_payment_method?: string | null;
@@ -50,7 +52,7 @@ function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
       return {
         title: 'Pagamento aprovado!',
         message:
-          'Recebemos seu pagamento e sua reserva já está confirmada. Você também receberá um e-mail com os detalhes.',
+          'Recebemos o pagamento do seu sinal e sua reserva já está confirmada. Você também receberá um e-mail com os detalhes.',
         icon: CheckCircle,
         circleClass: 'bg-success/10',
         iconClass: 'text-success',
@@ -72,6 +74,15 @@ function getStatusUI(status: StatusPagamentoReserva | 'cancelado_query') {
         icon: Clock3,
         circleClass: 'bg-warning/10',
         iconClass: 'text-warning',
+      };
+    case 'reembolsado':
+      return {
+        title: 'Pagamento reembolsado',
+        message:
+          'O pagamento foi estornado e a reserva não possui saldo recebido no momento. Fale com a pousada se precisar de ajuda.',
+        icon: AlertCircle,
+        circleClass: 'bg-slate-200/60',
+        iconClass: 'text-slate-700',
       };
     case 'cancelado':
     case 'cancelado_query':
@@ -230,6 +241,12 @@ function ConfirmacaoContent() {
                   <p className="text-xs text-text-light/70 mb-1">Status do pagamento</p>
                   <p className="font-semibold text-dark">
                     {formatPaymentStatus(reserva.stripe_payment_status || paymentStatus)}
+                  </p>
+                  <p className="text-sm text-text-light mt-1">
+                    Valor recebido: {formatCurrency(getReservaPaidAmount(reserva))}
+                  </p>
+                  <p className="text-sm text-text-light mt-1">
+                    Saldo restante: {formatCurrency(getReservaOutstandingAmount(reserva))}
                   </p>
                   <p className="text-sm text-text-light mt-1">
                     Método: {formatPaymentMethod(reserva.stripe_payment_method)}

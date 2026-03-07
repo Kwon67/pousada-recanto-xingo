@@ -35,6 +35,7 @@ import {
   formatPhone,
   formatStatus,
 } from '@/lib/formatters';
+import { getReservaPaidAmount } from '@/lib/payment';
 import type { Reserva } from '@/types/reserva';
 import type { Quarto } from '@/types/quarto';
 import type { AdminAccessLog, AdminAccessEventType } from '@/types/admin';
@@ -78,7 +79,8 @@ const STATUS_PRIORITY: Record<RoomAvailabilityStatus, number> = {
 
 const RESERVA_CLASSIFICATION_PRIORITY: Record<string, number> = {
   confirmada: 3,
-  pendente: 2,
+  aguardando_pagamento: 2,
+  pendente: 1,
   concluida: 1,
   cancelada: 0,
 };
@@ -125,6 +127,10 @@ export default function AdminDashboardClient({
 }: Props) {
   const router = useRouter();
   const pendentes = useMemo(() => reservas.filter((r) => r.status === 'pendente'), [reservas]);
+  const aguardandoPagamento = useMemo(
+    () => reservas.filter((r) => r.status === 'aguardando_pagamento'),
+    [reservas]
+  );
   const confirmadas = useMemo(() => reservas.filter((r) => r.status === 'confirmada'), [reservas]);
   const pagamentosAprovados = useMemo(
     () => reservas.filter((r) => r.stripe_payment_status === 'pago'),
@@ -134,8 +140,9 @@ export default function AdminDashboardClient({
     () =>
       reservas.filter(
         (r) =>
-          r.status === 'pendente' &&
+          (r.status === 'pendente' || r.status === 'aguardando_pagamento') &&
           (r.stripe_payment_status === 'pendente' ||
+            r.stripe_payment_status === 'falhou' ||
             r.stripe_payment_status === 'nao_iniciado' ||
             !r.stripe_payment_status)
       ),
@@ -295,7 +302,10 @@ export default function AdminDashboardClient({
 
           const reservaAtiva = reservaAtivaPorQuarto.get(quarto.id);
           if (reservaAtiva) {
-            if (reservaAtiva.status === 'pendente') {
+            if (
+              reservaAtiva.status === 'pendente' ||
+              reservaAtiva.status === 'aguardando_pagamento'
+            ) {
               return { quarto, status: 'pendente' as const, reservaAtiva };
             }
             return { quarto, status: 'ocupado' as const, reservaAtiva };
@@ -331,6 +341,7 @@ export default function AdminDashboardClient({
     confirmada: 'border border-emerald-200 bg-emerald-50 text-emerald-700',
     cancelada: 'border border-rose-200 bg-rose-50 text-rose-700',
     concluida: 'border border-slate-200 bg-slate-50 text-slate-600',
+    aguardando_pagamento: 'border border-yellow-200 bg-yellow-50 text-yellow-800',
   };
   const paymentStatusColors: Record<string, string> = {
     nao_iniciado: 'border border-slate-200 bg-slate-50 text-slate-600',
@@ -339,6 +350,7 @@ export default function AdminDashboardClient({
     falhou: 'border border-rose-200 bg-rose-50 text-rose-700',
     cancelado: 'border border-rose-200 bg-rose-50 text-rose-700',
     expirado: 'border border-orange-200 bg-orange-50 text-orange-700',
+    reembolsado: 'border border-slate-200 bg-slate-50 text-slate-700',
   };
 
   return (
@@ -449,7 +461,7 @@ export default function AdminDashboardClient({
                 <p className="mt-0.5 text-sm text-dark/70">
                   {ultimoPagamentoAprovado.hospede?.nome || 'Hóspede'} •{' '}
                   {ultimoPagamentoAprovado.quarto?.nome || 'Quarto'} •{' '}
-                  {formatCurrency(ultimoPagamentoAprovado.valor_total)}
+                  {formatCurrency(getReservaPaidAmount(ultimoPagamentoAprovado))}
                 </p>
                 <p className="mt-0.5 text-xs text-dark/50">
                   {ultimoPagamentoAprovado.payment_approved_at
@@ -486,7 +498,7 @@ export default function AdminDashboardClient({
                     : 'reservas confirmadas sem débito'}
                 </p>
                 <p className="mt-0.5 text-sm text-dark/60">
-                  Revise o pagamento no Stripe antes de considerar o valor como recebido.
+                  Revise o pagamento antes de considerar o valor como recebido.
                 </p>
               </div>
               <ArrowRight className="w-5 h-5 text-dark/40 transition-transform group-hover:translate-x-1" />
@@ -626,8 +638,9 @@ export default function AdminDashboardClient({
           <h2 className="mb-6 font-semibold text-dark">Resumo de Reservas</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             {[
-              { label: 'Pagamentos debitados', count: pagamentosAprovados.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
+              { label: 'Pagamentos recebidos', count: pagamentosAprovados.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
               { label: 'Pendentes', count: pendentes.length, color: 'border border-amber-200 bg-amber-50 text-amber-700' },
+              { label: 'Aguard. pagamento', count: aguardandoPagamento.length, color: 'border border-yellow-200 bg-yellow-50 text-yellow-800' },
               { label: 'Confirmadas', count: confirmadas.length, color: 'border border-emerald-200 bg-emerald-50 text-emerald-700' },
               { label: 'Concluídas', count: reservas.filter(r => r.status === 'concluida').length, color: 'border border-slate-200 bg-slate-50 text-slate-600' },
               { label: 'Canceladas', count: reservas.filter(r => r.status === 'cancelada').length, color: 'border border-rose-200 bg-rose-50 text-rose-700' },
@@ -736,7 +749,7 @@ export default function AdminDashboardClient({
                     </span>
                     {r.stripe_payment_status === 'pago' ? (
                       <p className="mt-1 text-[11px] text-emerald-700">
-                        Débito confirmado
+                        Sinal recebido: {formatCurrency(getReservaPaidAmount(r))}
                         {r.payment_approved_at
                           ? ` em ${formatDate(r.payment_approved_at, 'dd/MM HH:mm')}`
                           : ''}

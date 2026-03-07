@@ -5,7 +5,8 @@ export type StatusPagamentoReserva =
   | 'pago'
   | 'falhou'
   | 'cancelado'
-  | 'expirado';
+  | 'expirado'
+  | 'reembolsado';
 
 export interface Reserva {
   id: string;
@@ -15,6 +16,7 @@ export interface Reserva {
   check_out: string;
   num_hospedes: number;
   valor_total: number;
+  valor_pago?: number | null;
   status: StatusReserva;
   observacoes?: string;
   stripe_checkout_session_id?: string | null;

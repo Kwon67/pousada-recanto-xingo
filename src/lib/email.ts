@@ -15,6 +15,7 @@ interface EmailConfirmacaoData {
   numHospedes: number;
   noites: number;
   valorTotal: number;
+  valorPago?: number;
   metodoPagamento?: string;
 }
 
@@ -22,12 +23,20 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
   try {
     const checkInFormatado = formatarData(data.checkIn);
     const checkOutFormatado = formatarData(data.checkOut);
-    const valorFormatado = data.valorTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const valorFormatado = formatarDinheiro(data.valorTotal);
+    const valorPagoFormatado =
+      typeof data.valorPago === 'number' && data.valorPago > 0
+        ? formatarDinheiro(data.valorPago)
+        : null;
+    const saldoRestanteFormatado =
+      typeof data.valorPago === 'number' && data.valorPago > 0
+        ? formatarDinheiro(Math.max(data.valorTotal - data.valorPago, 0))
+        : null;
     const pagamentoAprovado = Boolean(data.metodoPagamento);
     const metodoPagamento = formatarMetodoPagamento(data.metodoPagamento);
     const titulo = pagamentoAprovado ? 'Pagamento Aprovado!' : 'Reserva Confirmada!';
     const mensagem = pagamentoAprovado
-      ? `Ol&aacute;, <strong>${data.hospedeNome}</strong>! Recebemos o seu pagamento no Stripe com sucesso (${metodoPagamento}). Confira os detalhes da sua reserva:`
+      ? `Ol&aacute;, <strong>${data.hospedeNome}</strong>! Recebemos o seu pagamento com sucesso via ${metodoPagamento}. Confira os detalhes atualizados da sua reserva:`
       : `Ol&aacute;, <strong>${data.hospedeNome}</strong>! Sua reserva foi recebida com sucesso. Confira os detalhes abaixo:`;
 
     const html = `
@@ -112,11 +121,28 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
                         </td>
                       </tr>
                       <tr>
-                        <td style="padding:12px 0 0;">
+                        <td style="padding:12px 0 ${valorPagoFormatado ? '12px' : '0'};">
                           <span style="color:#999;font-size:12px;text-transform:uppercase;">Valor Total</span><br>
                           <strong style="color:#2D6A4F;font-size:22px;">${valorFormatado}</strong>
                         </td>
                       </tr>
+                      ${valorPagoFormatado ? `
+                      <tr>
+                        <td style="padding:12px 0;border-top:1px solid #E8E0D4;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td width="50%">
+                                <span style="color:#999;font-size:12px;text-transform:uppercase;">Valor Recebido</span><br>
+                                <strong style="color:#14532d;font-size:16px;">${valorPagoFormatado}</strong>
+                              </td>
+                              <td width="50%">
+                                <span style="color:#999;font-size:12px;text-transform:uppercase;">Saldo Restante</span><br>
+                                <strong style="color:#1B3A4B;font-size:16px;">${saldoRestanteFormatado}</strong>
+                              </td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>` : ''}
                     </table>
                   </td>
                 </tr>
@@ -132,7 +158,7 @@ export async function enviarEmailConfirmacao(data: EmailConfirmacaoData): Promis
                 </tr>
                 <tr>
                   <td style="padding:8px 0;color:#666;font-size:14px;line-height:1.6;">
-                    <strong style="color:#D4A843;">2.</strong> ${pagamentoAprovado ? 'Sua reserva j&aacute; est&aacute; confirmada no sistema da pousada' : 'O pagamento ser&aacute; combinado diretamente com a pousada'}
+                    <strong style="color:#D4A843;">2.</strong> ${pagamentoAprovado ? (valorPagoFormatado ? `Recebemos ${valorPagoFormatado} e o restante ser&aacute; combinado com a pousada.` : 'Sua reserva j&aacute; est&aacute; confirmada no sistema da pousada') : 'O pagamento ser&aacute; combinado diretamente com a pousada'}
                   </td>
                 </tr>
                 <tr>
@@ -374,6 +400,7 @@ interface EmailPagamentoAprovadoAdminData {
   checkIn: string;
   checkOut: string;
   valorTotal: number;
+  valorPago?: number;
   metodoPagamento?: string | null;
 }
 
@@ -381,10 +408,11 @@ export async function enviarEmailPagamentoAprovadoAdmin(
   data: EmailPagamentoAprovadoAdminData
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const valorFormatado = data.valorTotal.toLocaleString('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    });
+    const valorFormatado = formatarDinheiro(data.valorTotal);
+    const valorPagoFormatado =
+      typeof data.valorPago === 'number' && data.valorPago > 0
+        ? formatarDinheiro(data.valorPago)
+        : null;
     const metodoPagamento = formatarMetodoPagamento(data.metodoPagamento || undefined);
 
     const html = `
@@ -401,13 +429,13 @@ export async function enviarEmailPagamentoAprovadoAdmin(
         <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb;">
           <tr>
             <td style="padding:24px;background:#14532d;color:#ffffff;">
-              <h1 style="margin:0;font-size:20px;">Pagamento aprovado no Stripe</h1>
+              <h1 style="margin:0;font-size:20px;">Pagamento aprovado</h1>
               <p style="margin:8px 0 0;font-size:13px;opacity:0.9;">Reserva ${data.reservaId}</p>
             </td>
           </tr>
           <tr>
             <td style="padding:24px;">
-              <p style="margin:0 0 16px;color:#111827;">O Stripe confirmou o pagamento da reserva abaixo:</p>
+              <p style="margin:0 0 16px;color:#111827;">A AbacatePay confirmou o pagamento da reserva abaixo:</p>
               <table width="100%" cellpadding="0" cellspacing="0" style="font-size:14px;color:#111827;">
                 <tr><td style="padding:8px 0;color:#6b7280;">Reserva</td><td style="padding:8px 0;text-align:right;font-weight:600;">${data.reservaId}</td></tr>
                 <tr><td style="padding:8px 0;color:#6b7280;">Hóspede</td><td style="padding:8px 0;text-align:right;font-weight:600;">${data.hospedeNome}</td></tr>
@@ -416,7 +444,8 @@ export async function enviarEmailPagamentoAprovadoAdmin(
                 <tr><td style="padding:8px 0;color:#6b7280;">Check-in</td><td style="padding:8px 0;text-align:right;font-weight:600;">${formatarData(data.checkIn)}</td></tr>
                 <tr><td style="padding:8px 0;color:#6b7280;">Check-out</td><td style="padding:8px 0;text-align:right;font-weight:600;">${formatarData(data.checkOut)}</td></tr>
                 <tr><td style="padding:8px 0;color:#6b7280;">Método</td><td style="padding:8px 0;text-align:right;font-weight:600;">${metodoPagamento}</td></tr>
-                <tr><td style="padding:8px 0;color:#6b7280;">Valor</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#14532d;">${valorFormatado}</td></tr>
+                <tr><td style="padding:8px 0;color:#6b7280;">Valor Total</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#14532d;">${valorFormatado}</td></tr>
+                ${valorPagoFormatado ? `<tr><td style="padding:8px 0;color:#6b7280;">Valor Recebido</td><td style="padding:8px 0;text-align:right;font-weight:700;color:#14532d;">${valorPagoFormatado}</td></tr>` : ''}
               </table>
             </td>
           </tr>
@@ -430,7 +459,7 @@ export async function enviarEmailPagamentoAprovadoAdmin(
     await resend.emails.send({
       from: EMAIL_FROM,
       to: data.destinoEmail,
-      subject: `Stripe aprovado: reserva ${data.reservaId}`,
+      subject: `Pagamento aprovado: reserva ${data.reservaId}`,
       html,
     });
 
@@ -452,9 +481,15 @@ function formatarMetodoPagamento(method?: string): string {
 
   const map: Record<string, string> = {
     card: 'Cartão',
+    credit_card: 'Cartão',
+    creditcard: 'Cartão',
     pix: 'Pix',
     boleto: 'Boleto',
   };
 
-  return map[method] || method;
+  return map[method.toLowerCase()] || method;
+}
+
+function formatarDinheiro(valor: number): string {
+  return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }

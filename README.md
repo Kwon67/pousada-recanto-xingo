@@ -23,7 +23,7 @@ Site institucional e sistema de reservas online da **Pousada Recanto do Matuto**
 ## Funcionalidades
 
 - **Catálogo de Quartos** — Standard, Superior e Suítes com galeria de fotos, amenidades e preços por noite
-- **Reservas Online** — Seleção de datas, cálculo automático de diárias e checkout com pagamento via **Stripe** (cartão e Pix)
+- **Reservas Online** — Seleção de datas, cálculo automático de diárias e checkout com pagamento via **AbacatePay** (Pix e cartão)
 - **Página Sobre** — História da pousada e o que a torna especial
 - **Contato** — Formulário integrado, mapa do Google Maps e link direto para WhatsApp
 - **Painel Administrativo** — Gestão de quartos, reservas, galeria de mídia, conteúdo do site e configurações
@@ -37,7 +37,7 @@ Site institucional e sistema de reservas online da **Pousada Recanto do Matuto**
 | Frontend | Next.js · React · Tailwind CSS |
 | Backend | Next.js API Routes · Server Actions |
 | Banco de Dados | Supabase (PostgreSQL) |
-| Pagamentos | Stripe Checkout (cartão + Pix) |
+| Pagamentos | AbacatePay (Pix + cartão) |
 | Mídia | Cloudinary |
 | E-mail | Resend |
 | Deploy | Vercel |
@@ -46,7 +46,7 @@ Site institucional e sistema de reservas online da **Pousada Recanto do Matuto**
 
 - Use o arquivo [`.env.example`](./.env.example) como base e **nunca** comite chaves reais.
 - Em produção, o app valida variáveis críticas no startup/runtime e falha se faltar segredo essencial.
-- Se alguma chave já foi exposta (admin, Stripe, Supabase, Cloudinary, Resend, Meta), a rotação é obrigatória.
+- Se alguma chave já foi exposta (admin, AbacatePay, Supabase, Cloudinary, Resend, Meta), a rotação é obrigatória.
 
 ### Preflight (sem rotação)
 

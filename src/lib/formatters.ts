@@ -72,6 +72,7 @@ export function formatCategoria(categoria: string): string {
 export function formatStatus(status: string): string {
   const statuses: Record<string, string> = {
     pendente: 'Pendente',
+    aguardando_pagamento: 'Aguardando pagamento',
     confirmada: 'Confirmada',
     cancelada: 'Cancelada',
     concluida: 'Concluída',
@@ -89,6 +90,7 @@ export function formatPaymentStatus(status?: string | null): string {
     falhou: 'Falhou',
     cancelado: 'Cancelado',
     expirado: 'Expirado',
+    reembolsado: 'Reembolsado',
   };
 
   return statuses[status] || status;
@@ -99,9 +101,12 @@ export function formatPaymentMethod(method?: string | null): string {
 
   const methods: Record<string, string> = {
     card: 'Cartão',
+    credit_card: 'Cartão',
+    creditcard: 'Cartão',
+    credito: 'Cartão',
     pix: 'Pix',
     boleto: 'Boleto',
   };
 
-  return methods[method] || method;
+  return methods[method.toLowerCase()] || method;
 }

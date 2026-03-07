@@ -40,6 +40,7 @@ import {
   formatCategoria,
 } from '@/lib/formatters';
 import { atualizarStatusReserva, criarReservaManual, deletarReserva } from '@/lib/actions/reservas';
+import { getReservaOutstandingAmount, getReservaPaidAmount } from '@/lib/payment';
 import Button from '@/components/ui/app-button';
 import { useToast } from '@/components/ui/Toast';
 import type { Reserva, StatusReserva } from '@/types/reserva';
@@ -69,6 +70,11 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
   const statusOptions = [
     { value: '', label: 'Todos', count: reservas.length },
     { value: 'pendente', label: 'Pendentes', count: reservas.filter((r) => r.status === 'pendente').length },
+    {
+      value: 'aguardando_pagamento',
+      label: 'Aguardando pagamento',
+      count: reservas.filter((r) => r.status === 'aguardando_pagamento').length,
+    },
     { value: 'confirmada', label: 'Confirmadas', count: reservas.filter((r) => r.status === 'confirmada').length },
     { value: 'concluida', label: 'Concluídas', count: reservas.filter((r) => r.status === 'concluida').length },
     { value: 'cancelada', label: 'Canceladas', count: reservas.filter((r) => r.status === 'cancelada').length },
@@ -87,6 +93,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
 
   const statusColors: Record<string, string> = {
     pendente: 'bg-amber-100 text-amber-700',
+    aguardando_pagamento: 'bg-yellow-100 text-yellow-800',
     confirmada: 'bg-green-100 text-green-700',
     cancelada: 'bg-red-100 text-red-700',
     concluida: 'bg-blue-100 text-blue-700',
@@ -99,6 +106,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
     falhou: 'bg-red-100 text-red-700',
     cancelado: 'bg-rose-100 text-rose-700',
     expirado: 'bg-orange-100 text-orange-700',
+    reembolsado: 'bg-slate-100 text-slate-700',
   };
 
   const updateStatus = async (id: string, newStatus: StatusReserva) => {
@@ -137,8 +145,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
   };
 
   const totalReceitaRecebida = filtered
-    .filter((r) => r.stripe_payment_status === 'pago')
-    .reduce((acc, r) => acc + r.valor_total, 0);
+    .reduce((acc, r) => acc + getReservaPaidAmount(r), 0);
 
   const totalReceitaPrevista = filtered
     .filter((r) => r.status !== 'cancelada')
@@ -361,7 +368,7 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                         </span>
                         {r.stripe_payment_status === 'pago' ? (
                           <span className="text-xs text-green-700">
-                            Débito confirmado
+                            Sinal recebido: {formatCurrency(getReservaPaidAmount(r))}
                             {r.payment_approved_at
                               ? ` em ${formatDate(r.payment_approved_at, 'dd/MM HH:mm')}`
                               : ''}
@@ -525,9 +532,17 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
                   >
                     {formatPaymentStatus(selectedReserva.stripe_payment_status)}
                   </span>
+                  <div className="mt-3 space-y-1 text-sm text-gray-600">
+                    <p>Valor recebido: {formatCurrency(getReservaPaidAmount(selectedReserva))}</p>
+                    <p>Saldo restante: {formatCurrency(getReservaOutstandingAmount(selectedReserva))}</p>
+                  </div>
                   {selectedReserva.stripe_payment_status === 'pago' ? (
                     <p className="text-xs text-green-700 mt-2 font-medium">
                       Pagamento confirmado.
+                    </p>
+                  ) : selectedReserva.stripe_payment_status === 'reembolsado' ? (
+                    <p className="text-xs text-slate-700 mt-2">
+                      Pagamento reembolsado.
                     </p>
                   ) : (
                     <p className="text-xs text-amber-700 mt-2">
@@ -582,7 +597,8 @@ export default function AdminReservasClient({ reservasIniciais, quartos }: Props
 
                   {/* Status Actions */}
                   <div className="space-y-2">
-                    {selectedReserva.status === 'pendente' && (
+                    {(selectedReserva.status === 'pendente' ||
+                      selectedReserva.status === 'aguardando_pagamento') && (
                       <>
                         {!showConfirmCode ? (
                           <button

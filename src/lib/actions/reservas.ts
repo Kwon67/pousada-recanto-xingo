@@ -10,7 +10,8 @@ import { checkAndConsumeReservaRateLimit, getClientIpFromHeaders } from '@/lib/r
 import { getSiteUrl } from '@/lib/site-url';
 import { createAbacatePayBilling } from '@/lib/abacatepay';
 import { reservasMock } from '@/data/mock';
-import type { Reserva, StatusReserva } from '@/types/reserva';
+import { getExpectedDepositAmount, getReservaPaidAmount } from '@/lib/payment';
+import type { Reserva, StatusPagamentoReserva, StatusReserva } from '@/types/reserva';
 import { z } from 'zod';
 
 interface CriarReservaData {
@@ -51,7 +52,11 @@ const criarReservaSchema = z.object({
     .trim()
     .min(8, 'Telefone inválido.')
     .max(40, 'Telefone inválido.'),
-  hospede_cpf: z.string().trim().max(32).optional().default(''),
+  hospede_cpf: z
+    .string()
+    .trim()
+    .max(32, 'CPF inválido.')
+    .refine((value) => value.replace(/\D/g, '').length === 11, 'CPF inválido.'),
   hospede_cidade: z.string().trim().max(120).optional().default(''),
   check_in: z
     .string()
@@ -298,10 +303,11 @@ export async function criarReserva(data: CriarReservaData) {
       .update({
         stripe_checkout_session_id: billing.id,
         stripe_payment_intent_id: billing.id,
-        stripe_payment_status:
-          billing.status === 'PAID' ? 'pago' : 'pendente',
-        stripe_payment_method: 'pix',
-        status: 'aguardando_pagamento',
+        stripe_payment_status: billing.status === 'PAID' ? 'pago' : 'pendente',
+        stripe_payment_method: null,
+        status: billing.status === 'PAID' ? 'confirmada' : 'aguardando_pagamento',
+        payment_approved_at: billing.status === 'PAID' ? new Date().toISOString() : null,
+        valor_pago: billing.status === 'PAID' ? getExpectedDepositAmount(valorTotalCalculado) : 0,
       })
       .eq('id', reserva.id);
 
@@ -436,6 +442,7 @@ export async function getReservaPublicaById(id: string, token: string) {
         check_out,
         num_hospedes,
         valor_total,
+        valor_pago,
         status,
         stripe_payment_status,
         stripe_payment_method,
@@ -457,11 +464,24 @@ export async function atualizarStatusReserva(id: string, status: StatusReserva) 
 
   try {
     const supabase = createAdminClient();
+    const { data: reservaAtual, error: reservaAtualError } = await supabase
+      .from('reservas')
+      .select('stripe_payment_status')
+      .eq('id', id)
+      .single();
+
+    if (reservaAtualError) throw reservaAtualError;
+
     const updatePayload: {
       status: StatusReserva;
-      stripe_payment_status?: 'cancelado';
+      stripe_payment_status?: StatusPagamentoReserva;
     } = { status };
-    if (status === 'cancelada') {
+
+    if (
+      status === 'cancelada' &&
+      reservaAtual.stripe_payment_status !== 'pago' &&
+      reservaAtual.stripe_payment_status !== 'reembolsado'
+    ) {
       updatePayload.stripe_payment_status = 'cancelado';
     }
 
@@ -643,7 +663,7 @@ export async function getEstatisticas() {
     // Reservas deste mês
     const { data: reservasMes, error: mesError } = await supabase
       .from('reservas')
-      .select('id, valor_total, stripe_payment_status')
+      .select('id, valor_total, valor_pago, stripe_payment_status')
       .gte('created_at', firstOfMonth)
       .lt('created_at', firstOfNextMonth);
 
@@ -653,7 +673,7 @@ export async function getEstatisticas() {
     const { count: pendentes, error: pendentesError } = await supabase
       .from('reservas')
       .select('*', { count: 'exact', head: true })
-      .eq('status', 'pendente');
+      .in('status', ['pendente', 'aguardando_pagamento']);
 
     if (pendentesError) throw pendentesError;
 
@@ -681,7 +701,7 @@ export async function getEstatisticas() {
       : 0;
 
     const receitaRecebidaMes = reservasMes.reduce(
-      (acc, r) => (r.stripe_payment_status === 'pago' ? acc + r.valor_total : acc),
+      (acc, r) => acc + getReservaPaidAmount(r),
       0
     );
 
@@ -701,13 +721,10 @@ export async function getEstatisticas() {
 
     return {
       totalReservas: reservasEsteMes.length,
-      reservasPendentes: reservasMock.filter((r) => r.status === 'pendente').length,
-      receitaMes: reservasEsteMes.reduce((acc, r) => {
-        if (!r.stripe_payment_status) {
-          return r.status === 'confirmada' ? acc + r.valor_total : acc;
-        }
-        return r.stripe_payment_status === 'pago' ? acc + r.valor_total : acc;
-      }, 0),
+      reservasPendentes: reservasMock.filter(
+        (r) => r.status === 'pendente' || r.status === 'aguardando_pagamento'
+      ).length,
+      receitaMes: reservasEsteMes.reduce((acc, r) => acc + getReservaPaidAmount(r), 0),
       taxaOcupacao: 75,
     };
   }
