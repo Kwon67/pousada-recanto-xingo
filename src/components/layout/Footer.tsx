@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MapPin, Phone, Mail, Instagram, MessageCircle, ArrowUpRight } from 'lucide-react';
-import { SITE_CONFIG, NAV_LINKS } from '@/lib/constants';
+import { SITE_CONFIG, NAV_LINKS, HOSPEDIN_BOOKING_URL } from '@/lib/constants';
+import { trackAndOpenBooking } from '@/lib/tracking';
 import { getWhatsAppLink } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -45,16 +46,21 @@ export default function Footer({ precoNoite = 'R$ 380' }: FooterProps) {
                 A partir de <span className="text-secondary">{precoNoiteExibido}</span> / noite
               </p>
               <div className="flex gap-4 items-center">
-                <Button 
+                <Button
                   asChild
-                  variant="luxury" 
-                  size="lg" 
+                  variant="luxury"
+                  size="lg"
                   className="rounded-none text-base uppercase tracking-wider font-semibold group h-auto py-4"
                 >
-                  <Link href="/reservas">
-                    Reservar Agora 
+                  <a
+                    href={HOSPEDIN_BOOKING_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackAndOpenBooking('footer')}
+                  >
+                    Reservar Agora
                     <ArrowUpRight className="ml-2 w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                  </Link>
+                  </a>
                 </Button>
               </div>
             </div>

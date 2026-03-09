@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Instagram } from 'lucide-react';
 import { cn, getWhatsAppLink } from '@/lib/utils';
-import { NAV_LINKS, SITE_CONFIG } from '@/lib/constants';
+import { NAV_LINKS, SITE_CONFIG, HOSPEDIN_BOOKING_URL } from '@/lib/constants';
+import { trackAndOpenBooking } from '@/lib/tracking';
 import { Button } from '@/components/ui/button';
 
 interface MobileMenuProps {
@@ -131,13 +132,22 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                   transition={{ delay: 0.4 }}
                   className="mt-12"
                 >
-                  <Link href="/reservas" onClick={onClose} className="block w-full">
-                    <Button 
+                  <a
+                    href={HOSPEDIN_BOOKING_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      trackAndOpenBooking('mobile_menu');
+                      onClose();
+                    }}
+                    className="block w-full"
+                  >
+                    <Button
                       className="w-full h-[60px] rounded-none bg-dark text-white uppercase tracking-widest text-sm font-bold border border-dark hover:bg-white hover:text-dark"
                     >
                       Reservar Agora
                     </Button>
-                  </Link>
+                  </a>
                 </motion.div>
               </nav>
 

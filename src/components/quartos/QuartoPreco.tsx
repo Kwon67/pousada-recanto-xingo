@@ -7,7 +7,8 @@ import { addDays } from 'date-fns';
 import { Quarto } from '@/types/quarto';
 import { formatCurrency } from '@/lib/formatters';
 import { calcularValorTotal, calcularNoites, getWhatsAppLink } from '@/lib/utils';
-import { SITE_CONFIG } from '@/lib/constants';
+import { SITE_CONFIG, HOSPEDIN_BOOKING_URL } from '@/lib/constants';
+import { trackAndOpenBooking } from '@/lib/tracking';
 import DatePicker from '@/components/ui/DatePicker';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/app-button';
@@ -36,13 +37,7 @@ export default function QuartoPreco({ quarto }: QuartoPrecoProps) {
       : 0;
 
   const handleReservar = () => {
-    const params = new URLSearchParams({
-      quarto: quarto.id,
-      checkIn: checkIn?.toISOString() || '',
-      checkOut: checkOut?.toISOString() || '',
-      guests,
-    });
-    window.location.href = `/reservas?${params.toString()}`;
+    trackAndOpenBooking('quarto_detalhe');
   };
 
   const whatsappMessage = `Olá! Gostaria de reservar o ${quarto.nome}${

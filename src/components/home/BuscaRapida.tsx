@@ -1,26 +1,20 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Search, User, Users } from 'lucide-react';
 import DatePicker from '@/components/ui/DatePicker';
 import { Button } from '@/components/ui/button';
 import { addDays } from 'date-fns';
 import { motion } from 'framer-motion';
+import { trackAndOpenBooking } from '@/lib/tracking';
 
 export default function BuscaRapida() {
-  const router = useRouter();
   const [checkIn, setCheckIn] = useState<Date | null>(null);
   const [checkOut, setCheckOut] = useState<Date | null>(null);
   const [guests, setGuests] = useState(2);
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (checkIn) params.set('checkIn', checkIn.toISOString());
-    if (checkOut) params.set('checkOut', checkOut.toISOString());
-    params.set('guests', guests.toString());
-
-    router.push(`/reservas?${params.toString()}`);
+    trackAndOpenBooking('busca_rapida');
   };
 
   const today = new Date();

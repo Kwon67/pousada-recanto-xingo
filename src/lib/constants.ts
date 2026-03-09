@@ -1,3 +1,6 @@
+// URL do Motor de Reservas Hospedin — substituir pelo link real após contratação
+export const HOSPEDIN_BOOKING_URL = 'HOSPEDIN_URL_AQUI';
+
 export const SITE_CONFIG = {
   name: 'Pousada Recanto do Matuto Xingó',
   description: 'Seu refúgio às margens do Canyon do Xingó',

@@ -1,9 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HOSPEDIN_BOOKING_URL } from '@/lib/constants';
+import { trackAndOpenBooking } from '@/lib/tracking';
 
 interface CTAReservaProps {
   precoNoite?: string;
@@ -52,10 +53,16 @@ export default function CTAReserva({ precoNoite = 'R$ 380' }: CTAReservaProps) {
             className="flex flex-col sm:flex-row items-center justify-center gap-6"
           >
             <Button asChild variant="luxury" size="lg" className="rounded-none uppercase tracking-widest text-sm font-bold w-full sm:w-auto h-16 px-10">
-              <Link href="/reservas" className="flex items-center justify-center">
+              <a
+                href={HOSPEDIN_BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackAndOpenBooking('cta_reserva')}
+                className="flex items-center justify-center"
+              >
                 Reservar Experiência
                 <ArrowUpRight className="ml-3 w-5 h-5" />
-              </Link>
+              </a>
             </Button>
             <div className="text-white/40 text-sm font-medium tracking-widest uppercase">
               A partir de <span className="text-white font-bold">{precoExibido}</span> / noite

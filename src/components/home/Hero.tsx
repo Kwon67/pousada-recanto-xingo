@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { HOSPEDIN_BOOKING_URL } from '@/lib/constants';
+import { trackAndOpenBooking } from '@/lib/tracking';
 
 const FALLBACK_HERO_IMAGE =
   'https://images.unsplash.com/photo-1533577116850-9cc66cad8a9b?auto=format&fit=crop&w=1920&q=80';
@@ -125,7 +127,12 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
               transition={{ duration: 0.6, delay: 0.5 }}
               className="mt-12 flex flex-col sm:flex-row gap-6 w-full sm:w-auto"
             >
-              <Link href="/reservas">
+              <a
+                href={HOSPEDIN_BOOKING_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => trackAndOpenBooking('hero')}
+              >
                 <Button
                   size="lg"
                   variant="luxury"
@@ -134,7 +141,7 @@ export default function Hero({ backgroundImageUrl, logoUrl }: HeroProps) {
                   Reservar Agora
                   <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-2" />
                 </Button>
-              </Link>
+              </a>
               <Link href="/quartos">
                 <Button
                   size="lg"

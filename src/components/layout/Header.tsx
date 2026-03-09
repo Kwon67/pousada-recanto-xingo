@@ -8,7 +8,8 @@ import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { NAV_LINKS } from '@/lib/constants';
+import { NAV_LINKS, HOSPEDIN_BOOKING_URL } from '@/lib/constants';
+import { trackAndOpenBooking } from '@/lib/tracking';
 import { Button } from '@/components/ui/button';
 
 const MobileMenu = dynamic(() => import('./MobileMenu'), {
@@ -111,13 +112,20 @@ export default function Header() {
                 asChild
                 className={cn(
                   "hidden md:inline-flex rounded-none text-xs tracking-widest font-bold uppercase border",
-                  isScrolled || !isHome 
-                    ? "bg-dark text-white border-dark hover:bg-white hover:text-dark" 
+                  isScrolled || !isHome
+                    ? "bg-dark text-white border-dark hover:bg-white hover:text-dark"
                     : "bg-white text-dark border-white hover:bg-transparent hover:text-white"
                 )}
                 size="sm"
               >
-                <Link href="/reservas">Reservar</Link>
+                <a
+                  href={HOSPEDIN_BOOKING_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => trackAndOpenBooking('navbar')}
+                >
+                  Reservar
+                </a>
               </Button>
 
               <button

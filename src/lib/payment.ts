@@ -54,3 +54,4 @@ export function normalizePaymentMethod(method?: string | null): string | null {
 
   return method.trim().toLowerCase();
 }
+
