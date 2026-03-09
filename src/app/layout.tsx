@@ -48,6 +48,14 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Kivora Inc." }],
   creator: "Kivora Inc.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      { url: "/favicon.ico" },
+    ],
+    shortcut: ["/favicon.ico"],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     type: "website",
     locale: "pt_BR",

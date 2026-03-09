@@ -1,0 +1,104 @@
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="256" height="256" fill="#F3ECE4" />
+  <g transform="translate(34 18)">
+    <path
+      d="M16 82H66V220H16V82Z"
+      fill="#A7642A"
+    />
+    <path
+      d="M60 34H178V220H60V34Z"
+      fill="#BC7934"
+    />
+    <path
+      d="M34 58H50V82H34V58ZM66 18H82V34H66V18ZM98 12H114V34H98V12ZM130 18H146V34H130V18ZM162 24H178V44H162V24ZM16 58H30V82H16V58Z"
+      fill="#BC7934"
+    />
+    <path
+      d="M6 60H66V82H6V60ZM54 24H90V34H54V24ZM92 18H120V34H92V18ZM122 24H154V34H122V24ZM154 30H188V44H154V30Z"
+      fill="#A7642A"
+    />
+    <path
+      d="M60 178H178V220H60V178Z"
+      fill="#B26F31"
+    />
+    <path
+      d="M124 178C141.673 178 156 192.327 156 210V220H92V210C92 192.327 106.327 178 124 178Z"
+      fill="#BC7934"
+    />
+    <path
+      d="M74 96H164"
+      stroke="#F3ECE4"
+      stroke-width="5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M74 134H164"
+      stroke="#F3ECE4"
+      stroke-width="5"
+      stroke-linecap="round"
+    />
+    <circle
+      cx="130"
+      cy="72"
+      r="17"
+      stroke="#F3ECE4"
+      stroke-width="6"
+    />
+    <path
+      d="M130 63V73L137 77"
+      stroke="#F3ECE4"
+      stroke-width="5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <circle
+      cx="42"
+      cy="100"
+      r="13"
+      stroke="#F3ECE4"
+      stroke-width="5"
+    />
+    <path
+      d="M42 93V101L47 104"
+      stroke="#F3ECE4"
+      stroke-width="4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path
+      d="M82 116C82 107.163 89.1634 100 98 100C106.837 100 114 107.163 114 116V146H82V116Z"
+      fill="#F3ECE4"
+    />
+    <path
+      d="M118 116C118 107.163 125.163 100 134 100C142.837 100 150 107.163 150 116V146H118V116Z"
+      fill="#F3ECE4"
+    />
+    <path
+      d="M66 194C66 161.967 91.9675 136 124 136C156.033 136 182 161.967 182 194V220H152V194C152 178.536 139.464 166 124 166C108.536 166 96 178.536 96 194V220H66V194Z"
+      fill="#9B5924"
+    />
+    <path
+      d="M82 220V196C82 172.804 100.804 154 124 154C147.196 154 166 172.804 166 196V220H152V196C152 180.536 139.464 168 124 168C108.536 168 96 180.536 96 196V220H82Z"
+      fill="#F3ECE4"
+    />
+    <path
+      d="M28 132H56"
+      stroke="#F3ECE4"
+      stroke-width="4"
+      stroke-linecap="round"
+    />
+    <path
+      d="M28 156H56"
+      stroke="#F3ECE4"
+      stroke-width="4"
+      stroke-linecap="round"
+    />
+    <path
+      d="M82 142H150"
+      stroke="#BC7934"
+      stroke-width="4"
+      stroke-linecap="round"
+      opacity="0.18"
+    />
+  </g>
+</svg>
