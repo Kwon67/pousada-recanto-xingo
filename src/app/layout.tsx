@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import Script from "next/script";
+import { headers } from "next/headers";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
@@ -100,6 +101,8 @@ export default async function RootLayout({
 }>) {
   validateCriticalServerEnv();
 
+  const nonce = (await headers()).get('x-nonce') ?? undefined;
+
   let precoNoiteFooter = 'R$ 380';
 
   try {
@@ -122,6 +125,7 @@ export default async function RootLayout({
           <>
             <Script
               id="meta-pixel"
+              nonce={nonce}
               strategy="afterInteractive"
               dangerouslySetInnerHTML={{
                 __html: `

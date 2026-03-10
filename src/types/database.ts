@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      reserva_rate_limit_attempts: {
+        Row: {
+          id: string
+          key_type: string
+          key_value: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          key_type: string
+          key_value: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          key_type?: string
+          key_value?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       admin_access_logs: {
         Row: {
           created_at: string

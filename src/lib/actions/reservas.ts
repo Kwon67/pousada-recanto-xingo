@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
+import { timingSafeEqual } from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { assertAdminActionSession } from '@/lib/admin-action-guard';
 import { enviarEmailConfirmacao, enviarEmailStatus } from '@/lib/email';
@@ -165,7 +166,7 @@ export async function criarReserva(data: CriarReservaData) {
 
     const requestHeaders = await headers();
     const clientIp = getClientIpFromHeaders(requestHeaders);
-    const rateLimitState = checkAndConsumeReservaRateLimit({
+    const rateLimitState = await checkAndConsumeReservaRateLimit({
       ip: clientIp,
       email: hospedeEmail,
     });
@@ -543,7 +544,12 @@ export async function deletarReserva(id: string, senha: string) {
     };
   }
 
-  if (senha.trim() !== senhaAdmin) {
+  const senhaBuffer = Buffer.from(senha.trim());
+  const senhaAdminBuffer = Buffer.from(senhaAdmin);
+  const senhasIguais =
+    senhaBuffer.length === senhaAdminBuffer.length &&
+    timingSafeEqual(senhaBuffer, senhaAdminBuffer);
+  if (!senhasIguais) {
     return { success: false, message: 'Senha incorreta.' };
   }
 

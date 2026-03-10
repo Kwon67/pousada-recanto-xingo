@@ -25,15 +25,26 @@ function normalizeText(value: string | null, maxLength: number): string | null {
   return sanitized ? sanitized.slice(0, maxLength) : null;
 }
 
-function getClientIp(request: NextRequest): string | null {
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0];
-    return normalizeText(firstIp, 80);
-  }
+function getTrustedProxyCount(): number {
+  const raw = Number(process.env.TRUSTED_PROXY_COUNT);
+  if (!Number.isFinite(raw) || raw < 0) return 1;
+  return Math.round(raw);
+}
 
+function getClientIp(request: NextRequest): string | null {
+  // x-real-ip is set by infrastructure (Vercel, nginx), not controllable by clients
   const realIp = request.headers.get('x-real-ip');
-  return normalizeText(realIp, 80);
+  if (realIp) return normalizeText(realIp, 80);
+
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  if (!forwardedFor) return null;
+
+  // Strip rightmost N IPs added by trusted proxies, take the next one
+  const ips = forwardedFor.split(',').map((ip) => ip.trim()).filter(Boolean);
+  const trustedCount = getTrustedProxyCount();
+  const targetIndex = ips.length - 1 - trustedCount;
+  const ip = ips[Math.max(targetIndex, 0)];
+  return normalizeText(ip ?? null, 80);
 }
 
 function getConfig(): RateLimitConfig {

@@ -1,3 +1,5 @@
+import { createAdminClient } from '@/lib/supabase/admin';
+
 interface ReservaRateLimitResult {
   allowed: boolean;
   retryAfterSeconds: number;
@@ -17,7 +19,8 @@ const DEFAULT_MAX_ATTEMPTS_PER_EMAIL = 8;
 const MAX_WINDOW_SECONDS = 24 * 60 * 60;
 const MIN_WINDOW_SECONDS = 60;
 
-const rateLimitStore = new Map<string, number[]>();
+// In-memory cache: fast-path for same-instance requests
+const localAttempts = new Map<string, number[]>();
 
 function getNumberFromEnv(value: string | undefined, fallback: number, min: number, max: number): number {
   const parsed = Number(value);
@@ -60,89 +63,129 @@ function normalizeEmail(value: string | null): string | null {
   return normalized ? normalized.toLowerCase() : null;
 }
 
-function buildKey(prefix: 'ip' | 'email', value: string): string {
-  return `${prefix}:${value}`;
-}
-
-function getRecentAttempts(key: string, windowStartMs: number): number[] {
-  const attempts = rateLimitStore.get(key) ?? [];
-  const recent = attempts.filter((timestamp) => timestamp >= windowStartMs);
-
+function getLocalCount(key: string, windowStartMs: number): number {
+  const attempts = localAttempts.get(key) ?? [];
+  const recent = attempts.filter((ts) => ts >= windowStartMs);
   if (recent.length > 0) {
-    rateLimitStore.set(key, recent);
+    localAttempts.set(key, recent);
   } else {
-    rateLimitStore.delete(key);
+    localAttempts.delete(key);
   }
-
-  return recent;
+  return recent.length;
 }
 
-function consumeAttempt(key: string, nowMs: number): void {
-  const attempts = rateLimitStore.get(key) ?? [];
-  attempts.push(nowMs);
-  rateLimitStore.set(key, attempts);
+function addLocalAttempt(key: string): void {
+  const attempts = localAttempts.get(key) ?? [];
+  attempts.push(Date.now());
+  localAttempts.set(key, attempts);
 }
 
-function getRetryAfterSeconds(
-  attempts: number[],
-  windowMs: number,
-  nowMs: number
-): number {
-  if (attempts.length === 0) return 0;
-  const earliest = attempts[0];
-  if (!earliest) return 0;
-  const retryMs = earliest + windowMs - nowMs;
-  return Math.max(Math.ceil(retryMs / 1000), 0);
+async function getDbCount(
+  keyType: 'ip' | 'email',
+  keyValue: string,
+  windowStartIso: string
+): Promise<number> {
+  const supabase = createAdminClient();
+  const { count, error } = await supabase
+    .from('reserva_rate_limit_attempts')
+    .select('id', { count: 'exact', head: true })
+    .eq('key_type', keyType)
+    .eq('key_value', keyValue)
+    .gte('created_at', windowStartIso);
+
+  if (error) throw error;
+  return count ?? 0;
+}
+
+async function recordDbAttempt(keyType: 'ip' | 'email', keyValue: string): Promise<void> {
+  const supabase = createAdminClient();
+  await supabase
+    .from('reserva_rate_limit_attempts')
+    .insert({ key_type: keyType, key_value: keyValue });
+}
+
+function getTrustedProxyCount(): number {
+  const raw = Number(process.env.TRUSTED_PROXY_COUNT);
+  if (!Number.isFinite(raw) || raw < 0) return 1;
+  return Math.round(raw);
 }
 
 export function getClientIpFromHeaders(headers: HeaderGetter): string | null {
-  const forwardedFor = headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    const firstIp = forwardedFor.split(',')[0];
-    return normalizeText(firstIp, 80);
-  }
-
+  // x-real-ip is set by infrastructure (Vercel, nginx), not controllable by clients
   const realIp = headers.get('x-real-ip');
-  return normalizeText(realIp, 80);
+  if (realIp) return normalizeText(realIp, 80);
+
+  const forwardedFor = headers.get('x-forwarded-for');
+  if (!forwardedFor) return null;
+
+  // Strip rightmost N IPs added by trusted proxies, take the next one
+  const ips = forwardedFor.split(',').map((ip) => ip.trim()).filter(Boolean);
+  const trustedCount = getTrustedProxyCount();
+  const targetIndex = ips.length - 1 - trustedCount;
+  const ip = ips[Math.max(targetIndex, 0)];
+  return normalizeText(ip ?? null, 80);
 }
 
-export function checkAndConsumeReservaRateLimit(
+export async function checkAndConsumeReservaRateLimit(
   input: ReservaRateLimitInput
-): ReservaRateLimitResult {
+): Promise<ReservaRateLimitResult> {
   const config = getRateLimitConfig();
   const nowMs = Date.now();
   const windowMs = config.windowSeconds * 1000;
   const windowStartMs = nowMs - windowMs;
+  const windowStartIso = new Date(windowStartMs).toISOString();
 
-  const normalizedIp = normalizeText(input.ip, 80) || 'unknown';
+  const normalizedIp = normalizeText(input.ip, 80)?.toLowerCase() || 'unknown';
   const normalizedEmail = normalizeEmail(input.email);
 
-  const ipKey = buildKey('ip', normalizedIp.toLowerCase());
-  const emailKey = normalizedEmail ? buildKey('email', normalizedEmail) : null;
+  const ipKey = `ip:${normalizedIp}`;
+  const emailKey = normalizedEmail ? `email:${normalizedEmail}` : null;
 
-  const ipAttempts = getRecentAttempts(ipKey, windowStartMs);
-  const emailAttempts = emailKey ? getRecentAttempts(emailKey, windowStartMs) : [];
+  // Count local (same instance)
+  const localIp = getLocalCount(ipKey, windowStartMs);
+  const localEmail = emailKey ? getLocalCount(emailKey, windowStartMs) : 0;
 
-  const ipBlocked = ipAttempts.length >= config.maxAttemptsPerIp;
-  const emailBlocked = emailAttempts.length >= config.maxAttemptsPerEmail;
-
-  if (ipBlocked || emailBlocked) {
-    const ipRetry = ipBlocked ? getRetryAfterSeconds(ipAttempts, windowMs, nowMs) : 0;
-    const emailRetry = emailBlocked ? getRetryAfterSeconds(emailAttempts, windowMs, nowMs) : 0;
-
-    return {
-      allowed: false,
-      retryAfterSeconds: Math.max(ipRetry, emailRetry),
-      remainingAttempts: 0,
-    };
+  // Count from DB (cross-instance coordination), fallback to local on error
+  let dbIp = 0;
+  let dbEmail = 0;
+  try {
+    const dbCounts = await Promise.all([
+      getDbCount('ip', normalizedIp, windowStartIso),
+      normalizedEmail ? getDbCount('email', normalizedEmail, windowStartIso) : Promise.resolve(0),
+    ]);
+    dbIp = dbCounts[0];
+    dbEmail = dbCounts[1];
+  } catch {
+    // Fallback to local-only if DB is unavailable
   }
 
-  consumeAttempt(ipKey, nowMs);
-  if (emailKey) consumeAttempt(emailKey, nowMs);
+  const totalIp = Math.max(localIp, dbIp);
+  const totalEmail = Math.max(localEmail, dbEmail);
 
-  const remainingIp = Math.max(config.maxAttemptsPerIp - (ipAttempts.length + 1), 0);
-  const remainingEmail = emailKey
-    ? Math.max(config.maxAttemptsPerEmail - (emailAttempts.length + 1), 0)
+  const ipBlocked = totalIp >= config.maxAttemptsPerIp;
+  const emailBlocked = totalEmail >= config.maxAttemptsPerEmail;
+
+  if (ipBlocked || emailBlocked) {
+    const retryAfterSeconds = config.windowSeconds;
+    return { allowed: false, retryAfterSeconds, remainingAttempts: 0 };
+  }
+
+  // Record attempt
+  addLocalAttempt(ipKey);
+  if (emailKey) addLocalAttempt(emailKey);
+
+  try {
+    await Promise.all([
+      recordDbAttempt('ip', normalizedIp),
+      normalizedEmail ? recordDbAttempt('email', normalizedEmail) : Promise.resolve(),
+    ]);
+  } catch {
+    // Non-fatal: local record still ensures same-instance protection
+  }
+
+  const remainingIp = Math.max(config.maxAttemptsPerIp - (totalIp + 1), 0);
+  const remainingEmail = normalizedEmail
+    ? Math.max(config.maxAttemptsPerEmail - (totalEmail + 1), 0)
     : remainingIp;
 
   return {

@@ -162,14 +162,9 @@ export async function createAbacatePayBilling(
 
 export function verifyAbacatePayWebhookSignature(
   rawBody: string,
-  signatureHeader: string | null,
-  querySecrets: Array<string | null | undefined>
+  signatureHeader: string | null
 ): boolean {
   const webhookSecret = getAbacatePayWebhookSecret();
-
-  if (querySecrets.some((candidate) => candidate?.trim() === webhookSecret)) {
-    return true;
-  }
 
   if (!signatureHeader) {
     return false;

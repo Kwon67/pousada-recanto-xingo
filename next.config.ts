@@ -1,88 +1,9 @@
 import type { NextConfig } from 'next';
 
-function getOrigin(value: string | undefined): string | null {
-  if (!value) return null;
-
-  try {
-    return new URL(value).origin;
-  } catch {
-    return null;
-  }
-}
-
-function getHost(value: string | undefined): string | null {
-  if (!value) return null;
-
-  try {
-    return new URL(value).host;
-  } catch {
-    return null;
-  }
-}
-
-function uniqueValues(values: Array<string | null | undefined>): string[] {
-  return Array.from(new Set(values.filter((value): value is string => Boolean(value))));
-}
-
-function buildContentSecurityPolicy(): string {
-  const supabaseOrigin = getOrigin(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const supabaseHost = getHost(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const supabaseWss = supabaseHost ? `wss://${supabaseHost}` : null;
-
-  const directives: Record<string, string[]> = {
-    'default-src': ["'self'"],
-    'base-uri': ["'self'"],
-    'frame-ancestors': ["'none'"],
-    'object-src': ["'none'"],
-    'script-src': uniqueValues([
-      "'self'",
-      "'unsafe-inline'",
-      'https://connect.facebook.net',
-      'https://www.googletagmanager.com',
-    ]),
-    'style-src': ["'self'", "'unsafe-inline'"],
-    'img-src': uniqueValues([
-      "'self'",
-      'data:',
-      'blob:',
-      'https://res.cloudinary.com',
-      'https://www.facebook.com',
-      'https://placehold.co',
-    ]),
-    'font-src': uniqueValues(["'self'", 'data:', 'https://fonts.gstatic.com']),
-    'connect-src': uniqueValues([
-      "'self'",
-      supabaseOrigin,
-      supabaseWss,
-      'https://api.abacatepay.com',
-      'https://connect.facebook.net',
-      'https://www.facebook.com',
-      'https://graph.facebook.com',
-    ]),
-    'frame-src': uniqueValues([
-      "'self'",
-      'https://abacatepay.com',
-      'https://www.google.com',
-    ]),
-    'media-src': uniqueValues(["'self'", 'blob:', 'data:', 'https://res.cloudinary.com']),
-    'form-action': ["'self'"],
-  };
-
-  if (process.env.NODE_ENV === 'production') {
-    directives['upgrade-insecure-requests'] = [];
-  }
-
-  return Object.entries(directives)
-    .map(([directive, sources]) => {
-      if (sources.length === 0) return directive;
-      return `${directive} ${sources.join(' ')}`;
-    })
-    .join('; ');
-}
-
+// CSP is now set dynamically in middleware.ts with per-request nonces.
+// Only static security headers that don't require nonces are set here.
 function buildSecurityHeaders() {
   const headers = [
-    { key: 'Content-Security-Policy', value: buildContentSecurityPolicy() },
     { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
     { key: 'X-Content-Type-Options', value: 'nosniff' },
     { key: 'X-Frame-Options', value: 'DENY' },

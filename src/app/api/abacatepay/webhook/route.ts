@@ -363,12 +363,8 @@ export async function POST(request: NextRequest) {
 
   const rawBody = await request.text();
   const signatureHeader = request.headers.get('x-webhook-signature');
-  const querySecrets = [
-    request.nextUrl.searchParams.get('webhookSecret'),
-    request.nextUrl.searchParams.get('secret'),
-  ];
 
-  const isValid = verifyAbacatePayWebhookSignature(rawBody, signatureHeader, querySecrets);
+  const isValid = verifyAbacatePayWebhookSignature(rawBody, signatureHeader);
   if (!isValid) {
     return NextResponse.json(
       { success: false, error: 'Assinatura do webhook inválida.' },

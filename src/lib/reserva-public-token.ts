@@ -12,11 +12,8 @@ function getTokenTtlSeconds(): number {
 }
 
 function getTokenSecret(): string {
-  const secret =
-    process.env.RESERVA_PUBLIC_TOKEN_SECRET?.trim() ||
-    process.env.ADMIN_SESSION_SECRET?.trim();
-
-  if (secret) return secret;
+  const dedicated = process.env.RESERVA_PUBLIC_TOKEN_SECRET?.trim();
+  if (dedicated) return dedicated;
 
   if (process.env.NODE_ENV === 'production') {
     throw new Error('RESERVA_PUBLIC_TOKEN_SECRET não configurada em produção.');
