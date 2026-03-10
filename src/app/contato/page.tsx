@@ -209,7 +209,7 @@ export default function ContatoPage() {
                 </a>
 
                 <a
-                  href={`https://instagram.com/${SITE_CONFIG.instagram.replace('@', '')}`}
+                  href="https://www.instagram.com/recantodomatuto.of?igsh=NGsyYnE3Z2IzM2pm"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-start gap-4 hover:text-secondary hover:translate-x-1 transition-all"

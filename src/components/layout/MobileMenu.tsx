@@ -183,7 +183,7 @@ export default function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                     <span className="truncate">{SITE_CONFIG.email}</span>
                   </a>
                   <a
-                    href={`https://instagram.com/${SITE_CONFIG.instagram.replace('@', '')}`}
+                    href="https://www.instagram.com/recantodomatuto.of?igsh=NGsyYnE3Z2IzM2pm"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-4 text-dark/80 hover:text-primary transition-colors text-sm font-medium"

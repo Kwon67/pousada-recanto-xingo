@@ -12,7 +12,7 @@ export const SITE_CONFIG = {
   mapsLink: 'https://maps.app.goo.gl/JsXxNX8P2N5qaGF48',
   mapsEmbedLink:
     'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3933.841879415933!2d-37.778848824072526!3d-9.608880190477453!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x70f33559af89733%3A0x5bd8dd3775872ede!2sPousada%20Recanto%20do%20Matuto%20Xing%C3%B3!5e0!3m2!1spt-BR!2sbr!4v1773160170559!5m2!1spt-BR!2sbr',
-  instagram: '@recantodomatutoxingo',
+  instagram: '@recantodomatuto.of',
   checkIn: '14:00',
   checkOut: '12:00',
   developer: 'Kivora Inc.',
@@ -82,7 +82,7 @@ export const AMENIDADES_ICONS: Record<string, string> = {
 export const SOCIAL_LINKS = [
   {
     name: 'Instagram',
-    href: 'https://instagram.com/recantodomatutoxingo',
+    href: 'https://www.instagram.com/recantodomatuto.of?igsh=NGsyYnE3Z2IzM2pm',
     icon: 'Instagram',
   },
   {

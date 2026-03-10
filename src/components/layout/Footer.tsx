@@ -139,7 +139,7 @@ export default function Footer({ precoNoite = 'R$ 380' }: FooterProps) {
           
           <div className="flex gap-4">
             <a
-              href={`https://instagram.com/${SITE_CONFIG.instagram.replace('@', '')}`}
+              href="https://www.instagram.com/recantodomatuto.of?igsh=NGsyYnE3Z2IzM2pm"
               target="_blank"
               rel="noopener noreferrer"
               className="w-10 h-10 border border-white/10 flex items-center justify-center hover:bg-secondary hover:text-black hover:border-secondary transition-all"
