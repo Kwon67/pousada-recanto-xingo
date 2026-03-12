@@ -265,21 +265,44 @@
   background-size: 26px 26px;
 }
 
-/* Warm textured background for admin panels */
+/* Dark theme background for admin panels */
 .admin-texture-bg {
-  background-color: var(--color-cream);
+  background-color: #0f172a;
   background-image:
-    radial-gradient(circle at 15% 50%, rgba(45, 106, 79, 0.03), transparent 50%),
-    radial-gradient(circle at 85% 20%, rgba(212, 168, 67, 0.04), transparent 45%);
+    radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.04), transparent 50%),
+    radial-gradient(circle at 85% 20%, rgba(59, 130, 246, 0.03), transparent 45%);
+  color: #e2e8f0;
+}
+
+/* Admin dark theme — scoped overrides */
+.admin-dark {
+  --admin-bg: #0f172a;
+  --admin-surface: #1e293b;
+  --admin-surface-hover: #253449;
+  --admin-border: rgba(255, 255, 255, 0.08);
+  --admin-border-strong: rgba(255, 255, 255, 0.12);
+  --admin-text: #e2e8f0;
+  --admin-text-secondary: #94a3b8;
+  --admin-text-muted: #64748b;
+  --admin-accent: #3b82f6;
+}
+
+.admin-dark h1,
+.admin-dark h2,
+.admin-dark h3,
+.admin-dark h4,
+.admin-dark h5,
+.admin-dark h6 {
+  color: #e2e8f0;
 }
 
 /* Glass card for admin dark theme */
 .admin-glass-card {
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--admin-surface, #1e293b);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--admin-border, rgba(255, 255, 255, 0.08));
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .admin-glass-card-hover {
@@ -287,9 +310,199 @@
 }
 
 .admin-glass-card-hover:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(212, 168, 67, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  background: var(--admin-surface-hover, #253449);
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* ─── Admin Dark: Global overrides for all child pages ─── */
+
+/* Backgrounds: white → dark surface */
+.admin-dark .bg-white {
+  background-color: #1e293b !important;
+}
+
+.admin-dark .bg-gray-50,
+.admin-dark .bg-gray-100 {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Text: gray → white variants */
+.admin-dark .text-gray-900,
+.admin-dark .text-gray-800 {
+  color: #e2e8f0 !important;
+}
+
+.admin-dark .text-gray-700,
+.admin-dark .text-gray-600 {
+  color: #94a3b8 !important;
+}
+
+.admin-dark .text-gray-500 {
+  color: #64748b !important;
+}
+
+.admin-dark .text-gray-400 {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+/* Borders: gray → subtle white */
+.admin-dark .border-gray-100,
+.admin-dark .border-gray-200,
+.admin-dark .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.admin-dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Inputs, selects, textareas */
+.admin-dark input,
+.admin-dark textarea,
+.admin-dark select {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #e2e8f0 !important;
+}
+
+.admin-dark input::placeholder,
+.admin-dark textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.admin-dark input:focus,
+.admin-dark textarea:focus,
+.admin-dark select:focus {
+  border-color: rgba(59, 130, 246, 0.4) !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Labels */
+.admin-dark label {
+  color: #94a3b8 !important;
+}
+
+/* Hover states */
+.admin-dark .hover\:bg-gray-50:hover,
+.admin-dark .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Badges — dark variants for status colors */
+.admin-dark .bg-amber-100 { background-color: rgba(245, 158, 11, 0.12) !important; }
+.admin-dark .text-amber-700 { color: #fbbf24 !important; }
+.admin-dark .bg-green-100 { background-color: rgba(16, 185, 129, 0.12) !important; }
+.admin-dark .text-green-700 { color: #34d399 !important; }
+.admin-dark .bg-red-100 { background-color: rgba(239, 68, 68, 0.12) !important; }
+.admin-dark .text-red-700 { color: #f87171 !important; }
+.admin-dark .bg-blue-100 { background-color: rgba(59, 130, 246, 0.12) !important; }
+.admin-dark .text-blue-700 { color: #60a5fa !important; }
+.admin-dark .bg-yellow-100 { background-color: rgba(234, 179, 8, 0.12) !important; }
+.admin-dark .text-yellow-800 { color: #facc15 !important; }
+.admin-dark .bg-rose-100 { background-color: rgba(244, 63, 94, 0.12) !important; }
+.admin-dark .text-rose-700 { color: #fb7185 !important; }
+.admin-dark .bg-orange-100 { background-color: rgba(249, 115, 22, 0.12) !important; }
+.admin-dark .text-orange-700 { color: #fb923c !important; }
+.admin-dark .bg-slate-100 { background-color: rgba(255, 255, 255, 0.06) !important; }
+.admin-dark .text-slate-700 { color: #94a3b8 !important; }
+
+/* Modals */
+.admin-dark .bg-green-50 { background-color: rgba(16, 185, 129, 0.08) !important; }
+.admin-dark .border-green-200 { border-color: rgba(16, 185, 129, 0.2) !important; }
+.admin-dark .text-green-800 { color: #34d399 !important; }
+
+.admin-dark .bg-red-50 { background-color: rgba(239, 68, 68, 0.08) !important; }
+.admin-dark .border-red-200 { border-color: rgba(239, 68, 68, 0.2) !important; }
+.admin-dark .text-red-600 { color: #f87171 !important; }
+
+/* Shadow overrides */
+.admin-dark .shadow-sm {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+.admin-dark .shadow-xl {
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Ring overrides */
+.admin-dark .focus\:ring-primary\/20:focus {
+  --tw-ring-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Scrollbar for admin dark */
+.admin-dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.admin-dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Button overrides in admin dark */
+.admin-dark .hover\:bg-primary\/5:hover {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+}
+
+.admin-dark .hover\:text-primary:hover {
+  color: #60a5fa !important;
+}
+
+/* Specific component overrides */
+.admin-dark .border-dark\/8 {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.admin-dark .bg-cream,
+.admin-dark .bg-cream\/80,
+.admin-dark .bg-cream-dark {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.admin-dark .text-dark {
+  color: #e2e8f0 !important;
+}
+
+.admin-dark .text-dark\/50 {
+  color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.admin-dark .text-dark\/60 {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.admin-dark .text-dark\/40 {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.admin-dark .text-dark\/30 {
+  color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.admin-dark .hover\:bg-cream\/50:hover,
+.admin-dark .hover\:bg-cream:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.admin-dark .bg-cream\/60 {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Admin dark select options */
+.admin-dark select option {
+  background-color: #1e293b;
+  color: #e2e8f0;
 }
 
 /* Hide main page scrollbar (keep scrolling functional) */

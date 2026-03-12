@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ExternalLink,
+  Search,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -31,7 +32,7 @@ const navItems = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   const [menuOriginPath, setMenuOriginPath] = useState<string | null>(null);
   const mobileOpen = menuOriginPath !== null && menuOriginPath === pathname;
   const scrollPositionRef = useRef(0);
@@ -75,13 +76,13 @@ export default function AdminSidebar() {
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-dark/95 backdrop-blur z-40 flex items-center justify-between px-4 border-b border-white/10">
-        <span className="font-display text-lg font-bold text-secondary">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-[#1e293b]/95 backdrop-blur z-40 flex items-center justify-between px-4 border-b border-white/8">
+        <span className="font-display text-lg font-bold text-white">
           Recanto do Matuto
         </span>
         <button
           onClick={() => setMenuOriginPath(mobileOpen ? null : pathname)}
-          className="p-2 text-white"
+          className="p-2 text-white/70 hover:text-white"
           aria-label={mobileOpen ? 'Fechar menu' : 'Abrir menu'}
         >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -91,7 +92,7 @@ export default function AdminSidebar() {
       {/* Mobile Overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-dark/50 z-30"
+          className="lg:hidden fixed inset-0 bg-black/50 z-30"
           onClick={() => setMenuOriginPath(null)}
         />
       )}
@@ -99,25 +100,41 @@ export default function AdminSidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed top-0 left-0 bottom-0 w-64 bg-[linear-gradient(180deg,#163244_0%,#102531_100%)] z-40 transform transition-transform duration-300 lg:translate-x-0 overflow-hidden border-r border-white/10',
+          'fixed top-0 left-0 bottom-0 w-64 bg-[#1e293b] z-40 transform transition-transform duration-300 lg:translate-x-0 overflow-hidden border-r border-white/8',
           mobileOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="p-6 border-b border-white/10">
-            <Link href="/" className="block">
-              <h1 className="font-display text-xl font-bold text-secondary">
-                Recanto do Matuto
-              </h1>
-              <p className="text-white/50 text-sm mt-1">Painel Administrativo</p>
+          <div className="px-6 py-5 border-b border-white/8">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold text-sm">
+                R
+              </div>
+              <div>
+                <h1 className="font-body text-base font-semibold text-white tracking-tight">
+                  Recanto do Matuto
+                </h1>
+              </div>
             </Link>
           </div>
 
+          {/* Search */}
+          <div className="px-4 pt-4 pb-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+              <input
+                type="text"
+                placeholder="Buscar..."
+                className="w-full pl-9 pr-3 py-2 bg-white/5 border border-white/8 rounded-lg text-sm text-white/70 placeholder:text-white/30 focus:outline-none focus:border-blue-500/40 focus:bg-white/8 transition-colors"
+              />
+            </div>
+          </div>
+
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            <p className="text-[11px] uppercase tracking-wider text-white/40 px-4 pb-2">
-              Navegação
+          <nav className="flex-1 px-3 py-2 space-y-0.5 overflow-y-auto">
+            <p className="text-[11px] uppercase tracking-wider text-white/30 px-3 pb-2 pt-3 font-medium">
+              Menu
             </p>
             {navItems.map((item) => (
               <Link
@@ -125,10 +142,10 @@ export default function AdminSidebar() {
                 href={item.href}
                 onClick={() => setMenuOriginPath(null)}
                 className={cn(
-                  'flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm',
                   isActive(item.href)
-                    ? 'bg-white text-dark shadow-sm'
-                    : 'text-white/70 hover:bg-white/10 hover:text-white'
+                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20'
+                    : 'text-white/60 hover:bg-white/5 hover:text-white/90'
                 )}
               >
                 <item.icon className="w-5 h-5" />
@@ -137,21 +154,32 @@ export default function AdminSidebar() {
             ))}
           </nav>
 
-          {/* Bottom actions */}
-          <div className="p-4 border-t border-white/10 space-y-1">
+          {/* User info + Bottom actions */}
+          <div className="p-3 border-t border-white/8 space-y-1">
+            {/* User avatar and info */}
+            <div className="flex items-center gap-3 px-3 py-2 mb-1">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
+                {(user?.name?.[0] || 'A').toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-white/90 truncate">{user?.name || 'Admin'}</p>
+                <p className="text-[11px] text-white/40 truncate">{user?.email || 'admin'}</p>
+              </div>
+            </div>
+
             <Link
               href="/"
               target="_blank"
-              className="flex items-center gap-3 px-4 py-3 w-full text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 text-sm"
+              className="flex items-center gap-3 px-3 py-2.5 w-full text-white/50 hover:bg-white/5 hover:text-white/80 rounded-lg transition-all duration-200 text-sm"
             >
-              <ExternalLink className="w-5 h-5" />
+              <ExternalLink className="w-4 h-4" />
               <span className="font-medium">Ver site</span>
             </Link>
             <button
               onClick={logout}
-              className="flex items-center gap-3 px-4 py-3 w-full text-white/70 hover:bg-white/10 hover:text-white rounded-xl transition-all duration-200 text-sm"
+              className="flex items-center gap-3 px-3 py-2.5 w-full text-white/50 hover:bg-red-500/10 hover:text-red-400 rounded-lg transition-all duration-200 text-sm"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
               <span className="font-medium">Sair</span>
             </button>
           </div>
